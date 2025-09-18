@@ -1,14 +1,13 @@
-//
-//  LuvDeckApp.swift
-//  LuvDeck
-//
-//  Created by Work Laptop on 15/09/2025.
-//
-
 import SwiftUI
+import Firebase
 
 @main
 struct LuvDeckApp: App {
+    init() {
+        FirebaseApp.configure()
+        // Removed: NotificationManager.shared.requestPermission()
+    }
+    
     var body: some Scene {
         WindowGroup {
             ContentView()
