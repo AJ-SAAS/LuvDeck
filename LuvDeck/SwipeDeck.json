@@ -1,0 +1,782 @@
+[
+  {
+    "title": "Love Note Attack",
+    "level": "Cute",
+    "description": "Hide sticky notes with little compliments in their bag, mirror, or car.",
+    "imageName": "placeholder_1"
+  },
+  {
+    "title": "Snack Ambush",
+    "level": "Cute",
+    "description": "Show up with their favorite snack or coffee out of the blue.",
+    "imageName": "placeholder_2"
+  },
+  {
+    "title": "Playlist of Us",
+    "level": "Cute",
+    "description": "Make a Spotify playlist with songs from your relationship & surprise them.",
+    "imageName": "placeholder_3"
+  },
+  {
+    "title": "Breakfast Boss",
+    "level": "Cute",
+    "description": "Wake up early and serve their favorite breakfast in bed.",
+    "imageName": "placeholder_4"
+  },
+  {
+    "title": "Pocket Surprise",
+    "level": "Cute",
+    "description": "Slip a handwritten love note into their coat, wallet, or purse.",
+    "imageName": "placeholder_5"
+  },
+  {
+    "title": "Candlelit Home Date",
+    "level": "Spicy",
+    "description": "Transform the dining room into a romantic restaurant — candles, music, and their favorite food.",
+    "imageName": "placeholder_6"
+  },
+  {
+    "title": "Memory Lane Drive",
+    "level": "Spicy",
+    "description": "Take them on a drive where you revisit spots that matter to your story.",
+    "imageName": "placeholder_7"
+  },
+  {
+    "title": "Spa-At-Home",
+    "level": "Spicy",
+    "description": "Draw a bubble bath, light candles, and give a mini massage.",
+    "imageName": "placeholder_8"
+  },
+  {
+    "title": "Backyard Theater",
+    "level": "Spicy",
+    "description": "Project a movie outdoors (or inside with blankets) — popcorn mandatory.",
+    "imageName": "placeholder_9"
+  },
+  {
+    "title": "First Date 2.0",
+    "level": "Spicy",
+    "description": "Recreate your first date exactly as it was… but with a twist.",
+    "imageName": "placeholder_10"
+  },
+  {
+    "title": "Weekend Getaway",
+    "level": "Epic",
+    "description": "Secretly book a cabin, beach house, or city hotel for a surprise trip.",
+    "imageName": "placeholder_11"
+  },
+  {
+    "title": "Surprise Party Hero",
+    "level": "Epic",
+    "description": "Throw a birthday or anniversary party with friends & family in on it.",
+    "imageName": "placeholder_12"
+  },
+  {
+    "title": "Private Chef Night",
+    "level": "Epic",
+    "description": "Hire a local chef to cook at home — fine dining without leaving the house.",
+    "imageName": "placeholder_13"
+  },
+  {
+    "title": "Scavenger of Love",
+    "level": "Epic",
+    "description": "Create a treasure hunt with clues leading to memories, places, and a gift.",
+    "imageName": "placeholder_14"
+  },
+  {
+    "title": "Capture the Love",
+    "level": "Epic",
+    "description": "Book a couples’ photoshoot to capture memories that last forever.",
+    "imageName": "placeholder_15"
+  },
+  {
+    "title": "Adventure Quest",
+    "level": "Legendary",
+    "description": "Plan a full-day adventure — rock climbing, kayaking, or a road trip with surprises all day.",
+    "imageName": "placeholder_16"
+  },
+  {
+    "title": "Sky High Surprise",
+    "level": "Legendary",
+    "description": "Take them on a hot air balloon ride or helicopter tour for breathtaking memories.",
+    "imageName": "placeholder_17"
+  },
+  {
+    "title": "Luxury Retreat",
+    "level": "Legendary",
+    "description": "Book a weekend at a luxury resort or spa — full pampering experience.",
+    "imageName": "placeholder_18"
+  },
+  {
+    "title": "Personal Concert",
+    "level": "Legendary",
+    "description": "Hire a musician or small band to perform their favorite songs privately.",
+    "imageName": "placeholder_19"
+  },
+  {
+    "title": "Memory Capsule",
+    "level": "Legendary",
+    "description": "Create a time capsule of memories to open together years later.",
+    "imageName": "placeholder_20"
+  },
+  {
+    "title": "Romantic Road Trip",
+    "level": "Legendary",
+    "description": "Plan a surprise cross-country or multi-city road trip with stops they’ll love.",
+    "imageName": "placeholder_21"
+  },
+  {
+    "title": "Starry Night Picnic",
+    "level": "Legendary",
+    "description": "Organize a midnight picnic under the stars with cozy blankets and wine.",
+    "imageName": "placeholder_22"
+  },
+  {
+    "title": "Secret Spa Experience",
+    "level": "Legendary",
+    "description": "Book a private spa suite or unique wellness treatment for two.",
+    "imageName": "placeholder_23"
+  },
+  {
+    "title": "Surprise VIP Event",
+    "level": "Legendary",
+    "description": "Get tickets to a show, sports game, or concert and surprise them at the door.",
+    "imageName": "placeholder_24"
+  },
+  {
+    "title": "Art & Wine Night",
+    "level": "Legendary",
+    "description": "Arrange a private art class or painting session with wine and snacks.",
+    "imageName": "placeholder_25"
+  },
+  {
+    "title": "Sunrise Adventure",
+    "level": "Legendary",
+    "description": "Wake up early and take them to watch the sunrise at a scenic spot.",
+    "imageName": "placeholder_26"
+  },
+  {
+    "title": "Ultimate Picnic",
+    "level": "Legendary",
+    "description": "Plan an elaborate picnic with gourmet food, games, and music.",
+    "imageName": "placeholder_27"
+  },
+  {
+    "title": "Helicopter Surprise",
+    "level": "Legendary",
+    "description": "Arrange a helicopter ride over the city with champagne.",
+    "imageName": "placeholder_28"
+  },
+  {
+    "title": "Luxury Boat Ride",
+    "level": "Legendary",
+    "description": "Book a private yacht or boat ride with a romantic dinner.",
+    "imageName": "placeholder_29"
+  },
+  {
+    "title": "Couples Workshop",
+    "level": "Legendary",
+    "description": "Attend a cooking, dancing, or art class together for a unique memory.",
+    "imageName": "placeholder_30"
+  },
+  {
+    "title": "Custom Star Map",
+    "level": "Legendary",
+    "description": "Gift a framed star map of a meaningful date or location.",
+    "imageName": "placeholder_31"
+  },
+  {
+    "title": "Surprise Getaway Flight",
+    "level": "Legendary",
+    "description": "Book a flight to a secret destination and reveal it only at the airport.",
+    "imageName": "placeholder_32"
+  },
+  {
+    "title": "Private Movie Screening",
+    "level": "Legendary",
+    "description": "Rent a small theater or outdoor space for a private screening.",
+    "imageName": "placeholder_33"
+  },
+  {
+    "title": "Romantic Treasure Hunt",
+    "level": "Legendary",
+    "description": "Create a city-wide scavenger hunt ending in a romantic spot or gift.",
+    "imageName": "placeholder_34"
+  },
+  {
+    "title": "Luxury Spa Night",
+    "level": "Legendary",
+    "description": "Transform your home into a spa with candles, music, massages, and gourmet snacks.",
+    "imageName": "placeholder_35"
+  },
+  {
+    "title": "Handwritten Poem",
+    "level": "Cute",
+    "description": "Write a short poem and leave it on their pillow or desk.",
+    "imageName": "placeholder_36"
+  },
+  {
+    "title": "Morning Coffee Surprise",
+    "level": "Cute",
+    "description": "Brew their favorite coffee and bring it to them in bed or at work.",
+    "imageName": "placeholder_37"
+  },
+  {
+    "title": "Random Hug Attack",
+    "level": "Cute",
+    "description": "Give them a surprise hug when they least expect it.",
+    "imageName": "placeholder_38"
+  },
+  {
+    "title": "Mini Gift",
+    "level": "Cute",
+    "description": "Bring a small, thoughtful gift for no reason at all.",
+    "imageName": "placeholder_39"
+  },
+  {
+    "title": "Message in a Bottle",
+    "level": "Cute",
+    "description": "Write a sweet note, put it in a small bottle, and leave it for them to find.",
+    "imageName": "placeholder_40"
+  },
+  {
+    "title": "Surprise Lunch",
+    "level": "Spicy",
+    "description": "Pick them up and take them to a new cafe or restaurant they love.",
+    "imageName": "placeholder_41"
+  },
+  {
+    "title": "Memory Jar",
+    "level": "Spicy",
+    "description": "Create a jar filled with small notes of memories and reasons you love them.",
+    "imageName": "placeholder_42"
+  },
+  {
+    "title": "Drive-In Movie",
+    "level": "Spicy",
+    "description": "Set up a backyard drive-in style movie night with blankets and popcorn.",
+    "imageName": "placeholder_43"
+  },
+  {
+    "title": "Handmade Dinner",
+    "level": "Spicy",
+    "description": "Cook a full three-course meal with their favorite dishes and candles.",
+    "imageName": "placeholder_44"
+  },
+  {
+    "title": "Night Stargazing",
+    "level": "Spicy",
+    "description": "Take them to a dark spot outside the city to watch the stars.",
+    "imageName": "placeholder_45"
+  },
+  {
+    "title": "Surprise Weekend Hike",
+    "level": "Epic",
+    "description": "Plan a scenic hike ending with a picnic or sunset view.",
+    "imageName": "placeholder_46"
+  },
+  {
+    "title": "Hot Air Balloon Sunrise",
+    "level": "Epic",
+    "description": "Book a sunrise hot air balloon ride for breathtaking views together.",
+    "imageName": "placeholder_47"
+  },
+  {
+    "title": "Custom Jewelry",
+    "level": "Epic",
+    "description": "Gift a personalized necklace, bracelet, or ring with their initials or date.",
+    "imageName": "placeholder_48"
+  },
+  {
+    "title": "Private Wine Tasting",
+    "level": "Epic",
+    "description": "Organize a private wine tasting at home or a vineyard.",
+    "imageName": "placeholder_49"
+  },
+  {
+    "title": "Cooking Challenge",
+    "level": "Epic",
+    "description": "Host a fun cooking competition together and enjoy the results.",
+    "imageName": "placeholder_50"
+  },
+  {
+    "title": "Luxury Cabin Retreat",
+    "level": "Legendary",
+    "description": "Surprise them with a weekend stay at a secluded luxury cabin.",
+    "imageName": "placeholder_51"
+  },
+  {
+    "title": "Helicopter Sunset",
+    "level": "Legendary",
+    "description": "Book a helicopter tour at sunset to see the city from above.",
+    "imageName": "placeholder_52"
+  },
+  {
+    "title": "Private Chef Tasting Menu",
+    "level": "Legendary",
+    "description": "Hire a chef to create a multi-course tasting menu just for you two.",
+    "imageName": "placeholder_53"
+  },
+  {
+    "title": "Surprise Destination Dinner",
+    "level": "Legendary",
+    "description": "Blindfold them and take them to a secret, romantic restaurant.",
+    "imageName": "placeholder_54"
+  },
+  {
+    "title": "Luxury Spa Suite",
+    "level": "Legendary",
+    "description": "Book a spa suite for a full day of pampering together.",
+    "imageName": "placeholder_55"
+  },
+  {
+    "title": "Private Concert",
+    "level": "Legendary",
+    "description": "Hire a musician or small band to perform their favorite songs privately.",
+    "imageName": "placeholder_56"
+  },
+  {
+    "title": "City Adventure",
+    "level": "Legendary",
+    "description": "Plan a full-day surprise tour around your city with hidden gems and fun activities.",
+    "imageName": "placeholder_57"
+  },
+  {
+    "title": "Romantic Photoshoot",
+    "level": "Legendary",
+    "description": "Book a photographer to capture candid romantic moments throughout a day.",
+    "imageName": "placeholder_58"
+  },
+  {
+    "title": "Scenic Train Trip",
+    "level": "Legendary",
+    "description": "Book a scenic train ride through mountains, lakes, or countryside.",
+    "imageName": "placeholder_59"
+  },
+  {
+    "title": "Custom Love Map",
+    "level": "Legendary",
+    "description": "Gift a framed map showing all the places you’ve shared special moments.",
+    "imageName": "placeholder_60"
+  },
+  {
+    "title": "Luxury Yacht Night",
+    "level": "Legendary",
+    "description": "Surprise them with a romantic evening on a private yacht.",
+    "imageName": "placeholder_61"
+  },
+  {
+    "title": "Sunset Hot Springs",
+    "level": "Legendary",
+    "description": "Plan a trip to natural hot springs at sunset for relaxation and romance.",
+    "imageName": "placeholder_62"
+  },
+  {
+    "title": "Theater Premiere",
+    "level": "Legendary",
+    "description": "Get VIP tickets to a theater or movie premiere for a night of glitz and glam.",
+    "imageName": "placeholder_63"
+  },
+  {
+    "title": "Secret Garden Date",
+    "level": "Legendary",
+    "description": "Take them to a hidden garden for a private picnic or stroll.",
+    "imageName": "placeholder_64"
+  },
+  {
+    "title": "Hot Springs Retreat",
+    "level": "Legendary",
+    "description": "Surprise them with a weekend at a luxury hot springs resort.",
+    "imageName": "placeholder_65"
+  },
+  {
+    "title": "Ballroom Dance Night",
+    "level": "Legendary",
+    "description": "Book a private ballroom dance lesson or evening for two.",
+    "imageName": "placeholder_66"
+  },
+  {
+    "title": "Adventure Safari",
+    "level": "Legendary",
+    "description": "Plan a short safari trip to see wildlife up close together.",
+    "imageName": "placeholder_67"
+  },
+  {
+    "title": "Private Art Exhibit",
+    "level": "Legendary",
+    "description": "Arrange a private viewing of an art gallery or museum exhibit.",
+    "imageName": "placeholder_68"
+  },
+  {
+    "title": "Skydiving Surprise",
+    "level": "Legendary",
+    "description": "Book a tandem skydiving session for an unforgettable adrenaline experience.",
+    "imageName": "placeholder_69"
+  },
+  {
+    "title": "Personal Stargazing Planetarium",
+    "level": "Legendary",
+    "description": "Rent a small planetarium or telescope setup for private stargazing.",
+    "imageName": "placeholder_70"
+  },
+  {
+    "title": "Memory Scrapbook",
+    "level": "Epic",
+    "description": "Create a scrapbook full of photos, ticket stubs, and love notes.",
+    "imageName": "placeholder_71"
+  },
+  {
+    "title": "Surprise Dance Lesson",
+    "level": "Epic",
+    "description": "Book a private dance lesson — salsa, tango, or their favorite style.",
+    "imageName": "placeholder_72"
+  },
+  {
+    "title": "Themed Costume Date",
+    "level": "Epic",
+    "description": "Plan a date night with a fun theme — dress up and enjoy activities around it.",
+    "imageName": "placeholder_73"
+  },
+  {
+    "title": "DIY Wine & Paint Night",
+    "level": "Epic",
+    "description": "Set up a painting and wine night at home with all supplies ready.",
+    "imageName": "placeholder_74"
+  },
+  {
+    "title": "Surprise Road Trip Playlist",
+    "level": "Epic",
+    "description": "Create a curated playlist for a surprise road trip together.",
+    "imageName": "placeholder_75"
+  },
+  {
+    "title": "Luxury Movie Night",
+    "level": "Epic",
+    "description": "Transform your living room into a cinema with snacks, projector, and cozy seating.",
+    "imageName": "placeholder_76"
+  },
+  {
+    "title": "Personalized Puzzle",
+    "level": "Epic",
+    "description": "Create a custom puzzle featuring a photo of a memorable moment together.",
+    "imageName": "placeholder_77"
+  },
+  {
+    "title": "Couples Yoga Retreat",
+    "level": "Epic",
+    "description": "Book a weekend yoga retreat or create a private yoga session at home.",
+    "imageName": "placeholder_78"
+  },
+  {
+    "title": "Gourmet Picnic Basket",
+    "level": "Epic",
+    "description": "Pack a picnic with gourmet treats and wine for a scenic day outdoors.",
+    "imageName": "placeholder_79"
+  },
+  {
+    "title": "Love Letter Subscription",
+    "level": "Epic",
+    "description": "Write a series of letters to be opened over time for an ongoing surprise.",
+    "imageName": "placeholder_80"
+  },
+  {
+    "title": "Sunrise Breakfast",
+    "level": "Cute",
+    "description": "Wake up early and share breakfast while watching the sunrise.",
+    "imageName": "placeholder_81"
+  },
+  {
+    "title": "Love Coupon Book",
+    "level": "Cute",
+    "description": "Make a small booklet with coupons like 'One Free Hug' or 'Movie Night Pick'.",
+    "imageName": "placeholder_82"
+  },
+  {
+    "title": "Random Compliment Bomb",
+    "level": "Cute",
+    "description": "Text them 5 random compliments during the day to brighten their mood.",
+    "imageName": "placeholder_83"
+  },
+  {
+    "title": "Flower Surprise",
+    "level": "Cute",
+    "description": "Bring home their favorite flowers for no reason.",
+    "imageName": "placeholder_84"
+  },
+  {
+    "title": "DIY Spa Night",
+    "level": "Spicy",
+    "description": "Set up a home spa night with candles, music, and massages.",
+    "imageName": "placeholder_85"
+  },
+  {
+    "title": "Adventure Day",
+    "level": "Spicy",
+    "description": "Plan a day of fun activities like kayaking, hiking, or biking.",
+    "imageName": "placeholder_86"
+  },
+  {
+    "title": "Rooftop Dinner",
+    "level": "Spicy",
+    "description": "Prepare a candlelit dinner on a rooftop or balcony.",
+    "imageName": "placeholder_87"
+  },
+  {
+    "title": "Photo Scavenger Hunt",
+    "level": "Spicy",
+    "description": "Create a scavenger hunt around town with clues and photo challenges.",
+    "imageName": "placeholder_88"
+  },
+  {
+    "title": "Surprise Dessert",
+    "level": "Spicy",
+    "description": "Bake or buy their favorite dessert and present it creatively.",
+    "imageName": "placeholder_89"
+  },
+  {
+    "title": "VIP Sports Experience",
+    "level": "Epic",
+    "description": "Get premium tickets to a game with a backstage or meet-and-greet.",
+    "imageName": "placeholder_90"
+  },
+  {
+    "title": "Private Helicopter Ride",
+    "level": "Epic",
+    "description": "Take them on a scenic helicopter tour over your city or countryside.",
+    "imageName": "placeholder_91"
+  },
+  {
+    "title": "Luxury Hotel Night",
+    "level": "Epic",
+    "description": "Book a stay at a luxury hotel for an unforgettable overnight experience.",
+    "imageName": "placeholder_92"
+  },
+  {
+    "title": "Personalized Perfume",
+    "level": "Epic",
+    "description": "Gift a custom scent made just for them.",
+    "imageName": "placeholder_93"
+  },
+  {
+    "title": "Sunset Sailing",
+    "level": "Epic",
+    "description": "Charter a small boat for a private sunset sail.",
+    "imageName": "placeholder_94"
+  },
+  {
+    "title": "Gourmet Cooking Class",
+    "level": "Epic",
+    "description": "Book a private cooking class to learn a fancy cuisine together.",
+    "imageName": "placeholder_95"
+  },
+  {
+    "title": "Private Jet Adventure",
+    "level": "Legendary",
+    "description": "Surprise them with a short trip on a private jet to a nearby city or resort.",
+    "imageName": "placeholder_96"
+  },
+  {
+    "title": "Island Retreat",
+    "level": "Legendary",
+    "description": "Plan a private weekend on a luxury island resort.",
+    "imageName": "placeholder_97"
+  },
+  {
+    "title": "Helicopter Picnic",
+    "level": "Legendary",
+    "description": "Fly to a scenic spot via helicopter and enjoy a gourmet picnic.",
+    "imageName": "placeholder_98"
+  },
+  {
+    "title": "Luxury Safari",
+    "level": "Legendary",
+    "description": "Book a private safari adventure with guided tours and VIP accommodations.",
+    "imageName": "placeholder_99"
+  },
+  {
+    "title": "Concert on the Water",
+    "level": "Legendary",
+    "description": "Rent a boat for a private floating concert experience.",
+    "imageName": "placeholder_100"
+  },
+  {
+    "title": "Secret Compliment Jar",
+    "level": "Cute",
+    "description": "Fill a jar with tiny compliments and notes for them to pick from daily.",
+    "imageName": "placeholder_101"
+  },
+  {
+    "title": "Unexpected Dance",
+    "level": "Cute",
+    "description": "Start dancing spontaneously in the living room or kitchen together.",
+    "imageName": "placeholder_102"
+  },
+  {
+    "title": "Midnight Dessert Run",
+    "level": "Cute",
+    "description": "Sneak out together at midnight for ice cream or dessert.",
+    "imageName": "placeholder_103"
+  },
+  {
+    "title": "Memory Lane Box",
+    "level": "Cute",
+    "description": "Create a box with mementos and notes from your favorite memories together.",
+    "imageName": "placeholder_104"
+  },
+  {
+    "title": "Random Picnic",
+    "level": "Spicy",
+    "description": "Pack a surprise picnic and take them to a nearby park or scenic spot.",
+    "imageName": "placeholder_105"
+  },
+  {
+    "title": "Secret Code Messages",
+    "level": "Spicy",
+    "description": "Send messages in code only they can decipher throughout the day.",
+    "imageName": "placeholder_106"
+  },
+  {
+    "title": "DIY Wine Tasting",
+    "level": "Spicy",
+    "description": "Set up a mini wine tasting at home with cheeses and candles.",
+    "imageName": "placeholder_107"
+  },
+  {
+    "title": "Themed Movie Night",
+    "level": "Spicy",
+    "description": "Transform your living room to match a favorite movie theme.",
+    "imageName": "placeholder_108"
+  },
+  {
+    "title": "Surprise Pet Experience",
+    "level": "Spicy",
+    "description": "Plan a day at a pet café or adopt a temporary pet for a fun experience.",
+    "imageName": "placeholder_109"
+  },
+  {
+    "title": "Message in a Bottle",
+    "level": "Epic",
+    "description": "Hide a love letter in a bottle and leave it somewhere they’ll discover.",
+    "imageName": "placeholder_110"
+  },
+  {
+    "title": "Rooftop Stargazing",
+    "level": "Epic",
+    "description": "Bring blankets and telescope for a private night under the stars.",
+    "imageName": "placeholder_111"
+  },
+  {
+    "title": "Private Dance Lesson",
+    "level": "Epic",
+    "description": "Book a professional dance instructor for a one-on-one lesson together.",
+    "imageName": "placeholder_112"
+  },
+  {
+    "title": "Personalized Love Map",
+    "level": "Epic",
+    "description": "Create a map marking all the meaningful spots in your relationship.",
+    "imageName": "placeholder_113"
+  },
+  {
+    "title": "Secret Rooftop Dinner",
+    "level": "Epic",
+    "description": "Transform a rooftop into a private candlelit restaurant for two.",
+    "imageName": "placeholder_114"
+  },
+  {
+    "title": "Adventure Passport",
+    "level": "Epic",
+    "description": "Make a 'passport' with tickets for small adventures and surprises.",
+    "imageName": "placeholder_115"
+  },
+  {
+    "title": "Private Hot Air Balloon Ride",
+    "level": "Legendary",
+    "description": "Take them on a breathtaking private balloon ride over scenic landscapes.",
+    "imageName": "placeholder_116"
+  },
+  {
+    "title": "Designer Shopping Spree",
+    "level": "Legendary",
+    "description": "Plan a surprise day where they get to pick something luxurious with your treat.",
+    "imageName": "placeholder_117"
+  },
+  {
+    "title": "Hidden Love Trail",
+    "level": "Legendary",
+    "description": "Create a scavenger hunt across your city with secret love messages at each stop.",
+    "imageName": "placeholder_118"
+  },
+  {
+    "title": "Private Island Picnic",
+    "level": "Legendary",
+    "description": "Charter a private island for a day and enjoy a romantic picnic.",
+    "imageName": "placeholder_119"
+  },
+  {
+    "title": "Custom Song Dedication",
+    "level": "Legendary",
+    "description": "Hire a musician to compose or perform a song just for them.",
+    "imageName": "placeholder_120"
+  },
+  {
+    "title": "VIP Movie Premiere",
+    "level": "Legendary",
+    "description": "Arrange tickets for a premiere or private screening of their favorite movie.",
+    "imageName": "placeholder_121"
+  },
+  {
+    "title": "Surprise Helicopter Proposal",
+    "level": "Legendary",
+    "description": "Take them on a helicopter tour with a jaw-dropping romantic twist.",
+    "imageName": "placeholder_122"
+  },
+  {
+    "title": "Luxury Spa Day Escape",
+    "level": "Legendary",
+    "description": "Plan a full-day luxury spa retreat with massages, saunas, and relaxation.",
+    "imageName": "placeholder_123"
+  },
+  {
+    "title": "Gourmet Surprise Feast",
+    "level": "Legendary",
+    "description": "Hire a private chef to cook a multi-course meal at home.",
+    "imageName": "placeholder_124"
+  },
+  {
+    "title": "Nighttime City Cruise",
+    "level": "Legendary",
+    "description": "Charter a private boat for a nighttime city skyline cruise.",
+    "imageName": "placeholder_125"
+  },
+  {
+    "title": "Secret Garden Picnic",
+    "level": "Epic",
+    "description": "Find a hidden garden or park and set up a private picnic oasis.",
+    "imageName": "placeholder_126"
+  },
+  {
+    "title": "DIY Movie Trailer",
+    "level": "Epic",
+    "description": "Create a fun trailer starring the two of you for your own 'movie night'.",
+    "imageName": "placeholder_127"
+  },
+  {
+    "title": "Handwritten Adventure Map",
+    "level": "Epic",
+    "description": "Draw a map of your city with secret spots and fun challenges for them.",
+    "imageName": "placeholder_128"
+  },
+  {
+    "title": "Flash Mob Surprise",
+    "level": "Legendary",
+    "description": "Organize a flash mob with friends to surprise them in a public spot.",
+    "imageName": "placeholder_129"
+  },
+  {
+    "title": "Midnight Stargazing Drive",
+    "level": "Spicy",
+    "description": "Drive to a quiet hilltop or lake to stargaze under the night sky.",
+    "imageName": "placeholder_130"
+  }
+]

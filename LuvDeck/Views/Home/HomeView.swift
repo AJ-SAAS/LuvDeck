@@ -5,7 +5,8 @@ struct HomeView: View {
     
     var body: some View {
         ZStack {
-            Color(.systemGray6).edgesIgnoringSafeArea(.all)
+            Color(.systemGray6)
+                .edgesIgnoringSafeArea(.all)
             
             if viewModel.isLoading {
                 ProgressView("Loading ideas...")
@@ -17,40 +18,26 @@ struct HomeView: View {
             } else {
                 ZStack {
                     ForEach(viewModel.ideas.indices.reversed(), id: \.self) { index in
-                        if index >= viewModel.currentIndex {
+                        if index >= viewModel.currentIndex && index < viewModel.ideas.count {
                             IdeaCardView(idea: viewModel.ideas[index])
                                 .zIndex(Double(viewModel.ideas.count - index))
                         }
                     }
                 }
-                
-                // Top progress dots
-                VStack {
-                    HStack(spacing: 6) {
-                        ForEach(0..<viewModel.ideas.count, id: \.self) { idx in
-                            Circle()
-                                .fill(idx == viewModel.currentIndex ? Color.pink : Color.gray.opacity(0.4))
-                                .frame(width: 8, height: 8)
-                        }
-                    }
-                    .padding(.top, 50)
-                    
-                    Spacer()
-                }
             }
         }
         .onAppear {
-            print("HomeView appeared with \(viewModel.ideas.count) ideas, currentIndex=\(viewModel.currentIndex)")
+            print("HomeView appeared with \(viewModel.ideas.count) ideas, currentIndex=\(viewModel.currentIndex), titles: \(viewModel.ideas.map { $0.title }.prefix(10))")
         }
     }
 }
 
 #Preview("iPhone 14") {
     HomeView()
-        .environmentObject(HomeViewModel(userId: "testUser"))
+        .environmentObject(HomeViewModel(userId: nil))
 }
 
 #Preview("iPad Pro") {
     HomeView()
-        .environmentObject(HomeViewModel(userId: "testUser"))
+        .environmentObject(HomeViewModel(userId: nil))
 }

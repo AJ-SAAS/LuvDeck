@@ -119,7 +119,9 @@ struct FirebaseManager {
                       let category = data["category"] as? String,
                       let difficulty = data["difficulty"] as? Int,
                       let impressive = data["impressive"] as? Int,
-                      let imageName = data["imageName"] as? String else {
+                      let imageName = data["imageName"] as? String,
+                      let levelStr = data["level"] as? String,
+                      let level = Level(rawValue: levelStr) else {
                     print("Invalid idea data for document: \(doc.documentID)")
                     return nil
                 }
@@ -130,7 +132,8 @@ struct FirebaseManager {
                     category: category,
                     difficulty: difficulty,
                     impressive: impressive,
-                    imageName: imageName
+                    imageName: imageName,
+                    level: level
                 )
             } ?? []
             print("Fetched \(ideas.count) ideas from Firestore")
@@ -146,7 +149,8 @@ struct FirebaseManager {
             "category": idea.category,
             "difficulty": idea.difficulty,
             "impressive": idea.impressive,
-            "imageName": idea.imageName
+            "imageName": idea.imageName,
+            "level": idea.level.rawValue
         ]
         db.collection("users").document(userId).collection("likedIdeas").document(idea.id.uuidString).setData(data) { error in
             if let error = error {
@@ -165,7 +169,8 @@ struct FirebaseManager {
             "category": idea.category,
             "difficulty": idea.difficulty,
             "impressive": idea.impressive,
-            "imageName": idea.imageName
+            "imageName": idea.imageName,
+            "level": idea.level.rawValue
         ]
         db.collection("users").document(userId).collection("bookmarkedIdeas").document(idea.id.uuidString).setData(data) { error in
             if let error = error {

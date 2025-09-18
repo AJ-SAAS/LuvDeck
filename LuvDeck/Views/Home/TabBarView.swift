@@ -3,20 +3,22 @@ import SwiftUI
 struct TabBarView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var onboardingViewModel: OnboardingViewModel
-    
+    @StateObject private var homeVM = HomeViewModel(userId: nil)
+
     var body: some View {
         TabView {
             HomeView()
-                .environmentObject(authViewModel)
-                .environmentObject(HomeViewModel(userId: authViewModel.user?.id))
+                .environmentObject(homeVM)
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }
+
             AddDatesView()
                 .environmentObject(AddDatesViewModel(userId: authViewModel.user?.id))
                 .tabItem {
                     Label("Dates", systemImage: "calendar")
                 }
+
             SettingsView()
                 .environmentObject(authViewModel)
                 .tabItem {
@@ -24,7 +26,9 @@ struct TabBarView: View {
                 }
         }
         .onAppear {
-            print("TabBarView appeared with userId: \(authViewModel.user?.id ?? "nil")")
+            if let uid = authViewModel.user?.id {
+                homeVM.setUserId(uid) // Call the method to update userId
+            }
         }
     }
 }
