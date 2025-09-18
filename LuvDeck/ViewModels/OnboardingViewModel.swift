@@ -12,7 +12,7 @@ class OnboardingViewModel: ObservableObject {
             currentStep = 0
             print("New user: Reset onboarding")
         } else {
-            FirebaseManager.shared.checkOnboardingStatus(for: userId!) { completed in
+            FirebaseManager.shared.checkOnboardingStatus(for: userId!) { (completed: Bool) in
                 DispatchQueue.main.async {
                     self.onboardingCompleted = completed
                     self.currentStep = completed ? 5 : 0
@@ -24,7 +24,7 @@ class OnboardingViewModel: ObservableObject {
     
     func nextStep(userId: String?) {
         print("Next step called: currentStep=\(currentStep), userId=\(userId ?? "nil")")
-        if currentStep < 4 { // Updated for 5 steps (0–4)
+        if currentStep < 4 {
             currentStep += 1
             print("Advancing to onboarding step: \(currentStep)")
         } else {
@@ -41,7 +41,6 @@ class OnboardingViewModel: ObservableObject {
                 } else {
                     print("Notification permission denied")
                 }
-                // Move to the next screen (fifth screen) instead of completing
                 self.currentStep = 4
                 print("Advancing to fifth onboarding screen: currentStep=\(self.currentStep)")
             }

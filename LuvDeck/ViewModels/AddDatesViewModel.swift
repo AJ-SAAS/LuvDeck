@@ -25,7 +25,7 @@ class AddDatesViewModel: ObservableObject {
             print("No user ID available for fetching events")
             return
         }
-        FirebaseManager.shared.fetchEvents(for: userId) { [weak self] events in
+        FirebaseManager.shared.fetchEvents(for: userId) { [weak self] (events: [Event]) in
             DispatchQueue.main.async {
                 self?.events = events
             }

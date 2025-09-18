@@ -12,6 +12,11 @@ struct TabBarView: View {
                 .tabItem {
                     Label("Home", systemImage: "house")
                 }
+            AddDatesView()
+                .environmentObject(AddDatesViewModel(userId: authViewModel.user?.id))
+                .tabItem {
+                    Label("Dates", systemImage: "calendar")
+                }
             SettingsView()
                 .environmentObject(authViewModel)
                 .tabItem {

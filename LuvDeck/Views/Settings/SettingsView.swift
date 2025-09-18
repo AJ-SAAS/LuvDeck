@@ -5,7 +5,7 @@ struct SettingsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @State private var username = ""
     @State private var email = ""
-    @State private var currentPassword = "" // Added for re-authentication
+    @State private var currentPassword = ""
     @State private var password = ""
     @State private var confirmPassword = ""
     @State private var errorMessage: String?
@@ -176,15 +176,13 @@ struct SettingsView: View {
             return
         }
         FirebaseManager.shared.updateUsername(username) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    self.errorMessage = nil
-                    self.successMessage = "Username updated successfully"
-                case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                    self.successMessage = nil
-                }
+            switch result {
+            case .success:
+                self.errorMessage = nil
+                self.successMessage = "Username updated successfully"
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+                self.successMessage = nil
             }
         }
     }
@@ -201,26 +199,22 @@ struct SettingsView: View {
             return
         }
         FirebaseManager.shared.reauthenticate(currentPassword: currentPassword) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    FirebaseManager.shared.updateEmail(email) { result in
-                        DispatchQueue.main.async {
-                            switch result {
-                            case .success:
-                                self.errorMessage = nil
-                                self.successMessage = "Verification email sent. Please check your inbox to confirm."
-                                self.currentPassword = ""
-                            case .failure(let error):
-                                self.errorMessage = error.localizedDescription
-                                self.successMessage = nil
-                            }
-                        }
+            switch result {
+            case .success:
+                FirebaseManager.shared.updateEmail(email) { result in
+                    switch result {
+                    case .success:
+                        self.errorMessage = nil
+                        self.successMessage = "Verification email sent. Please check your inbox to confirm."
+                        self.currentPassword = ""
+                    case .failure(let error):
+                        self.errorMessage = error.localizedDescription
+                        self.successMessage = nil
                     }
-                case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                    self.successMessage = nil
                 }
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+                self.successMessage = nil
             }
         }
     }
@@ -242,28 +236,24 @@ struct SettingsView: View {
             return
         }
         FirebaseManager.shared.reauthenticate(currentPassword: currentPassword) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    FirebaseManager.shared.updatePassword(password) { result in
-                        DispatchQueue.main.async {
-                            switch result {
-                            case .success:
-                                self.errorMessage = nil
-                                self.successMessage = "Password updated successfully"
-                                self.password = ""
-                                self.confirmPassword = ""
-                                self.currentPassword = ""
-                            case .failure(let error):
-                                self.errorMessage = error.localizedDescription
-                                self.successMessage = nil
-                            }
-                        }
+            switch result {
+            case .success:
+                FirebaseManager.shared.updatePassword(password) { result in
+                    switch result {
+                    case .success:
+                        self.errorMessage = nil
+                        self.successMessage = "Password updated successfully"
+                        self.password = ""
+                        self.confirmPassword = ""
+                        self.currentPassword = ""
+                    case .failure(let error):
+                        self.errorMessage = error.localizedDescription
+                        self.successMessage = nil
                     }
-                case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                    self.successMessage = nil
                 }
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+                self.successMessage = nil
             }
         }
     }
@@ -276,26 +266,22 @@ struct SettingsView: View {
             return
         }
         FirebaseManager.shared.reauthenticate(currentPassword: currentPassword) { result in
-            DispatchQueue.main.async {
-                switch result {
-                case .success:
-                    FirebaseManager.shared.deleteAccount { result in
-                        DispatchQueue.main.async {
-                            switch result {
-                            case .success:
-                                self.errorMessage = nil
-                                self.successMessage = nil
-                                self.authViewModel.signOut()
-                            case .failure(let error):
-                                self.errorMessage = error.localizedDescription
-                                self.successMessage = nil
-                            }
-                        }
+            switch result {
+            case .success:
+                FirebaseManager.shared.deleteAccount { result in
+                    switch result {
+                    case .success:
+                        self.errorMessage = nil
+                        self.successMessage = nil
+                        self.authViewModel.signOut()
+                    case .failure(let error):
+                        self.errorMessage = error.localizedDescription
+                        self.successMessage = nil
                     }
-                case .failure(let error):
-                    self.errorMessage = error.localizedDescription
-                    self.successMessage = nil
                 }
+            case .failure(let error):
+                self.errorMessage = error.localizedDescription
+                self.successMessage = nil
             }
         }
     }
