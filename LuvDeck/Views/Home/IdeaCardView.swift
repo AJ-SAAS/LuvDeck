@@ -3,117 +3,111 @@ import SwiftUI
 struct IdeaCardView: View {
     let idea: Idea
     @EnvironmentObject var viewModel: HomeViewModel
-    @State private var offset = CGSize.zero
-    @State private var isDragging = false
-    private let swipeThreshold: CGFloat = 150
     
     var body: some View {
-        VStack(spacing: 0) {
-            if UIImage(named: idea.imageName) != nil {
-                Image(idea.imageName)
-                    .resizable()
-                    .scaledToFill()
-                    .frame(maxWidth: .infinity)
-                    .frame(height: UIScreen.main.bounds.height / 2)
-                    .clipped()
-                    .cornerRadius(10)
-            } else {
-                Image("defaultIdeaImage")
-                    .resizable()
-                    .scaledToFill()
-                    .frame(maxWidth: .infinity)
-                    .frame(height: UIScreen.main.bounds.height / 2)
-                    .clipped()
-                    .cornerRadius(10)
-            }
-            
-            VStack(spacing: 16) {
-                Text(idea.title)
-                    .font(.title2)
-                    .bold()
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-                
-                Text(idea.description)
-                    .font(.body)
-                    .foregroundColor(.gray)
-                    .multilineTextAlignment(.center)
-                    .padding(.horizontal, 16)
-                
-                HStack(spacing: 16) {
-                    statView(title: "Difficulty", value: idea.difficultyStars)
-                    statView(title: "Category", value: idea.category)
-                    statView(title: "Level", value: idea.level.rawValue)
-                }
-                .padding(.horizontal, 16)
-                
-                HStack(spacing: 70) {
-                    Button { viewModel.saveIdea(idea) } label: {
-                        Image(systemName: "bookmark.fill")
-                            .foregroundColor(.blue)
-                            .font(.title2)
-                            .padding(14)
-                            .background(Color.white.opacity(0.9))
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
+        GeometryReader { geometry in
+            VStack(spacing: 0) {
+                // Top: Image (65% of card height)
+                Group {
+                    if UIImage(named: idea.imageName) != nil {
+                        Image(idea.imageName)
+                            .resizable()
+                            .scaledToFill()
+                            .frame(
+                                width: geometry.size.width,
+                                height: geometry.size.height * 0.65
+                            )
+                            .clipped()
+                    } else {
+                        Image("defaultIdeaImage")
+                            .resizable()
+                            .scaledToFill()
+                            .frame(
+                                width: geometry.size.width,
+                                height: geometry.size.height * 0.65
+                            )
+                            .clipped()
                     }
+                }
+                .frame(height: geometry.size.height * 0.65)
+                
+                // Bottom: Content (35% of card height)
+                VStack(spacing: 8) {
+                    Text(idea.title)
+                        .font(.system(size: 24, weight: .bold))
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
+                        .padding(.top, 12)
+                        .lineLimit(2)
                     
-                    Button { viewModel.likeIdea(idea) } label: {
-                        Image(systemName: "heart.fill")
-                            .foregroundColor(.red)
-                            .font(.title2)
-                            .padding(14)
-                            .background(Color.white.opacity(0.9))
-                            .clipShape(Circle())
-                            .shadow(radius: 5)
+                    Text(idea.description)
+                        .font(.system(size: 15)) // Slightly reduced from 16 to fit space
+                        .foregroundColor(.gray)
+                        .multilineTextAlignment(.center)
+                        .padding(.horizontal, 16)
+                        .lineLimit(3) // Limited to 3 lines to fit content area
+                        .fixedSize(horizontal: false, vertical: true)
+                    
+                    HStack(spacing: 16) {
+                        statView(title: "Difficulty", value: idea.difficultyStars, icon: "star.fill")
+                        statView(title: "Category", value: idea.category, icon: "tag.fill")
+                        statView(title: "Level", value: idea.level.rawValue, icon: "sparkles")
                     }
+                    .padding(.horizontal, 16)
+                    .padding(.vertical, 6)
+                    
+                    HStack(spacing: 50) {
+                        Button { viewModel.shareIdea(idea) } label: {
+                            Image(systemName: "square.and.arrow.up")
+                                .foregroundColor(.purple)
+                                .font(.system(size: 19.8))
+                                .padding(11)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(radius: 2)
+                        }
+                        
+                        Button { viewModel.likeIdea(idea) } label: {
+                            Image(systemName: "heart.fill")
+                                .foregroundColor(.red)
+                                .font(.system(size: 19.8))
+                                .padding(11)
+                                .background(Color.white)
+                                .clipShape(Circle())
+                                .shadow(radius: 2)
+                        }
+                    }
+                    .padding(.top, 6)
+                    .padding(.bottom, 12)
                 }
-                .padding(.top, 12)
+                .frame(height: geometry.size.height * 0.35)
+                .background(Color.white)
+                .clipShape(RoundedRectangle(cornerRadius: 30))
             }
-            .padding(.horizontal, 32)
-            .padding(.top, 20)
-            .padding(.bottom, 36)
+            .background(Color.white)
+            .clipShape(RoundedRectangle(cornerRadius: 30))
+            .shadow(radius: 5)
+            .ignoresSafeArea(edges: .top)
         }
-        .background(Color.white)
-        .cornerRadius(10)
-        .shadow(radius: 5)
-        .offset(y: offset.height)
-        .rotationEffect(.degrees(Double(offset.height / 20)))
-        .scaleEffect(isDragging ? 0.97 : 1.0)
-        .gesture(
-            DragGesture()
-                .onChanged { value in
-                    offset = value.translation
-                    isDragging = true
-                }
-                .onEnded { value in
-                    handleSwipe(value: value)
-                    isDragging = false
-                }
-        )
-        .animation(.interactiveSpring(response: 0.4, dampingFraction: 0.75, blendDuration: 0.75), value: offset)
     }
     
-    private func handleSwipe(value: DragGesture.Value) {
-        if value.translation.height < -swipeThreshold { viewModel.nextIdea() }
-        else if value.translation.height > swipeThreshold { viewModel.previousIdea() }
-        offset = .zero
-    }
-    
-    private func statView(title: String, value: String) -> some View {
+    private func statView(title: String, value: String, icon: String) -> some View {
         VStack(spacing: 4) {
-            Text(title)
-                .font(.caption)
-                .foregroundColor(.gray)
-            Text(value)
-                .font(.caption)
+            Image(systemName: icon)
                 .foregroundColor(.pink)
+                .font(.system(size: 14))
+            Text(value)
+                .font(.system(size: 14, weight: .medium))
+                .foregroundColor(.pink)
+            Text(title)
+                .font(.system(size: 12))
+                .foregroundColor(.gray)
         }
         .frame(maxWidth: .infinity)
     }
 }
 
-#Preview {
+#Preview("IdeaCardView") {
     IdeaCardView(idea: Idea(
         id: UUID(),
         title: "Love Note Attack",
@@ -125,7 +119,6 @@ struct IdeaCardView: View {
         level: .cute
     ))
     .environmentObject(HomeViewModel(userId: nil))
-    .previewLayout(.sizeThatFits)
-    .padding()
-    .background(Color(.systemGray6))
+    .previewDevice(PreviewDevice(rawValue: "iPhone 14"))
+    .background(Color.white)
 }
