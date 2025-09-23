@@ -11,7 +11,7 @@ struct SwipeableCardView: View {
                 if !viewModel.ideas.isEmpty {
                     IdeaCardView(idea: viewModel.ideas[viewModel.currentIndex])
                         .frame(
-                            width: geometry.size.width * 0.9,
+                            width: geometry.size.width * 0.95, // Increased from 0.9 to 0.95
                             height: geometry.size.height
                         )
                         .offset(offset)

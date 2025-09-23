@@ -20,9 +20,9 @@ struct HomeView: View {
                     SwipeableCardView()
                         .frame(
                             width: geometry.size.width,
-                            height: geometry.size.height - geometry.safeAreaInsets.bottom - 10
+                            height: geometry.size.height - geometry.safeAreaInsets.bottom // Removed -10 padding
                         )
-                        .ignoresSafeArea(edges: .top) // Fixed: Use edges: .top
+                        .ignoresSafeArea(edges: .top)
                 }
             }
             .onAppear {

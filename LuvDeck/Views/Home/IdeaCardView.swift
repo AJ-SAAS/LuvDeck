@@ -18,6 +18,8 @@ struct IdeaCardView: View {
                                 height: geometry.size.height * 0.65
                             )
                             .clipped()
+                            // Optional: Adjust to focus on top of 1440x2560 image
+                            // .offset(y: -geometry.size.height * 0.05)
                     } else {
                         Image("defaultIdeaImage")
                             .resizable()
@@ -27,6 +29,8 @@ struct IdeaCardView: View {
                                 height: geometry.size.height * 0.65
                             )
                             .clipped()
+                            // Optional: Adjust to focus on top of default image
+                            // .offset(y: -geometry.size.height * 0.05)
                     }
                 }
                 .frame(height: geometry.size.height * 0.65)
@@ -41,11 +45,11 @@ struct IdeaCardView: View {
                         .lineLimit(2)
                     
                     Text(idea.description)
-                        .font(.system(size: 15)) // Slightly reduced from 16 to fit space
+                        .font(.system(size: 15))
                         .foregroundColor(.gray)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 16)
-                        .lineLimit(3) // Limited to 3 lines to fit content area
+                        .lineLimit(3)
                         .fixedSize(horizontal: false, vertical: true)
                     
                     HStack(spacing: 16) {
