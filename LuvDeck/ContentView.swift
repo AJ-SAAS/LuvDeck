@@ -3,29 +3,42 @@ import SwiftUI
 struct ContentView: View {
     @StateObject var authViewModel = AuthViewModel()
     @StateObject var onboardingViewModel = OnboardingViewModel()
+    @State private var showSplash = true // State to control splash screen visibility
     
     var body: some View {
         Group {
-            if authViewModel.user == nil {
-                AuthView()
-                    .environmentObject(authViewModel)
-                    .onAppear {
-                        print("Rendering AuthView: user is nil")
-                    }
-            } else if !onboardingViewModel.onboardingCompleted {
-                OnboardingView()
-                    .environmentObject(authViewModel)
-                    .environmentObject(onboardingViewModel)
-                    .onAppear {
-                        print("Rendering OnboardingView: onboardingCompleted=\(onboardingViewModel.onboardingCompleted), currentStep=\(onboardingViewModel.currentStep)")
-                    }
+            if showSplash {
+                SplashView()
             } else {
-                TabBarView()
-                    .environmentObject(authViewModel)
-                    .environmentObject(onboardingViewModel)
-                    .onAppear {
-                        print("Rendering TabBarView: onboardingCompleted=\(onboardingViewModel.onboardingCompleted)")
-                    }
+                if authViewModel.user == nil {
+                    AuthView()
+                        .environmentObject(authViewModel)
+                        .onAppear {
+                            print("Rendering AuthView: user is nil")
+                        }
+                } else if !onboardingViewModel.onboardingCompleted {
+                    OnboardingView()
+                        .environmentObject(authViewModel)
+                        .environmentObject(onboardingViewModel)
+                        .onAppear {
+                            print("Rendering OnboardingView: onboardingCompleted=\(onboardingViewModel.onboardingCompleted), currentStep=\(onboardingViewModel.currentStep)")
+                        }
+                } else {
+                    TabBarView()
+                        .environmentObject(authViewModel)
+                        .environmentObject(onboardingViewModel)
+                        .onAppear {
+                            print("Rendering TabBarView: onboardingCompleted=\(onboardingViewModel.onboardingCompleted)")
+                        }
+                }
+            }
+        }
+        .onAppear {
+            // Hide splash screen after 1.5 seconds
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+                withAnimation {
+                    showSplash = false
+                }
             }
         }
         .onChange(of: authViewModel.user) { _, newUser in
