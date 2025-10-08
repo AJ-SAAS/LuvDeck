@@ -1,8 +1,8 @@
 [
   {
-    "title": "Love Notes",
-    "level": "Cute",
-    "description": "Hide sticky notes with little compliments in their bag, mirror, or car.",
+    "title": "VIP Formula 1 Experience",
+    "level": "Legendary",
+    "description": "Get VIP passes to a Formula 1 Grand Prix, including paddock access, luxury hospitality, and an up-close look at the action.",
     "imageName": "placeholder_1"
   },
   {
@@ -24,9 +24,9 @@
     "imageName": "placeholder_4"
   },
   {
-    "title": "Pocket Surprise",
+    "title": "Scented Surprise",
     "level": "Cute",
-    "description": "Slip a handwritten love note into their coat, wallet, or purse.",
+    "description": "Spritz their favorite scarf or jacket with your cologne/perfume and leave a cheeky text: ‘Smell me all day, babe.’",
     "imageName": "placeholder_5"
   },
   {
@@ -42,15 +42,15 @@
     "imageName": "placeholder_7"
   },
   {
-    "title": "Spa-At-Home",
+    "title": "Blindfolded Sensory Game",
     "level": "Spicy",
-    "description": "Draw a bubble bath, light candles, and give a mini massage.",
+    "description": "Blindfold them and guide them through a sensory game at home—guess scents, textures, or sounds (e.g., their favorite flower, a soft scarf, your whisper), ending with a kiss.",
     "imageName": "placeholder_8"
   },
   {
-    "title": "Backyard Theater",
+    "title": "Vintage Vinyl Hunt",
     "level": "Spicy",
-    "description": "Project a movie outdoors (or inside with blankets) — popcorn mandatory.",
+    "description": "Take them to a record store to hunt for a vinyl that reminds you of them, then play it at home with a surprise candlelit dance.",
     "imageName": "placeholder_9"
   },
   {
@@ -72,15 +72,15 @@
     "imageName": "placeholder_12"
   },
   {
-    "title": "Private Chef Night",
+    "title": "Flirty Voice Note",
     "level": "Epic",
-    "description": "Hire a local chef to cook at home — fine dining without leaving the house.",
+    "description": "Record a playful voice note with a kind, flirty message to make their day — something short, sweet, and straight from the heart.",
     "imageName": "placeholder_13"
   },
   {
-    "title": "Scavenger of Love",
+    "title": "Horseback Date Adventure",
     "level": "Epic",
-    "description": "Create a treasure hunt with clues leading to memories, places, and a gift.",
+    "description": "Plan a romantic horseback riding date — enjoy the open air, gentle trails, and quiet moments together surrounded by nature.",
     "imageName": "placeholder_14"
   },
   {
@@ -90,9 +90,9 @@
     "imageName": "placeholder_15"
   },
   {
-    "title": "Adventure Quest",
-    "level": "Legendary",
-    "description": "Plan a full-day adventure — rock climbing, kayaking, or a road trip with surprises all day.",
+    "title": "Time Machine Date",
+    "level": "Epic",
+    "description": "Plan a date that recreates a specific moment from their past (e.g., their favorite childhood hangout or prom night), complete with era-appropriate music and outfits.",
     "imageName": "placeholder_16"
   },
   {
@@ -114,9 +114,9 @@
     "imageName": "placeholder_19"
   },
   {
-    "title": "Memory Capsule",
+    "title": "Private Ski Resort Getaway",
     "level": "Legendary",
-    "description": "Create a time capsule of memories to open together years later.",
+    "description": "Book a secluded luxury ski chalet with private slopes, a personal chef, and exclusive winter activities for an unforgettable adventure.",
     "imageName": "placeholder_20"
   },
   {
@@ -127,7 +127,7 @@
   },
   {
     "title": "Starry Night Picnic",
-    "level": "Legendary",
+    "level": "Spicy",
     "description": "Organize a midnight picnic under the stars with cozy blankets and wine.",
     "imageName": "placeholder_22"
   },
@@ -157,8 +157,8 @@
   },
   {
     "title": "Ultimate Picnic",
-    "level": "Legendary",
-    "description": "Plan an elaborate picnic with gourmet food, games, and music.",
+    "level": "Epic",
+    "description": "Plan an elaborate picnic with gourmet food, games, and music in a hidden garden or park.",
     "imageName": "placeholder_27"
   },
   {
@@ -193,7 +193,7 @@
   },
   {
     "title": "Private Movie Screening",
-    "level": "Legendary",
+    "level": "Epic",
     "description": "Rent a small theater or outdoor space for a private screening.",
     "imageName": "placeholder_33"
   },
@@ -204,9 +204,9 @@
     "imageName": "placeholder_34"
   },
   {
-    "title": "Luxury Spa Night",
+    "title": "Skywritten Love Note",
     "level": "Legendary",
-    "description": "Transform your home into a spa with candles, music, massages, and gourmet snacks.",
+    "description": "Hire a skywriter to spell out a romantic message or your initials in the sky during a private rooftop dinner with live music.",
     "imageName": "placeholder_35"
   },
   {
@@ -234,9 +234,9 @@
     "imageName": "placeholder_39"
   },
   {
-    "title": "Message in a Bottle",
+    "title": "Fortune Teller Flirt",
     "level": "Cute",
-    "description": "Write a sweet note, put it in a small bottle, and leave it for them to find.",
+    "description": "Create a quick paper fortune teller (like from childhood) with flirty predictions like ‘You’ll kiss someone amazing tonight’ and slip it into their hand.",
     "imageName": "placeholder_40"
   },
   {
@@ -246,27 +246,27 @@
     "imageName": "placeholder_41"
   },
   {
-    "title": "Memory Jar",
-    "level": "Spicy",
-    "description": "Create a jar filled with small notes of memories and reasons you love them.",
+    "title": "Memory & Compliment Jar",
+    "level": "Epic",
+    "description": "Craft a jar filled with notes of shared memories and daily compliments, encouraging them to add their own.",
     "imageName": "placeholder_42"
   },
   {
-    "title": "Drive-In Movie",
+    "title": "Street Art Love Mural",
     "level": "Spicy",
-    "description": "Set up a backyard drive-in style movie night with blankets and popcorn.",
+    "description": "Collaborate with a local artist to create a small, temporary chalk or mural art piece in a public space (with permission) that spells out a sweet message for them.",
     "imageName": "placeholder_43"
   },
   {
-    "title": "Handmade Dinner",
-    "level": "Spicy",
-    "description": "Cook a full three-course meal with their favorite dishes and candles.",
+    "title": "Private Escape Room",
+    "level": "Epic",
+    "description": "Design or book a private escape room with puzzles based on your relationship, ending with a romantic surprise like a hidden gift or message.",
     "imageName": "placeholder_44"
   },
   {
-    "title": "Night Stargazing",
+    "title": "Private Stargazing Experience",
     "level": "Spicy",
-    "description": "Take them to a dark spot outside the city to watch the stars.",
+    "description": "Take them to a dark spot outside the city with a telescope or portable planetarium for a magical stargazing night.",
     "imageName": "placeholder_45"
   },
   {
@@ -276,9 +276,9 @@
     "imageName": "placeholder_46"
   },
   {
-    "title": "Hot Air Balloon Sunrise",
-    "level": "Epic",
-    "description": "Book a sunrise hot air balloon ride for breathtaking views together.",
+    "title": "Private Fire Dance Show",
+    "level": "Legendary",
+    "description": "Hire a professional fire dancer to perform a private show on a beach or private estate, followed by a champagne toast under a canopy of fairy lights.",
     "imageName": "placeholder_47"
   },
   {
@@ -319,7 +319,7 @@
   },
   {
     "title": "Surprise Destination Dinner",
-    "level": "Legendary",
+    "level": "Epic",
     "description": "Blindfold them and take them to a secret, romantic restaurant.",
     "imageName": "placeholder_54"
   },
@@ -414,9 +414,9 @@
     "imageName": "placeholder_69"
   },
   {
-    "title": "Personal Stargazing Planetarium",
+    "title": "Underwater Love Message",
     "level": "Legendary",
-    "description": "Rent a small planetarium or telescope setup for private stargazing.",
+    "description": "Arrange a private scuba or snorkeling trip where divers hold up a custom underwater sign (e.g., ‘You’re My Treasure’) in a coral reef or clear lagoon.",
     "imageName": "placeholder_70"
   },
   {
@@ -468,9 +468,9 @@
     "imageName": "placeholder_78"
   },
   {
-    "title": "Gourmet Picnic Basket",
+    "title": "Custom Candle Workshop",
     "level": "Epic",
-    "description": "Pack a picnic with gourmet treats and wine for a scenic day outdoors.",
+    "description": "Book a private candle-making workshop where you create a custom scent inspired by your relationship, then gift them the candles with a romantic note.",
     "imageName": "placeholder_79"
   },
   {
@@ -504,15 +504,15 @@
     "imageName": "placeholder_84"
   },
   {
-    "title": "DIY Spa Night",
+    "title": "Secret Rooftop Swing",
     "level": "Spicy",
-    "description": "Set up a home spa night with candles, music, and massages.",
+    "description": "Set up a cozy hammock or swing on a rooftop or backyard, invite them for a sunset snuggle with a thermos of hot cocoa and a flirty playlist.",
     "imageName": "placeholder_85"
   },
   {
-    "title": "Adventure Day",
-    "level": "Spicy",
-    "description": "Plan a day of fun activities like kayaking, hiking, or biking.",
+    "title": "Secret Bookstore Quest",
+    "level": "Epic",
+    "description": "Hide a series of clues in a bookstore, each tucked into a book they love, leading to a final surprise like a rare edition or a handwritten love letter.",
     "imageName": "placeholder_86"
   },
   {
@@ -600,9 +600,9 @@
     "imageName": "placeholder_100"
   },
   {
-    "title": "Secret Compliment Jar",
+    "title": "Glow-in-the-Dark Wish",
     "level": "Cute",
-    "description": "Fill a jar with tiny compliments and notes for them to pick from daily.",
+    "description": "Write a sweet wish for them on a glow-in-the-dark star, stick it to their bedroom ceiling, and text them to look up after dark.",
     "imageName": "placeholder_101"
   },
   {
@@ -624,9 +624,9 @@
     "imageName": "placeholder_104"
   },
   {
-    "title": "Random Picnic",
+    "title": "Pop-Up Karaoke Duel",
     "level": "Spicy",
-    "description": "Pack a surprise picnic and take them to a nearby park or scenic spot.",
+    "description": "Surprise them with a private karaoke setup at home or a local bar, challenging them to a duet of your song, with playful bets like ‘loser owes a massage.’",
     "imageName": "placeholder_105"
   },
   {
@@ -654,9 +654,9 @@
     "imageName": "placeholder_109"
   },
   {
-    "title": "Message in a Bottle",
-    "level": "Epic",
-    "description": "Hide a love letter in a bottle and leave it somewhere they’ll discover.",
+    "title": "Sneaky Song Dedication",
+    "level": "Cute",
+    "description": "Call their favorite local radio station to dedicate a song to them, and text them to tune in at the exact moment it plays.",
     "imageName": "placeholder_110"
   },
   {
@@ -692,7 +692,7 @@
   {
     "title": "Private Hot Air Balloon Ride",
     "level": "Legendary",
-    "description": "Take them on a breathtaking private balloon ride over scenic landscapes.",
+    "description": "Book a private hot air balloon ride over scenic landscapes, ideally at sunrise for breathtaking views.",
     "imageName": "placeholder_116"
   },
   {
