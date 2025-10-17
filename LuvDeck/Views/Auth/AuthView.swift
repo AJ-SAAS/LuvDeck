@@ -7,6 +7,7 @@ struct AuthView: View {
     @State private var confirmPassword = ""
     @State private var isSignUp = true
     @FocusState private var focusedField: Field?
+    @State private var animateLogo = false // for fade + scale animation
 
     enum Field {
         case email, password, confirmPassword
@@ -16,16 +17,18 @@ struct AuthView: View {
         GeometryReader { geometry in
             NavigationView {
                 VStack(spacing: 24) {
-                    // MARK: - App Logo
+                    // MARK: - App Logo (larger + animated)
                     Image("luvdecklogo")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: min(geometry.size.width * 0.35, 140))
-                        .padding(.top, geometry.size.height * 0.05)
+                        .frame(width: min(geometry.size.width * 0.45, 180))
+                        .padding(.top, geometry.size.height * 0.04)
+                        .scaleEffect(animateLogo ? 1.0 : 0.85)
+                        .opacity(animateLogo ? 1.0 : 0.0)
+                        .animation(.easeOut(duration: 0.6), value: animateLogo)
 
                     // MARK: - Title & Fields
                     VStack(spacing: 14) {
-                        // Title aligned with fields
                         Text(isSignUp ? "Get started" : "Welcome back")
                             .font(.system(size: min(geometry.size.width * 0.07, 28), weight: .bold))
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -96,7 +99,7 @@ struct AuthView: View {
                         }
                     }) {
                         Text(isSignUp ? "Create Account" : "Sign In")
-                            .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold)) // +2px larger
+                            .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
                             .frame(maxWidth: .infinity)
                             .padding(.vertical, 16)
                             .background(Color.black)
@@ -108,11 +111,13 @@ struct AuthView: View {
 
                     // MARK: - Toggle Auth Mode
                     Button(action: {
-                        isSignUp.toggle()
-                        email = ""
-                        password = ""
-                        confirmPassword = ""
-                        viewModel.errorMessage = nil
+                        withAnimation(.easeInOut(duration: 0.25)) {
+                            isSignUp.toggle()
+                            email = ""
+                            password = ""
+                            confirmPassword = ""
+                            viewModel.errorMessage = nil
+                        }
                     }) {
                         HStack(spacing: 4) {
                             Text(isSignUp ? "Already have an account?" : "Don't have an account?")
@@ -129,7 +134,10 @@ struct AuthView: View {
                 }
                 .navigationBarHidden(true)
                 .background(Color(.systemBackground).ignoresSafeArea())
-                .onAppear { focusedField = .email }
+                .onAppear {
+                    focusedField = .email
+                    animateLogo = true
+                }
             }
         }
     }

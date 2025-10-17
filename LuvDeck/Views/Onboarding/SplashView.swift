@@ -3,14 +3,11 @@ import SwiftUI
 struct SplashView: View {
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
-                Color.white
-                    .ignoresSafeArea()
-                Image("luvdecklogo") // Ensure "luvdecklogo" is in the asset catalog
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: min(geometry.size.width * 0.6, 240), height: min(geometry.size.width * 0.6, 240)) // Increased size
-            }
+            Image("Splashscreen")
+                .resizable()
+                .ignoresSafeArea()
+                .frame(width: geometry.size.width, height: geometry.size.height)
+                .aspectRatio(nil, contentMode: .fill) // Ignore aspect ratio, stretch to fill
         }
     }
 }
