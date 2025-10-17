@@ -372,9 +372,9 @@
     "imageName": "placeholder_62"
   },
   {
-    "title": "Theater Premiere",
+    "title": "Monaco Dream Escape",
     "level": "Legendary",
-    "description": "Get VIP tickets to a theater or movie premiere for a night of glitz and glam.",
+    "description": "Fly them to Monaco for a glamorous weekend — stay at a 5-star hotel overlooking the marina, dine at Michelin-star restaurants, stroll the casino promenade, and toast with champagne as yachts glitter on the Riviera.",
     "imageName": "placeholder_63"
   },
   {
@@ -384,9 +384,9 @@
     "imageName": "placeholder_64"
   },
   {
-    "title": "Hot Springs Retreat",
+    "title": "Supercar Adventure",
     "level": "Legendary",
-    "description": "Surprise them with a weekend at a luxury hot springs resort.",
+    "description": "Rent a high-performance supercar — Ferrari, Lamborghini, or McLaren — and spend the day carving through scenic coastal roads or mountain passes together.",
     "imageName": "placeholder_65"
   },
   {
@@ -414,7 +414,7 @@
     "imageName": "placeholder_69"
   },
   {
-    "title": "Underwater Love Message",
+    "title": "Scuba Diving Paradise",
     "level": "Legendary",
     "description": "Arrange a private scuba or snorkeling trip where divers hold up a custom underwater sign (e.g., ‘You’re My Treasure’) in a coral reef or clear lagoon.",
     "imageName": "placeholder_70"
@@ -426,39 +426,39 @@
     "imageName": "placeholder_71"
   },
   {
-    "title": "Surprise Dance Lesson",
+    "title": "Mystery European Dinner",
     "level": "Epic",
-    "description": "Book a private dance lesson — salsa, tango, or their favorite style.",
+    "description": "Take them to a surprise European-style bistro or hidden gem in your city.",
     "imageName": "placeholder_72"
   },
   {
-    "title": "Themed Costume Date",
+    "title": "Horseback Beach Ride",
     "level": "Epic",
-    "description": "Plan a date night with a fun theme — dress up and enjoy activities around it.",
+    "description": "Ride along a private beach on horseback, ending with a picnic at sunset.",
     "imageName": "placeholder_73"
   },
   {
-    "title": "DIY Wine & Paint Night",
+    "title": "Ice Skating Afternoon",
     "level": "Epic",
-    "description": "Set up a painting and wine night at home with all supplies ready.",
+    "description": "Book a private ice skating session in a beautiful rink.",
     "imageName": "placeholder_74"
   },
   {
-    "title": "Surprise Road Trip Playlist",
+    "title": "Classic Car Drive",
     "level": "Epic",
-    "description": "Create a curated playlist for a surprise road trip together.",
+    "description": "Rent a classic car and take a scenic drive through the countryside.",
     "imageName": "placeholder_75"
   },
   {
-    "title": "Luxury Movie Night",
+    "title": "Private Mini Golf Challenge",
     "level": "Epic",
-    "description": "Transform your living room into a cinema with snacks, projector, and cozy seating.",
+    "description": "Book a private or after-hours mini golf session with fun prizes.",
     "imageName": "placeholder_76"
   },
   {
-    "title": "Personalized Puzzle",
+    "title": "Luxury Ski Chalet Weekend",
     "level": "Epic",
-    "description": "Create a custom puzzle featuring a photo of a memorable moment together.",
+    "description": "Rent a private chalet in the Alps with ski-in, ski-out access and private chef.",
     "imageName": "placeholder_77"
   },
   {
@@ -468,9 +468,9 @@
     "imageName": "placeholder_78"
   },
   {
-    "title": "Custom Candle Workshop",
+    "title": "Luxury Desert Glamping",
     "level": "Epic",
-    "description": "Book a private candle-making workshop where you create a custom scent inspired by your relationship, then gift them the candles with a romantic note.",
+    "description": "Experience the desert in a private luxury tent with spa, meals, and camel rides.",
     "imageName": "placeholder_79"
   },
   {
@@ -486,15 +486,15 @@
     "imageName": "placeholder_81"
   },
   {
-    "title": "Love Coupon Book",
+    "title": "Cinema Night Out",
     "level": "Cute",
-    "description": "Make a small booklet with coupons like 'One Free Hug' or 'Movie Night Pick'.",
+    "description": "Go to the movies, share popcorn, and make it feel like your first date again.",
     "imageName": "placeholder_82"
   },
   {
-    "title": "Random Compliment Bomb",
+    "title": "Day at the Local Farm",
     "level": "Cute",
-    "description": "Text them 5 random compliments during the day to brighten their mood.",
+    "description": "Visit a nearby farm, feed the animals, and enjoy fresh treats together.",
     "imageName": "placeholder_83"
   },
   {
@@ -504,9 +504,9 @@
     "imageName": "placeholder_84"
   },
   {
-    "title": "Secret Rooftop Swing",
+    "title": "Outdoor Jazz Night",
     "level": "Spicy",
-    "description": "Set up a cozy hammock or swing on a rooftop or backyard, invite them for a sunset snuggle with a thermos of hot cocoa and a flirty playlist.",
+    "description": "Attend a small outdoor jazz performance with blankets and wine.",
     "imageName": "placeholder_85"
   },
   {
@@ -516,15 +516,15 @@
     "imageName": "placeholder_86"
   },
   {
-    "title": "Rooftop Dinner",
+    "title": "Sunset Sail",
     "level": "Spicy",
-    "description": "Prepare a candlelit dinner on a rooftop or balcony.",
+    "description": "Rent a small sailboat and watch the sunset on the water.",
     "imageName": "placeholder_87"
   },
   {
-    "title": "Photo Scavenger Hunt",
+    "title": "Sunset Paddleboarding",
     "level": "Spicy",
-    "description": "Create a scavenger hunt around town with clues and photo challenges.",
+    "description": "Take them paddleboarding on a lake or river at sunset.",
     "imageName": "placeholder_88"
   },
   {
@@ -534,9 +534,9 @@
     "imageName": "placeholder_89"
   },
   {
-    "title": "VIP Sports Experience",
+    "title": "Handcrafted Signature Candle",
     "level": "Epic",
-    "description": "Get premium tickets to a game with a backstage or meet-and-greet.",
+    "description": "A bespoke candle made with a scent blend representing your story — maybe even poured during a private workshop for two.",
     "imageName": "placeholder_90"
   },
   {
@@ -552,9 +552,9 @@
     "imageName": "placeholder_92"
   },
   {
-    "title": "Personalized Perfume",
+    "title": "Artisan Chocolate Tasting Experience",
     "level": "Epic",
-    "description": "Gift a custom scent made just for them.",
+    "description": "Book a private chocolate tasting led by a master chocolatier — sample rare single-origin chocolates paired with wines or whiskeys while learning their flavor notes.",
     "imageName": "placeholder_93"
   },
   {
@@ -570,9 +570,9 @@
     "imageName": "placeholder_95"
   },
   {
-    "title": "Private Jet Adventure",
+    "title": "Courtside Fever Dream",
     "level": "Legendary",
-    "description": "Surprise them with a short trip on a private jet to a nearby city or resort.",
+    "description": "Snag courtside seats to an Tennis or Champions League game — complete with a private lounge pass and personalized jersey waiting at your seat.",
     "imageName": "placeholder_96"
   },
   {
@@ -582,27 +582,27 @@
     "imageName": "placeholder_97"
   },
   {
-    "title": "Helicopter Picnic",
+    "title": "Midnight in Venice",
     "level": "Legendary",
-    "description": "Fly to a scenic spot via helicopter and enjoy a gourmet picnic.",
+    "description": "Fly to Venice for a one-night escape — glide through moonlit canals in a private gondola, dine by candlelight, and wake up to espresso by the Grand Canal",
     "imageName": "placeholder_98"
   },
   {
-    "title": "Luxury Safari",
+    "title": "Boho Luxury Retreat",
     "level": "Legendary",
-    "description": "Book a private safari adventure with guided tours and VIP accommodations.",
+    "description": "Rent a stunning bohemian-style villa with hanging lanterns, Moroccan rugs, and open-air lounges. Spend your days with private yoga, spa treatments, and gourmet meals, and your nights stargazing on the terrace with fairy lights and music.",
     "imageName": "placeholder_99"
   },
   {
-    "title": "Concert on the Water",
+    "title": "100 Roses Surprise",
     "level": "Legendary",
-    "description": "Rent a boat for a private floating concert experience.",
+    "description": "Have 100 roses delivered to them in one unforgettable moment — a grand, over-the-top gesture that turns pure emotion into an experience they’ll never forget.",
     "imageName": "placeholder_100"
   },
   {
-    "title": "Glow-in-the-Dark Wish",
-    "level": "Cute",
-    "description": "Write a sweet wish for them on a glow-in-the-dark star, stick it to their bedroom ceiling, and text them to look up after dark.",
+    "title": "Midday Surprise Adventure",
+    "level": "Epic",
+    "description": "Send them a mysterious message mid-day asking them to meet you somewhere — then whisk them away for a spontaneous adventure like a scenic drive, rooftop picnic, or hidden café experience.",
     "imageName": "placeholder_101"
   },
   {
@@ -630,21 +630,21 @@
     "imageName": "placeholder_105"
   },
   {
-    "title": "Secret Code Messages",
+    "title": "Secret Dessert Date",
     "level": "Spicy",
-    "description": "Send messages in code only they can decipher throughout the day.",
+    "description": "Take them to a hidden or little-known dessert spot for a spontaneous treat — think molten chocolate, rare pastries, or a dessert tasting menu.",
     "imageName": "placeholder_106"
   },
   {
-    "title": "DIY Wine Tasting",
+    "title": "Riverside Wine & Cheese",
     "level": "Spicy",
-    "description": "Set up a mini wine tasting at home with cheeses and candles.",
+    "description": "Surprise them with a picnic along a riverbank with wine, cheese, and a blanket to watch the sunset.",
     "imageName": "placeholder_107"
   },
   {
-    "title": "Themed Movie Night",
+    "title": "European Weekend Trip Adventure",
     "level": "Spicy",
-    "description": "Transform your living room to match a favorite movie theme.",
+    "description": "Plan a surprise weekend trip to a charming European village, castle, or vineyard for exploration and lunch together.",
     "imageName": "placeholder_108"
   },
   {

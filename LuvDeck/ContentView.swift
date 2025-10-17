@@ -10,18 +10,18 @@ struct ContentView: View {
             if showSplash {
                 SplashView()
             } else {
-                if authViewModel.user == nil {
-                    AuthView()
-                        .environmentObject(authViewModel)
-                        .onAppear {
-                            print("Rendering AuthView: user is nil")
-                        }
-                } else if !onboardingViewModel.onboardingCompleted {
+                if !onboardingViewModel.onboardingCompleted {
                     OnboardingView()
                         .environmentObject(authViewModel)
                         .environmentObject(onboardingViewModel)
                         .onAppear {
                             print("Rendering OnboardingView: onboardingCompleted=\(onboardingViewModel.onboardingCompleted), currentStep=\(onboardingViewModel.currentStep)")
+                        }
+                } else if authViewModel.user == nil {
+                    AuthView()
+                        .environmentObject(authViewModel)
+                        .onAppear {
+                            print("Rendering AuthView: user is nil")
                         }
                 } else {
                     TabBarView()
@@ -34,8 +34,8 @@ struct ContentView: View {
             }
         }
         .onAppear {
-            // Hide splash screen after 1.5 seconds
-            DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
+            // Hide splash screen after 1 second
+            DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 withAnimation {
                     showSplash = false
                 }

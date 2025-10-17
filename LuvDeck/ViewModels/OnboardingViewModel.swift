@@ -2,23 +2,33 @@ import Foundation
 import UserNotifications
 
 class OnboardingViewModel: ObservableObject {
-    @Published var onboardingCompleted: Bool = false
+    @Published var onboardingCompleted: Bool = UserDefaults.standard.bool(forKey: "onboardingCompleted")
     @Published var currentStep: Int = 0
     
     func checkOnboardingStatus(userId: String?, didJustSignUp: Bool) {
         print("Checking onboarding status: userId=\(userId ?? "nil"), didJustSignUp=\(didJustSignUp)")
-        if didJustSignUp || userId == nil {
+        if didJustSignUp {
+            // New user: reset onboarding
             onboardingCompleted = false
             currentStep = 0
+            UserDefaults.standard.set(false, forKey: "onboardingCompleted")
             print("New user: Reset onboarding")
-        } else {
-            FirebaseManager.shared.checkOnboardingStatus(for: userId!) { (completed: Bool) in
+        } else if let userId = userId {
+            // Existing user: check Firestore
+            FirebaseManager.shared.checkOnboardingStatus(for: userId) { (completed: Bool) in
                 DispatchQueue.main.async {
                     self.onboardingCompleted = completed
                     self.currentStep = completed ? 5 : 0
+                    UserDefaults.standard.set(completed, forKey: "onboardingCompleted")
                     print("Onboarding status checked: completed=\(completed), currentStep=\(self.currentStep)")
                 }
             }
+        } else {
+            // No user: use local UserDefaults
+            let completed = UserDefaults.standard.bool(forKey: "onboardingCompleted")
+            onboardingCompleted = completed
+            currentStep = completed ? 5 : 0
+            print("No user: Using UserDefaults, onboardingCompleted=\(completed), currentStep=\(self.currentStep)")
         }
     }
     
@@ -52,7 +62,8 @@ class OnboardingViewModel: ObservableObject {
         DispatchQueue.main.async {
             self.onboardingCompleted = true
             self.currentStep = 5
-            print("Set onboardingCompleted=true, currentStep=5")
+            UserDefaults.standard.set(true, forKey: "onboardingCompleted")
+            print("Set onboardingCompleted=true, currentStep=5, UserDefaults updated")
             if let userId = userId {
                 FirebaseManager.shared.setOnboardingCompleted(for: userId) { success in
                     DispatchQueue.main.async {
@@ -64,7 +75,7 @@ class OnboardingViewModel: ObservableObject {
                     }
                 }
             } else {
-                print("No userId provided; skipping Firestore update")
+                print("No userId provided; storing onboarding completion in UserDefaults only")
             }
         }
     }
