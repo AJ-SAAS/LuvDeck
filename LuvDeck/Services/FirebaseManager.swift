@@ -182,45 +182,60 @@ struct FirebaseManager {
     }
     
     // MARK: - Events
-    
-    func saveEvent(_ event: Event, for userId: String) {
-        let data: [String: Any] = [
-            "id": event.id.uuidString,
-            "title": event.title,
-            "date": Timestamp(date: event.date)
-        ]
-        db.collection("users").document(userId).collection("userEvents").document(event.id.uuidString).setData(data) { error in
-            if let error = error {
-                print("Error saving event: \(error.localizedDescription)")
-            } else {
-                print("Saved event: \(event.title)")
-            }
+
+    func saveEvent(_ event: FirebaseEvent, for userId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        do {
+            let data = try Firestore.Encoder().encode(event)
+            print("Attempting to save event: \(event.title) for user: \(userId)")
+            db.collection("users")
+                .document(userId)
+                .collection("userEvents")
+                .document(event.id)
+                .setData(data) { error in
+                    if let error = error {
+                        print("🔥 Error saving event: \(event.title), Error: \(error.localizedDescription)")
+                        completion(.failure(error))
+                    } else {
+                        print("✅ Successfully saved event: \(event.title) for user: \(userId)")
+                        completion(.success(()))
+                    }
+                }
+        } catch {
+            print("⚠️ Encoding error for event: \(event.title), Error: \(error.localizedDescription)")
+            completion(.failure(error))
         }
     }
-    
-    func fetchEvents(for userId: String, completion: @escaping ([Event]) -> Void) {
-        db.collection("users").document(userId).collection("userEvents").getDocuments { snapshot, error in
-            if let error = error {
-                print("Fetch events error: \(error.localizedDescription)")
-                completion([])
-                return
-            }
-            let events = snapshot?.documents.compactMap { doc -> Event? in
-                let data = doc.data()
-                guard let title = data["title"] as? String,
-                      let timestamp = data["date"] as? Timestamp else {
-                    print("Invalid event data for document: \(doc.documentID)")
-                    return nil
+
+    func fetchEvents(for userId: String, completion: @escaping ([FirebaseEvent]) -> Void) {
+        db.collection("users")
+            .document(userId)
+            .collection("userEvents")
+            .getDocuments { snapshot, error in
+                if let error = error {
+                    print("🔥 Fetch events error: \(error.localizedDescription)")
+                    completion([])
+                    return
                 }
-                return Event(
-                    id: UUID(uuidString: doc.documentID) ?? UUID(),
-                    title: title,
-                    date: timestamp.dateValue()
-                )
-            } ?? []
-            print("Fetched \(events.count) events for userId: \(userId)")
-            completion(events)
-        }
+
+                guard let documents = snapshot?.documents else {
+                    print("No documents found for userId: \(userId)")
+                    completion([])
+                    return
+                }
+
+                let events: [FirebaseEvent] = documents.compactMap { doc in
+                    do {
+                        let event = try Firestore.Decoder().decode(FirebaseEvent.self, from: doc.data())
+                        return event
+                    } catch {
+                        print("⚠️ Decoding error for document \(doc.documentID): \(error.localizedDescription)")
+                        return nil
+                    }
+                }
+
+                print("✅ Fetched \(events.count) events for userId: \(userId)")
+                completion(events)
+            }
     }
     
     // MARK: - Onboarding
