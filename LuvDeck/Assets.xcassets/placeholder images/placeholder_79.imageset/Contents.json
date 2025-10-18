@@ -1,7 +1,6 @@
 {
   "images" : [
     {
-      "filename" : "placeholder_79.png",
       "idiom" : "universal",
       "scale" : "1x"
     },
@@ -11,7 +10,6 @@
       "scale" : "2x"
     },
     {
-      "filename" : "placeholder_79 2.png",
       "idiom" : "universal",
       "scale" : "3x"
     }

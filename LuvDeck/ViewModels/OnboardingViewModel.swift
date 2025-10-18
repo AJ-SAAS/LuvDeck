@@ -8,11 +8,17 @@ class OnboardingViewModel: ObservableObject {
     func checkOnboardingStatus(userId: String?, didJustSignUp: Bool) {
         print("Checking onboarding status: userId=\(userId ?? "nil"), didJustSignUp=\(didJustSignUp)")
         if didJustSignUp {
-            // New user: reset onboarding
-            onboardingCompleted = false
-            currentStep = 0
-            UserDefaults.standard.set(false, forKey: "onboardingCompleted")
-            print("New user: Reset onboarding")
+            // New user: only show onboarding once
+            if !UserDefaults.standard.bool(forKey: "onboardingCompleted") {
+                onboardingCompleted = false
+                currentStep = 0
+                print("New user: Starting onboarding")
+            } else {
+                // Already completed, skip onboarding
+                onboardingCompleted = true
+                currentStep = 5
+                print("New user already completed onboarding, skipping")
+            }
         } else if let userId = userId {
             // Existing user: check Firestore
             FirebaseManager.shared.checkOnboardingStatus(for: userId) { (completed: Bool) in

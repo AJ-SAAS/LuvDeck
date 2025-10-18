@@ -2,44 +2,77 @@ import SwiftUI
 
 struct HomeView: View {
     @EnvironmentObject var viewModel: HomeViewModel
-    
+    @GestureState private var dragOffset: CGFloat = 0
+    @State private var animatingIndex: Int = 0
+
+    private func rubberBandOffset(_ offset: CGFloat, screenHeight: CGFloat) -> CGFloat {
+        // Apply diminishing effect for extra drag
+        let resistance: CGFloat = 0.3
+        return offset > screenHeight || offset < -screenHeight ? offset * resistance : offset
+    }
+
     var body: some View {
         GeometryReader { geometry in
+            let screenHeight = geometry.size.height
+
             ZStack {
-                Color.white
-                    .ignoresSafeArea(.all)
-                
+                Color.white.ignoresSafeArea()
+
                 if viewModel.isLoading {
                     ProgressView("Loading ideas...")
                         .progressViewStyle(CircularProgressViewStyle(tint: .pink))
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else if viewModel.ideas.isEmpty {
                     Text("No ideas available")
                         .font(.title)
                         .foregroundColor(.secondary)
+                        .frame(maxWidth: .infinity, maxHeight: .infinity)
                 } else {
-                    SwipeableCardView()
-                        .frame(
-                            width: geometry.size.width,
-                            height: geometry.size.height - geometry.safeAreaInsets.bottom // Removed -10 padding
-                        )
-                        .ignoresSafeArea(edges: .top)
+                    ZStack {
+                        ForEach(Array(viewModel.ideas.enumerated()), id: \.element.id) { index, idea in
+                            IdeaCardView(idea: idea)
+                                .frame(width: geometry.size.width,
+                                       height: screenHeight)
+                                .offset(
+                                    y: CGFloat(index - animatingIndex) * screenHeight
+                                        + rubberBandOffset(dragOffset, screenHeight: screenHeight)
+                                )
+                                .animation(.interactiveSpring(response: 0.4, dampingFraction: 0.8),
+                                           value: animatingIndex)
+                        }
+                    }
+                    .frame(width: geometry.size.width, height: screenHeight)
+                    .clipped()
+                    .ignoresSafeArea(.container, edges: .bottom)
+                    .gesture(
+                        DragGesture()
+                            .updating($dragOffset) { value, state, _ in
+                                state = value.translation.height
+                            }
+                            .onEnded { value in
+                                let threshold: CGFloat = 100
+                                let count = viewModel.ideas.count
+                                var newIndex = viewModel.currentIndex
+
+                                if value.translation.height < -threshold {
+                                    newIndex = (viewModel.currentIndex + 1) % count
+                                } else if value.translation.height > threshold {
+                                    newIndex = (viewModel.currentIndex - 1 + count) % count
+                                }
+
+                                // Animate visual card
+                                animatingIndex = newIndex
+                                // Update logical index shortly after
+                                DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
+                                    viewModel.currentIndex = newIndex
+                                }
+                            }
+                    )
                 }
             }
-            .onAppear {
-                print("HomeView appeared with \(viewModel.ideas.count) ideas, currentIndex=\(viewModel.currentIndex), titles: \(viewModel.ideas.map { $0.title }.prefix(10))")
-            }
+        }
+        .onAppear {
+            animatingIndex = viewModel.currentIndex
         }
     }
-}
-
-#Preview("iPhone 14") {
-    HomeView()
-        .environmentObject(HomeViewModel(userId: nil))
-        .previewDevice(PreviewDevice(rawValue: "iPhone 14"))
-}
-
-#Preview("iPad Pro") {
-    HomeView()
-        .environmentObject(HomeViewModel(userId: nil))
-        .previewDevice(PreviewDevice(rawValue: "iPad Pro (12.9-inch) (6th generation)"))
 }

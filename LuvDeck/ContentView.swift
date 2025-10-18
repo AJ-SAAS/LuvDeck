@@ -3,38 +3,34 @@ import SwiftUI
 struct ContentView: View {
     @StateObject var authViewModel = AuthViewModel()
     @StateObject var onboardingViewModel = OnboardingViewModel()
-    @State private var showSplash = true // State to control splash screen visibility
+    @State private var showSplash = true
     
     var body: some View {
         Group {
             if showSplash {
                 SplashView()
             } else {
+                // Step 1: Show onboarding only if not completed
                 if !onboardingViewModel.onboardingCompleted {
                     OnboardingView()
                         .environmentObject(authViewModel)
                         .environmentObject(onboardingViewModel)
-                        .onAppear {
-                            print("Rendering OnboardingView: onboardingCompleted=\(onboardingViewModel.onboardingCompleted), currentStep=\(onboardingViewModel.currentStep)")
-                        }
-                } else if authViewModel.user == nil {
+                }
+                // Step 2: After onboarding, show auth if no user
+                else if authViewModel.user == nil {
                     AuthView()
                         .environmentObject(authViewModel)
-                        .onAppear {
-                            print("Rendering AuthView: user is nil")
-                        }
-                } else {
+                        .environmentObject(onboardingViewModel)
+                }
+                // Step 3: User signed in and onboarding completed
+                else {
                     TabBarView()
                         .environmentObject(authViewModel)
                         .environmentObject(onboardingViewModel)
-                        .onAppear {
-                            print("Rendering TabBarView: onboardingCompleted=\(onboardingViewModel.onboardingCompleted)")
-                        }
                 }
             }
         }
         .onAppear {
-            // Hide splash screen after 1 second
             DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
                 withAnimation {
                     showSplash = false
@@ -42,14 +38,11 @@ struct ContentView: View {
             }
         }
         .onChange(of: authViewModel.user) { _, newUser in
-            print("User changed: \(newUser?.id ?? "nil")")
+            // If the user just signed up, mark onboarding as complete if needed
             onboardingViewModel.checkOnboardingStatus(userId: newUser?.id, didJustSignUp: authViewModel.didJustSignUp)
-        }
-        .onChange(of: onboardingViewModel.onboardingCompleted) { _, completed in
-            print("Onboarding completed changed: \(completed)")
-        }
-        .onChange(of: onboardingViewModel.currentStep) { _, step in
-            print("Current step changed: \(step)")
+            
+            // Reset the flag
+            authViewModel.didJustSignUp = false
         }
     }
 }

@@ -31,49 +31,30 @@ class HomeViewModel: ObservableObject {
     
     private func loadIdeasFromJSON() {
         guard let url = Bundle.main.url(forResource: "SwipeDeck", withExtension: "json") else {
-            print("SwipeDeck.json not found in bundle. Bundle path: \(Bundle.main.bundlePath)")
-            print("Available bundle resources: \(Bundle.main.urls(forResourcesWithExtension: nil, subdirectory: nil)?.map { $0.lastPathComponent } ?? [])")
+            print("SwipeDeck.json not found in bundle. Using sample ideas")
             self.ideas = sampleIdeas()
             self.isLoading = false
             return
         }
-        print("Found SwipeDeck.json at: \(url.path)")
         
         do {
             let data = try Data(contentsOf: url)
-            print("Successfully read data from SwipeDeck.json, size: \(data.count) bytes")
             let decoder = JSONDecoder()
             let decodedIdeas = try decoder.decode([Idea].self, from: data)
             self.ideas = decodedIdeas
             self.isLoading = false
             self.currentIndex = 0
-            print("Loaded \(decodedIdeas.count) ideas from JSON: \(decodedIdeas.map { $0.title }.prefix(10))")
+            print("Loaded \(decodedIdeas.count) ideas from JSON")
         } catch {
             print("Error decoding SwipeDeck.json: \(error)")
-            if let decodingError = error as? DecodingError {
-                switch decodingError {
-                case .dataCorrupted(let context):
-                    print("Data corrupted: \(context.debugDescription)")
-                case .keyNotFound(let key, let context):
-                    print("Key '\(key)' not found: \(context.debugDescription)")
-                case .typeMismatch(let type, let context):
-                    print("Type '\(type)' mismatch: \(context.debugDescription)")
-                case .valueNotFound(let type, let context):
-                    print("Value for type '\(type)' not found: \(context.debugDescription)")
-                @unknown default:
-                    print("Unknown decoding error")
-                }
-            }
             self.ideas = sampleIdeas()
             self.isLoading = false
         }
     }
     
     private func sampleIdeas() -> [Idea] {
-        print("Loading sample ideas as fallback")
         return [
             Idea(
-                id: UUID(),
                 title: "Romantic Dinner",
                 description: "Plan a candlelit dinner at home with your partner’s favorite meal.",
                 category: "Random",
@@ -83,7 +64,6 @@ class HomeViewModel: ObservableObject {
                 level: .cute
             ),
             Idea(
-                id: UUID(),
                 title: "Sunset Hike",
                 description: "Take a scenic hike and watch the sunset from a hilltop.",
                 category: "Random",
@@ -93,7 +73,6 @@ class HomeViewModel: ObservableObject {
                 level: .epic
             ),
             Idea(
-                id: UUID(),
                 title: "DIY Spa Day",
                 description: "Create a relaxing spa experience at home with candles and bath bombs.",
                 category: "Random",
@@ -105,38 +84,32 @@ class HomeViewModel: ObservableObject {
         ]
     }
     
+    // MARK: - Controlled Scrolling
     func nextIdea() {
+        guard !ideas.isEmpty else { return }
         if currentIndex < ideas.count - 1 {
             currentIndex += 1
             print("Moved to next idea: index=\(currentIndex), title=\(ideas[currentIndex].title)")
-        } else {
-            print("No more ideas to show")
         }
     }
     
     func previousIdea() {
+        guard !ideas.isEmpty else { return }
         if currentIndex > 0 {
             currentIndex -= 1
             print("Moved to previous idea: index=\(currentIndex), title=\(ideas[currentIndex].title)")
-        } else {
-            print("Already at first idea")
         }
     }
     
+    // MARK: - Other actions
     func likeIdea(_ idea: Idea) {
-        guard let userId = userId else {
-            print("Cannot like idea: userId is nil")
-            return
-        }
+        guard let userId = userId else { return }
         FirebaseManager.shared.saveLikedIdea(idea, for: userId)
         print("Liked idea: \(idea.title)")
     }
     
     func saveIdea(_ idea: Idea) {
-        guard let userId = userId else {
-            print("Cannot save idea: userId is nil")
-            return
-        }
+        guard let userId = userId else { return }
         FirebaseManager.shared.saveBookmarkedIdea(idea, for: userId)
         print("Saved idea: \(idea.title)")
     }
@@ -153,8 +126,6 @@ class HomeViewModel: ObservableObject {
                 rootVC.present(activityVC, animated: true)
                 print("Sharing idea: \(idea.title)")
             }
-        } else {
-            print("Failed to find root view controller for sharing")
         }
     }
 }
