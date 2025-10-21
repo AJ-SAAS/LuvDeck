@@ -38,9 +38,9 @@ struct IdeaCardView: View {
                     loadImage(downsampleTo: targetSize)
                 }
 
-                // MARK: - Bottom Overlay
+                // MARK: - Bottom Overlay (Raised higher)
                 VStack {
-                    Spacer()
+                    Spacer() // pushes overlay higher
 
                     ZStack {
                         LinearGradient(
@@ -80,7 +80,7 @@ struct IdeaCardView: View {
                         .padding(.vertical, 20)
                     }
                     .padding(.horizontal)
-                    .padding(.bottom, geometry.safeAreaInsets.bottom + 15)
+                    .padding(.bottom, geometry.safeAreaInsets.bottom + 80) // ⬅️ raised above TabBar
                 }
                 .zIndex(1)
 

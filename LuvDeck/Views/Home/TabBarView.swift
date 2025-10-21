@@ -7,7 +7,6 @@ struct TabBarView: View {
     @StateObject private var homeVM: HomeViewModel
     @StateObject private var datesVM: AddDatesViewModel
     @State private var selectedTab: Int = 0
-    @State private var didAppear: Bool = false // For lazy logo rendering if needed
 
     init() {
         let userId = Auth.auth().currentUser?.uid
@@ -22,18 +21,18 @@ struct TabBarView: View {
             NavigationStack {
                 VStack(spacing: 0) {
 
-                    // Preloaded logo (top-left)
+                    // Logo - flush left
                     HStack {
                         Image("luvdecksmall")
                             .resizable()
                             .scaledToFit()
-                            .frame(width: 260, height: 260) // Big logo
-                            .padding(.leading, 2)  // flush with left edge
-                            .padding(.top, -6)     // lift slightly to reduce gap
-                        
+                            .frame(width: 260, height: 260)
+                            .offset(x: -6)  // fully flush to the left
+                            .padding(.top, -6)
+
                         Spacer()
                     }
-                    .frame(height: 70) // reduces space below logo
+                    .frame(height: 70)
 
                     // Main content (Idea cards)
                     HomeView()
@@ -49,11 +48,11 @@ struct TabBarView: View {
             .tag(0)
             .onAppear {
                 print("Home tab selected")
-                
-                // Prevent initial layout/animation glitch
-                UIView.setAnimationsEnabled(false)
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.4) {
-                    UIView.setAnimationsEnabled(true)
+
+                // Preload logo in background to prevent freeze/white flash
+                DispatchQueue.global(qos: .userInitiated).async {
+                    _ = UIImage(named: "luvdecksmall")
+                    homeVM.ideas.forEach { _ = UIImage(named: $0.imageName) } // preload idea images
                 }
             }
 
@@ -85,9 +84,6 @@ struct TabBarView: View {
             print("Tab changed to: \(newTab)")
         }
         .onAppear {
-            // Preload logo to eliminate white flash / lag
-            _ = UIImage(named: "luvdecksmall")
-            
             if let uid = authViewModel.user?.id {
                 homeVM.setUserId(uid)
                 datesVM.setUserId(uid)
