@@ -38,12 +38,11 @@ struct IdeaCardView: View {
                     loadImage(downsampleTo: targetSize)
                 }
 
-                // MARK: - Bottom Overlay (TikTok-style)
+                // MARK: - Bottom Overlay
                 VStack {
-                    Spacer() // Push everything to the bottom
+                    Spacer()
 
                     ZStack {
-                        // Gradient only behind text
                         LinearGradient(
                             gradient: Gradient(colors: [
                                 Color.black.opacity(0.65),
@@ -53,7 +52,7 @@ struct IdeaCardView: View {
                             startPoint: .bottom,
                             endPoint: .top
                         )
-                        .frame(height: 180) // Adjust height to cover your text
+                        .frame(height: 180)
                         .cornerRadius(30)
                         .blur(radius: 10)
 
@@ -98,7 +97,7 @@ struct IdeaCardView: View {
                     }
                 }
 
-                // MARK: - Right Side Buttons (TikTok style)
+                // MARK: - Right Side Buttons
                 VStack(spacing: 22) {
                     Spacer()
 

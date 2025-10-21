@@ -6,7 +6,6 @@ struct HomeView: View {
     @State private var animatingIndex: Int = 0
 
     private func rubberBandOffset(_ offset: CGFloat, screenHeight: CGFloat) -> CGFloat {
-        // Apply diminishing effect for extra drag
         let resistance: CGFloat = 0.3
         return offset > screenHeight || offset < -screenHeight ? offset * resistance : offset
     }
@@ -31,8 +30,7 @@ struct HomeView: View {
                     ZStack {
                         ForEach(Array(viewModel.ideas.enumerated()), id: \.element.id) { index, idea in
                             IdeaCardView(idea: idea)
-                                .frame(width: geometry.size.width,
-                                       height: screenHeight)
+                                .frame(width: geometry.size.width, height: screenHeight)
                                 .offset(
                                     y: CGFloat(index - animatingIndex) * screenHeight
                                         + rubberBandOffset(dragOffset, screenHeight: screenHeight)
@@ -60,9 +58,7 @@ struct HomeView: View {
                                     newIndex = (viewModel.currentIndex - 1 + count) % count
                                 }
 
-                                // Animate visual card
                                 animatingIndex = newIndex
-                                // Update logical index shortly after
                                 DispatchQueue.main.asyncAfter(deadline: .now() + 0.01) {
                                     viewModel.currentIndex = newIndex
                                 }

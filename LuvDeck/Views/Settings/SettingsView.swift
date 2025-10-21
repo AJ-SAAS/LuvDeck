@@ -127,9 +127,9 @@ struct SettingsView: View {
                     }
                     
                     Section(header: Text("Legal")) {
-                        Link("Terms of Use", destination: URL(string: "https://yourapp.com/terms")!)
-                        Link("Privacy Policy", destination: URL(string: "https://yourapp.com/privacy")!)
-                        Link("Visit Website", destination: URL(string: "https://yourapp.com")!)
+                        Link("Terms of Use", destination: URL(string: "https://www.luvdeck.com/r/terms")!)
+                        Link("Privacy Policy", destination: URL(string: "https://www.luvdeck.com/r/privacy")!)
+                        Link("Visit Website", destination: URL(string: "https://www.luvdeck.com")!)
                     }
                     
                     Section {
