@@ -11,29 +11,13 @@ struct HomeView: View {
     }
 
     var body: some View {
-        VStack(spacing: 0) {
+        ZStack(alignment: .top) {
 
-            // Top Logo Bar
-            HStack {
-                Spacer()
-                Image("luvdecksmall")
-                    .resizable()
-                    .scaledToFit()
-                    .frame(width: 140, height: 48) // slightly bigger
-                    .padding(.vertical, 6)
-                Spacer()
-            }
-            .background(Color.white)
-            .shadow(color: .black.opacity(0.05), radius: 3, y: 1)
-            .zIndex(2)
-
-            // Scrollable Content
+            // MARK: - Scrollable Idea Cards
             GeometryReader { geometry in
                 let screenHeight = geometry.size.height
 
                 ZStack {
-                    Color.white.ignoresSafeArea()
-
                     if viewModel.isLoading {
                         ProgressView("Loading ideas...")
                             .progressViewStyle(CircularProgressViewStyle(tint: .pink))
@@ -82,7 +66,22 @@ struct HomeView: View {
                         )
                     }
                 }
+                .edgesIgnoringSafeArea(.top) // Image covers the top safe area
             }
+
+            // MARK: - Top Logo Bar
+            HStack {
+                Spacer()
+                Image("luvdecksmall")
+                    .resizable()
+                    .scaledToFit()
+                    .frame(width: 140, height: 48)
+                    .padding(.vertical, 6)
+                Spacer()
+            }
+            .background(Color.white.opacity(0.95)) // slight transparency so top of image can peek
+            .shadow(color: .black.opacity(0.05), radius: 3, y: 1)
+            .zIndex(2)
         }
         .onAppear {
             animatingIndex = viewModel.currentIndex
