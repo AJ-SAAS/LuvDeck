@@ -12,96 +12,90 @@ struct IdeaCardView: View {
 
     var body: some View {
         GeometryReader { geometry in
-            ZStack {
+            ZStack(alignment: .bottom) {
+                
                 // MARK: - Background Image
                 Group {
                     if let image = loadedImage {
                         Image(uiImage: image)
                             .resizable()
                             .scaledToFill()
-                            .frame(width: geometry.size.width,
-                                   height: geometry.size.height + geometry.safeAreaInsets.bottom)
+                            .frame(width: geometry.size.width, height: geometry.size.height)
                             .clipped()
                     } else {
                         Image("defaultIdeaImage")
                             .resizable()
                             .scaledToFill()
-                            .frame(width: geometry.size.width,
-                                   height: geometry.size.height + geometry.safeAreaInsets.bottom)
+                            .frame(width: geometry.size.width, height: geometry.size.height)
                             .clipped()
                     }
                 }
-                .ignoresSafeArea(edges: .all)
                 .onAppear {
-                    let targetSize = CGSize(width: UIScreen.main.bounds.width * UIScreen.main.scale,
-                                            height: UIScreen.main.bounds.height * UIScreen.main.scale)
+                    let targetSize = CGSize(
+                        width: geometry.size.width * UIScreen.main.scale,
+                        height: geometry.size.height * UIScreen.main.scale
+                    )
                     loadImage(downsampleTo: targetSize)
                 }
+                .ignoresSafeArea()
+                
+                // MARK: - Text Overlay (Dynamic Height)
+                VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
+                    Text(idea.title)
+                        .font(.system(size: geometry.size.height * 0.04, weight: .bold))
+                        .foregroundColor(.white)
+                        .shadow(radius: 4)
+                        .multilineTextAlignment(.leading)
 
-                // MARK: - Bottom Overlay (Raised higher)
-                VStack {
-                    Spacer() // pushes overlay higher
+                    Text(idea.description)
+                        .font(.system(size: geometry.size.height * 0.022))
+                        .foregroundColor(.white.opacity(0.95))
+                        .multilineTextAlignment(.leading)
+                        .shadow(radius: 3)
+                        .lineLimit(3)
 
-                    ZStack {
-                        LinearGradient(
-                            gradient: Gradient(colors: [
-                                Color.black.opacity(0.65),
-                                Color.black.opacity(0.3),
-                                Color.clear
-                            ]),
-                            startPoint: .bottom,
-                            endPoint: .top
-                        )
-                        .frame(height: 180)
-                        .cornerRadius(30)
-                        .blur(radius: 10)
-
-                        VStack(alignment: .leading, spacing: 12) {
-                            Text(idea.title)
-                                .font(.system(size: 28, weight: .bold))
-                                .multilineTextAlignment(.leading)
-                                .foregroundColor(.white)
-                                .shadow(radius: 4)
-
-                            Text(idea.description)
-                                .font(.system(size: 16))
-                                .foregroundColor(.white)
-                                .multilineTextAlignment(.leading)
-                                .shadow(radius: 3)
-                                .padding(.trailing, 80)
-
-                            HStack(spacing: 20) {
-                                statView(title: "Difficulty", value: idea.difficultyStars, icon: "star.fill")
-                                statView(title: "Category", value: idea.category, icon: "tag.fill")
-                                statView(title: "Level", value: idea.level.rawValue, icon: "sparkles")
-                            }
-                        }
-                        .padding(.horizontal, 16)
-                        .padding(.vertical, 20)
+                    // MARK: - Stats Row
+                    HStack(spacing: geometry.size.width * 0.05) {
+                        statView(title: "Difficulty", value: idea.difficultyStars, icon: "star.fill")
+                        statView(title: "Category", value: idea.category, icon: "tag.fill")
+                        statView(title: "Level", value: idea.level.rawValue, icon: "sparkles")
                     }
-                    .padding(.horizontal)
-                    .padding(.bottom, geometry.safeAreaInsets.bottom + 80) // ⬅️ raised above TabBar
                 }
-                .zIndex(1)
+                .padding(.horizontal, geometry.size.width * 0.05)
+                .padding(.bottom, geometry.safeAreaInsets.bottom + 100)
+                .background(
+                    LinearGradient(
+                        gradient: Gradient(colors: [
+                            .black.opacity(0.6),
+                            .black.opacity(0.2),
+                            .clear
+                        ]),
+                        startPoint: .bottom,
+                        endPoint: .top
+                    )
+                    .frame(height: geometry.size.height * 0.35)
+                    .blur(radius: 12)
+                    .allowsHitTesting(false)
+                )
+                .zIndex(2)
 
-                // MARK: - Floating Heart Burst
+                // MARK: - Floating Heart Burst Animation
                 if showHeartBurst {
                     ForEach(0..<10, id: \.self) { index in
                         HeartParticleView()
                             .frame(width: 20, height: 20)
                             .position(
-                                x: geometry.size.width - 50 + CGFloat.random(in: -30...30),
-                                y: geometry.size.height * 0.65 + CGFloat.random(in: -40...40)
+                                x: geometry.size.width - 60 + CGFloat.random(in: -40...40),
+                                y: geometry.size.height * 0.65 + CGFloat.random(in: -50...50)
                             )
                             .opacity(Double.random(in: 0.6...1))
                     }
                 }
 
-                // MARK: - Right Side Buttons
-                VStack(spacing: 22) {
+                // MARK: - Floating Buttons (Right side)
+                VStack(spacing: geometry.size.height * 0.035) {
                     Spacer()
 
-                    // LIKE BUTTON
                     Button {
                         withAnimation(.spring(response: 0.3, dampingFraction: 0.4)) {
                             animateLike = true
@@ -119,37 +113,36 @@ struct IdeaCardView: View {
                     } label: {
                         VStack(spacing: 6) {
                             Image(systemName: isLiked ? "heart.fill" : "heart")
-                                .font(.system(size: 32))
+                                .font(.system(size: geometry.size.height * 0.045))
                                 .foregroundColor(isLiked ? .red : .white)
                                 .shadow(radius: 6)
                                 .scaleEffect(animateLike ? 1.4 : 1.0)
                                 .animation(.spring(response: 0.3, dampingFraction: 0.4), value: animateLike)
 
                             Text("Like")
-                                .font(.system(size: 12))
+                                .font(.system(size: geometry.size.height * 0.018))
                                 .foregroundColor(.white)
                         }
                     }
 
-                    // SHARE BUTTON
                     Button {
                         viewModel.shareIdea(idea)
                     } label: {
                         VStack(spacing: 6) {
                             Image(systemName: "arrowshape.turn.up.right.fill")
-                                .font(.system(size: 30))
+                                .font(.system(size: geometry.size.height * 0.045))
                                 .foregroundColor(.white)
                                 .shadow(radius: 6)
                             Text("Share")
-                                .font(.system(size: 12))
+                                .font(.system(size: geometry.size.height * 0.018))
                                 .foregroundColor(.white)
                         }
                     }
 
-                    Spacer().frame(height: 300)
+                    Spacer().frame(height: geometry.size.height * 0.35)
                 }
                 .frame(maxWidth: .infinity, alignment: .trailing)
-                .padding(.trailing, 20)
+                .padding(.trailing, geometry.size.width * 0.06)
                 .zIndex(3)
             }
             .ignoresSafeArea(edges: .bottom)
@@ -159,20 +152,16 @@ struct IdeaCardView: View {
     // MARK: - Lazy Image Loader
     private func loadImage(downsampleTo targetPixelSize: CGSize) {
         if loadedImage != nil { return }
-
         DispatchQueue.global(qos: .userInitiated).async {
             autoreleasepool {
                 if let fullImage = UIImage(named: idea.imageName) {
                     let scale = UIScreen.main.scale
-                    let targetW = max(1, Int(targetPixelSize.width))
-                    let targetH = max(1, Int(targetPixelSize.height))
-                    let targetSize = CGSize(width: targetW, height: targetH)
+                    let targetSize = CGSize(width: max(1, targetPixelSize.width / scale),
+                                            height: max(1, targetPixelSize.height / scale))
 
-                    let renderer = UIGraphicsImageRenderer(size: CGSize(width: targetSize.width / scale,
-                                                                        height: targetSize.height / scale))
+                    let renderer = UIGraphicsImageRenderer(size: targetSize)
                     let downsampled = renderer.image { _ in
-                        fullImage.draw(in: CGRect(origin: .zero, size: CGSize(width: targetSize.width / scale,
-                                                                              height: targetSize.height / scale)))
+                        fullImage.draw(in: CGRect(origin: .zero, size: targetSize))
                     }
 
                     DispatchQueue.main.async {
@@ -196,13 +185,12 @@ struct IdeaCardView: View {
                 .foregroundColor(.pink)
             Text(title)
                 .font(.system(size: 12))
-                .foregroundColor(.white)
+                .foregroundColor(.white.opacity(0.9))
         }
-        .frame(maxWidth: .infinity)
     }
 }
 
-// MARK: - Floating Heart Particle
+// MARK: - Heart Particle Animation
 struct HeartParticleView: View {
     @State private var randomX: CGFloat = CGFloat.random(in: -20...20)
     @State private var randomY: CGFloat = CGFloat.random(in: -150 ... -50)
