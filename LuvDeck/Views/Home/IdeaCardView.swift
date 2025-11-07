@@ -23,11 +23,9 @@ struct IdeaCardView: View {
         .ignoresSafeArea(edges: .bottom)
     }
 
-    // MARK: - Background Image
     @ViewBuilder
     private func backgroundImage(geometry: GeometryProxy) -> some View {
         let screenWidth = geometry.size.width
-        // Exact tab bar bleed (34pt) to touch without clipping content
         let screenHeight = geometry.size.height + 34
 
         ZStack {
@@ -37,7 +35,7 @@ struct IdeaCardView: View {
                 .resizable()
                 .scaledToFill()
                 .frame(width: screenWidth, height: screenHeight)
-                .clipped()  // Clip image only — no content clipping
+                .clipped()
                 .offset(y: -geometry.safeAreaInsets.top * 0.3)
         }
         .onAppear { loadImageForSize(geometry: geometry) }
@@ -52,7 +50,6 @@ struct IdeaCardView: View {
         loadImage(downsampleTo: targetSize)
     }
 
-    // MARK: - Bottom Gradient & Text Overlay
     @ViewBuilder
     private func bottomOverlay(geometry: GeometryProxy) -> some View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
@@ -69,9 +66,9 @@ struct IdeaCardView: View {
                 .lineLimit(3)
 
             HStack(spacing: geometry.size.width * 0.05) {
-                statView(title: "Difficulty", value: idea.difficultyStars, icon: "star.fill")
-                statView(title: "Category", value: idea.category, icon: "tag.fill")
-                statView(title: "Level", value: idea.level.rawValue, icon: "sparkles")
+                statView(title: "Difficulty", value: idea.difficultyStars)
+                statView(title: "Category", value: idea.category)
+                statView(title: "Level", value: idea.level.rawValue)
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
@@ -94,7 +91,6 @@ struct IdeaCardView: View {
         .zIndex(2)
     }
 
-    // MARK: - Right Side Floating Buttons
     @ViewBuilder
     private func rightSideButtons(geometry: GeometryProxy) -> some View {
         VStack(spacing: geometry.size.height * 0.035) {
@@ -148,7 +144,6 @@ struct IdeaCardView: View {
         .zIndex(3)
     }
 
-    // MARK: - Heart Burst Animation
     @ViewBuilder
     private func heartBurst(geometry: GeometryProxy) -> some View {
         if showHeartBurst {
@@ -164,7 +159,6 @@ struct IdeaCardView: View {
         }
     }
 
-    // MARK: - Lazy Image Loader
     private func loadImage(downsampleTo targetPixelSize: CGSize) {
         if loadedImage != nil { return }
         DispatchQueue.global(qos: .userInitiated).async {
@@ -189,15 +183,19 @@ struct IdeaCardView: View {
         }
     }
 
-    // MARK: - Stat View
-    private func statView(title: String, value: String, icon: String) -> some View {
+    // MARK: - Stat View (No Icons, Stars for Difficulty)
+    private func statView(title: String, value: String) -> some View {
         VStack(alignment: .leading, spacing: 4) {
-            Image(systemName: icon)
-                .foregroundColor(.pink)
-                .font(.system(size: 14))
-            Text(value)
-                .font(.system(size: 14, weight: .medium))
-                .foregroundColor(.pink)
+            if title == "Difficulty" {
+                Text(value)
+                    .font(.system(size: 16, weight: .medium))
+                    .foregroundColor(.yellow)
+            } else {
+                Text(value)
+                    .font(.system(size: 14, weight: .medium))
+                    .foregroundColor(.pink)
+            }
+            
             Text(title)
                 .font(.system(size: 12))
                 .foregroundColor(.white.opacity(0.9))
@@ -206,7 +204,6 @@ struct IdeaCardView: View {
     }
 }
 
-// MARK: - Heart Particle Animation
 struct HeartParticleView: View {
     @State private var randomX: CGFloat = CGFloat.random(in: -20...20)
     @State private var randomY: CGFloat = CGFloat.random(in: -150 ... -50)

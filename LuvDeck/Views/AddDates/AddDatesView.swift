@@ -38,18 +38,33 @@ struct AddDatesView: View {
                 }
                 .padding(.horizontal)
             }
-            .navigationTitle("LuvDeck")
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarTrailing) {
-                    Button {
-                        selectedEvent = nil
-                        showAddSheet = true
-                    } label: {
-                        Image(systemName: "plus.circle.fill")
-                            .font(.title2)
-                            .foregroundStyle(.pink)
-                            .symbolRenderingMode(.hierarchical)
+                // MARK: - Centered Logo (Exact Match with HomeView)
+                ToolbarItem(placement: .principal) {
+                        HStack {
+                            Spacer()
+                            Image("luvdecksmall")
+                                .resizable()
+                                .scaledToFit()
+                                .frame(width: 140, height: 48)
+                                .padding(.vertical, 6)
+                            Spacer()
+                        }
+                        .background(Color.white.opacity(0.95))
+                        .shadow(color: .black.opacity(0.05), radius: 3, y: 1)
+                        .padding(.trailing, 44)
+                    }
+
+                    ToolbarItem(placement: .topBarTrailing) {
+                        Button {
+                            selectedEvent = nil
+                            showAddSheet = true
+                        } label: {
+                            Image(systemName: "plus.circle.fill")
+                                .font(.title2)
+                                .foregroundStyle(.pink)
+                                .symbolRenderingMode(.hierarchical)
                     }
                 }
             }
@@ -112,7 +127,7 @@ struct AddDatesView: View {
         }
     }
 
-    // MARK: - How It Works Card (Collapsible)
+    // MARK: - How It Works Card (Collapsible) — CENTERED + PINK
     private var howItWorksCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Button {
@@ -121,11 +136,12 @@ struct AddDatesView: View {
                 HStack {
                     Text("How LuvDeck Dates Works")
                         .font(.headline)
-                        .foregroundStyle(.primary)
-                    Spacer()
+                        .foregroundStyle(.pink)
+                        .frame(maxWidth: .infinity, alignment: .center)
                     Image(systemName: showHowItWorks ? "chevron.up" : "chevron.down")
                         .foregroundStyle(.secondary)
                 }
+                .padding(.horizontal, -8)
             }
 
             if showHowItWorks {
@@ -136,8 +152,10 @@ struct AddDatesView: View {
                     bulletPoint("Build rituals that keep love growing, week after week")
                 }
                 .font(.subheadline)
-                .foregroundStyle(.secondary)
-                .transition(.opacity.combined(with: .scale))  // Fixed line
+                .foregroundStyle(.pink.opacity(0.9))
+                .multilineTextAlignment(.center)
+                .frame(maxWidth: .infinity)
+                .transition(.opacity.combined(with: .scale))
             }
         }
         .padding(16)
