@@ -40,6 +40,7 @@ struct HomeView: View {
                                                value: animatingIndex)
                             }
                         }
+                        .background(Color.clear)  // ← PREVENTS WHITE FLASH
                         .clipped()
                         .contentShape(Rectangle())
                         .gesture(

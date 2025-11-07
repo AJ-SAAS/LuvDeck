@@ -13,12 +13,10 @@ struct TabBarView: View {
         _homeVM = StateObject(wrappedValue: HomeViewModel(userId: currentUID))
         _datesVM = StateObject(wrappedValue: AddDatesViewModel(userId: currentUID))
 
-        // Simplified tab bar – no aggressive styling
         let appearance = UITabBarAppearance()
-        appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .systemBackground  // Use system default
+        appearance.configureWithTransparentBackground()
+        appearance.backgroundColor = .clear
 
-        // Standard colors (let iOS handle selected/unselected)
         appearance.stackedLayoutAppearance.normal.iconColor = .secondaryLabel
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
         appearance.stackedLayoutAppearance.selected.iconColor = .systemRed
@@ -26,6 +24,7 @@ struct TabBarView: View {
 
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
+        UITabBar.appearance().isTranslucent = true
     }
 
     var body: some View {
@@ -34,13 +33,14 @@ struct TabBarView: View {
                 HomeView()
                     .environmentObject(homeVM)
                     .navigationBarHidden(true)
+                    .toolbarBackground(.hidden, for: .tabBar)  // ← FIX: No tab bar interference
             }
             .tabItem { Label("Home", systemImage: "house.fill") }
             .tag(0)
 
             NavigationStack {
                 AddDatesView(viewModel: datesVM)
-                    .navigationBarHidden(false)  // Ensure bar is visible
+                    .navigationBarHidden(false)
             }
             .tabItem { Label("Dates", systemImage: "calendar") }
             .tag(1)
@@ -53,8 +53,12 @@ struct TabBarView: View {
             .tabItem { Label("Settings", systemImage: "gear") }
             .tag(2)
         }
+        .background(Color.clear)
+        .ignoresSafeArea(edges: .all)
         .onAppear {
             updateUserId()
+            UITabBar.appearance().backgroundColor = .clear
+            UITabBar.appearance().isTranslucent = true
         }
         .onChange(of: authViewModel.user) { _, _ in
             updateUserId()

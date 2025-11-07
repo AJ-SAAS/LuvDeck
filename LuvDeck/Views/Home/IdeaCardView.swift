@@ -13,39 +13,32 @@ struct IdeaCardView: View {
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottomLeading) {
-
-                // MARK: - Background Image (fills full screen)
                 backgroundImage(geometry: geometry)
-
-                // MARK: - Bottom Gradient & Text Overlay
                 bottomOverlay(geometry: geometry)
-
-                // MARK: - Right Side Floating Buttons
                 rightSideButtons(geometry: geometry)
-
-                // MARK: - Heart Burst Animation
                 heartBurst(geometry: geometry)
             }
             .ignoresSafeArea(edges: .all)
         }
+        .ignoresSafeArea(edges: .bottom)
     }
 
     // MARK: - Background Image
     @ViewBuilder
     private func backgroundImage(geometry: GeometryProxy) -> some View {
         let screenWidth = geometry.size.width
-        // Extend height slightly to eliminate bottom gap
-        let screenHeight = geometry.size.height + geometry.safeAreaInsets.bottom
+        // Exact tab bar bleed (34pt) to touch without clipping content
+        let screenHeight = geometry.size.height + 34
 
         ZStack {
-            Color.black.opacity(0.1)
+            Color.black.opacity(0.1).ignoresSafeArea(edges: .bottom)
 
             Image(uiImage: loadedImage ?? UIImage(named: "defaultIdeaImage") ?? UIImage())
                 .resizable()
                 .scaledToFill()
                 .frame(width: screenWidth, height: screenHeight)
-                .clipped()
-                .offset(y: -geometry.safeAreaInsets.top * 0.3) // closes top gap under logo
+                .clipped()  // Clip image only — no content clipping
+                .offset(y: -geometry.safeAreaInsets.top * 0.3)
         }
         .onAppear { loadImageForSize(geometry: geometry) }
         .ignoresSafeArea(edges: .all)
@@ -63,22 +56,18 @@ struct IdeaCardView: View {
     @ViewBuilder
     private func bottomOverlay(geometry: GeometryProxy) -> some View {
         VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
-
-            // Title
             Text(idea.title)
                 .font(.system(size: geometry.size.height * 0.04, weight: .bold))
                 .foregroundColor(.white)
                 .shadow(radius: 4)
                 .multilineTextAlignment(.leading)
 
-            // Description
             Text(idea.description)
                 .font(.system(size: geometry.size.height * 0.022))
                 .foregroundColor(.white.opacity(0.95))
                 .multilineTextAlignment(.leading)
                 .lineLimit(3)
 
-            // 3 Stats in One Row
             HStack(spacing: geometry.size.width * 0.05) {
                 statView(title: "Difficulty", value: idea.difficultyStars, icon: "star.fill")
                 statView(title: "Category", value: idea.category, icon: "tag.fill")
@@ -87,7 +76,7 @@ struct IdeaCardView: View {
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, geometry.size.width * 0.05)
-        .padding(.bottom, geometry.safeAreaInsets.bottom + geometry.size.height * 0.07) // adjusted for comfort above tab bar
+        .padding(.bottom, geometry.safeAreaInsets.bottom + geometry.size.height * 0.07)
         .background(
             LinearGradient(
                 gradient: Gradient(colors: [
@@ -111,7 +100,6 @@ struct IdeaCardView: View {
         VStack(spacing: geometry.size.height * 0.035) {
             Spacer()
 
-            // Like Button
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.4)) {
                     animateLike = true
@@ -119,8 +107,12 @@ struct IdeaCardView: View {
                     viewModel.likeIdea(idea)
                     if isLiked { showHeartBurst = true }
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) { animateLike = false }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) { showHeartBurst = false }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 0.5) {
+                    animateLike = false
+                }
+                DispatchQueue.main.asyncAfter(deadline: .now() + 1.0) {
+                    showHeartBurst = false
+                }
             } label: {
                 VStack(spacing: 6) {
                     Image(systemName: isLiked ? "heart.fill" : "heart")
@@ -135,7 +127,6 @@ struct IdeaCardView: View {
                 }
             }
 
-            // Share Button
             Button {
                 viewModel.shareIdea(idea)
             } label: {
