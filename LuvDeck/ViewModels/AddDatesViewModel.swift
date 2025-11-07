@@ -1,109 +1,111 @@
-import SwiftUI
 import Foundation
+import SwiftUI
 
-class AddDatesViewModel: ObservableObject {
+final class AddDatesViewModel: ObservableObject {
     @Published var events: [DateEvent] = []
     @Published var errorMessage: String?
-    @Published var showConfetti: Bool = false
-    @Published var userId: String? // Public, as fixed previously
+    @Published var showConfetti = false
 
+    private let firebase = FirebaseManager.shared
+    private let notifications = NotificationManager.shared
+    private var userId: String?
+
+    // MARK: - Initializer
     init(userId: String? = nil) {
         self.userId = userId
-        print("AddDatesViewModel initialized with userId: \(userId ?? "nil")")
-        if let uid = userId { fetchEvents(for: uid) }
+        if let uid = userId, !uid.isEmpty {
+            fetchEvents()
+        }
     }
 
-    func setUserId(_ id: String) {
-        self.userId = id
-        print("AddDatesViewModel setUserId: \(id)")
-        fetchEvents(for: id)
+    // MARK: - Public API
+    func setUserId(_ id: String?) {
+        userId = id
+        if id?.isEmpty == false { fetchEvents() }
+        else { events = [] }
+    }
+
+    /// Upcoming events only, sorted by nearest date first
+    var upcomingEvents: [DateEvent] {
+        events
+            .filter { $0.date >= Date() }           // Only future dates
+            .sorted { $0.date < $1.date }           // Nearest first
     }
 
     func addEvent(title: String, date: Date, type: EventType, reminderOn: Bool) {
-        guard let uid = userId else {
-            errorMessage = "Please log in to save events"
-            print("No userId for saving event")
-            return
-        }
-        guard !title.isEmpty else {
-            errorMessage = "Please enter a title"
-            print("Empty title for event")
-            return
-        }
-        let event = DateEvent(
-            id: UUID(),
-            personName: title,
-            date: date,
-            eventType: type,
-            reminderOn: reminderOn,
-            rating: nil,
-            notes: nil,
-            reviewed: false
-        )
-        let firebaseEvent = FirebaseEvent(dateEvent: event)
-        FirebaseManager.shared.saveEvent(firebaseEvent, for: uid) { [weak self] result in
+        guard let uid = userId else { errorMessage = "No user logged in"; return }
+
+        let event = DateEvent(personName: title,
+                              date: date,
+                              eventType: type,
+                              reminderOn: reminderOn)
+
+        firebase.saveEvent(event.firebase, for: uid) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success:
                     self?.events.append(event)
-                    self?.errorMessage = nil
+                    if event.reminderOn { self?.notifications.schedule(for: event) }
                     self?.showConfetti = true
-                    print("Event added to local events: \(event.personName)")
-                case .failure(let error):
-                    self?.errorMessage = error.localizedDescription
-                    print("Failed to save event: \(error.localizedDescription)")
+                case .failure(let err):
+                    self?.errorMessage = err.localizedDescription
                 }
             }
         }
     }
 
-    func updateEvent(id: UUID, title: String, date: Date, type: EventType, reminderOn: Bool, rating: Int?, notes: String?, reviewed: Bool) {
-        guard let uid = userId else {
-            errorMessage = "Please log in to update events"
-            print("No userId for updating event")
-            return
-        }
-        guard !title.isEmpty else {
-            errorMessage = "Please enter a title"
-            print("Empty title for event update")
-            return
-        }
-        guard let index = events.firstIndex(where: { $0.id == id }) else {
-            errorMessage = "Event not found"
-            print("Event not found for id: \(id)")
-            return
-        }
-        let updatedEvent = DateEvent(
-            id: id,
-            personName: title,
-            date: date,
-            eventType: type,
-            reminderOn: reminderOn,
-            rating: rating,
-            notes: notes,
-            reviewed: reviewed
-        )
-        let firebaseEvent = FirebaseEvent(dateEvent: updatedEvent)
-        FirebaseManager.shared.saveEvent(firebaseEvent, for: uid) { [weak self] result in
+    func updateEvent(_ event: DateEvent) {
+        guard let uid = userId else { return }
+
+        firebase.saveEvent(event.firebase, for: uid) { [weak self] result in
             DispatchQueue.main.async {
                 switch result {
                 case .success:
-                    self?.events[index] = updatedEvent
-                    self?.errorMessage = nil
-                    print("Event updated: \(updatedEvent.personName)")
-                case .failure(let error):
-                    self?.errorMessage = error.localizedDescription
-                    print("Failed to update event: \(error.localizedDescription)")
+                    if let i = self?.events.firstIndex(where: { $0.id == event.id }) {
+                        self?.events[i] = event
+                        if event.reminderOn { self?.notifications.schedule(for: event) }
+                        else { self?.notifications.remove(for: event) }
+                    }
+                case .failure(let err):
+                    self?.errorMessage = err.localizedDescription
                 }
             }
         }
     }
 
-    func fetchEvents(for userId: String) {
-        FirebaseManager.shared.fetchEvents(for: userId) { [weak self] events in
+    func deleteEvents(at offsets: IndexSet) {
+        guard let uid = userId else { return }
+        let toDelete = offsets.map { events[$0] }
+
+        for event in toDelete {
+            firebase.deleteEvent(event.id.uuidString, for: uid) { [weak self] result in
+                DispatchQueue.main.async {
+                    if case .success = result {
+                        self?.events.removeAll { $0.id == event.id }
+                        self?.notifications.remove(for: event)
+                    }
+                }
+            }
+        }
+    }
+
+    func toggleReminder(for event: DateEvent) {
+        let updated = DateEvent(id: event.id,
+                                personName: event.personName,
+                                date: event.date,
+                                eventType: event.eventType,
+                                reminderOn: !event.reminderOn,
+                                rating: event.rating,
+                                notes: event.notes,
+                                reviewed: event.reviewed)
+        updateEvent(updated)
+    }
+
+    func fetchEvents() {
+        guard let uid = userId else { return }
+        firebase.fetchEvents(for: uid) { [weak self] fbEvents in
             DispatchQueue.main.async {
-                self?.events = events.map { DateEvent(from: $0) } // Fixed label to 'from:'
-                print("Updated events in view model: \(self?.events.map { $0.personName } ?? [])")
+                self?.events = fbEvents.map { DateEvent(from: $0) }
             }
         }
     }

@@ -9,20 +9,18 @@ struct TabBarView: View {
     @State private var selectedTab: Int = 0
 
     init() {
-        let userId = Auth.auth().currentUser?.uid
-        _homeVM = StateObject(wrappedValue: HomeViewModel(userId: userId))
-        _datesVM = StateObject(wrappedValue: AddDatesViewModel(userId: userId))
+        let currentUID = Auth.auth().currentUser?.uid
+        _homeVM = StateObject(wrappedValue: HomeViewModel(userId: currentUID))
+        _datesVM = StateObject(wrappedValue: AddDatesViewModel(userId: currentUID))
 
-        // Configure tab bar appearance
+        // Simplified tab bar – no aggressive styling
         let appearance = UITabBarAppearance()
         appearance.configureWithOpaqueBackground()
-        appearance.backgroundColor = .white
+        appearance.backgroundColor = .systemBackground  // Use system default
 
-        // Unselected = black
-        appearance.stackedLayoutAppearance.normal.iconColor = .black
-        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.black]
-
-        // Selected = red
+        // Standard colors (let iOS handle selected/unselected)
+        appearance.stackedLayoutAppearance.normal.iconColor = .secondaryLabel
+        appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
         appearance.stackedLayoutAppearance.selected.iconColor = .systemRed
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.systemRed]
 
@@ -32,45 +30,46 @@ struct TabBarView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-
-            // MARK: Home Tab
             NavigationStack {
                 HomeView()
                     .environmentObject(homeVM)
                     .navigationBarHidden(true)
             }
-            .tabItem {
-                Label("Home", systemImage: "house.fill")
-            }
+            .tabItem { Label("Home", systemImage: "house.fill") }
             .tag(0)
 
-            // MARK: Dates Tab
             NavigationStack {
-                AddDatesView()
-                    .environmentObject(datesVM)
-                    .navigationBarHidden(true)
+                AddDatesView(viewModel: datesVM)
+                    .navigationBarHidden(false)  // Ensure bar is visible
             }
-            .tabItem {
-                Label("Dates", systemImage: "calendar")
-            }
+            .tabItem { Label("Dates", systemImage: "calendar") }
             .tag(1)
 
-            // MARK: Settings Tab
             NavigationStack {
                 SettingsView()
                     .environmentObject(authViewModel)
                     .navigationBarHidden(true)
             }
-            .tabItem {
-                Label("Settings", systemImage: "gear")
-            }
+            .tabItem { Label("Settings", systemImage: "gear") }
             .tag(2)
         }
         .onAppear {
-            if let uid = authViewModel.user?.id {
-                homeVM.setUserId(uid)
-                datesVM.setUserId(uid)
-            }
+            updateUserId()
+        }
+        .onChange(of: authViewModel.user) { _, _ in
+            updateUserId()
         }
     }
+
+    private func updateUserId() {
+        let uid = authViewModel.user?.id
+        homeVM.setUserId(uid)
+        datesVM.setUserId(uid)
+    }
+}
+
+#Preview {
+    TabBarView()
+        .environmentObject(AuthViewModel())
+        .environmentObject(OnboardingViewModel())
 }

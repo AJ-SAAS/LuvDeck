@@ -6,57 +6,59 @@ import Foundation
 struct FirebaseManager {
     static let shared = FirebaseManager()
     private init() {}
-    
-    let db = Firestore.firestore()
-    
+    private let db = Firestore.firestore()
+
     // MARK: - Auth
-    
-    func getCurrentUID() -> String? {
-        Auth.auth().currentUser?.uid
+    func signOut() throws {
+        try Auth.auth().signOut()
     }
-    
+
+    // MARK: - Auth: Sign In
     func signIn(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
         Auth.auth().signIn(withEmail: email, password: password) { result, error in
             if let error = error {
-                print("Sign in error: \(error.localizedDescription)")
                 completion(.failure(error))
                 return
             }
-            guard let authUser = result?.user else { return }
+            guard let authUser = result?.user else {
+                let err = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown user"])
+                completion(.failure(err))
+                return
+            }
             let user = User(id: authUser.uid, email: authUser.email ?? "")
             completion(.success(user))
         }
     }
-    
+
+    // MARK: - Auth: Sign Up
     func signUp(email: String, password: String, completion: @escaping (Result<User, Error>) -> Void) {
         Auth.auth().createUser(withEmail: email, password: password) { result, error in
             if let error = error {
-                print("Sign up error: \(error.localizedDescription)")
                 completion(.failure(error))
                 return
             }
-            guard let authUser = result?.user else { return }
+            guard let authUser = result?.user else {
+                let err = NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "Unknown user"])
+                completion(.failure(err))
+                return
+            }
             let user = User(id: authUser.uid, email: authUser.email ?? "")
+
+            // Create Firestore user document
             self.db.collection("users").document(user.id).setData([
                 "email": user.email,
                 "onboardingCompleted": false
-            ], merge: true) { error in
-                if let error = error {
-                    print("Firestore set user error: \(error.localizedDescription)")
-                    completion(.failure(error))
-                    return
+            ], merge: true) { err in
+                if let err = err {
+                    completion(.failure(err))
+                } else {
+                    completion(.success(user))
                 }
-                completion(.success(user))
             }
         }
     }
-    
-    func signOut() throws {
-        try Auth.auth().signOut()
-    }
-    
+
     // MARK: - Username
-    
     func updateUsername(_ username: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let user = Auth.auth().currentUser else {
             print("No user for username update")
@@ -82,9 +84,8 @@ struct FirebaseManager {
             }
         }
     }
-    
+
     // MARK: - Re-authentication
-    
     func reauthenticate(currentPassword: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let user = Auth.auth().currentUser, let email = user.email else {
             print("No user or email for re-authentication")
@@ -102,9 +103,8 @@ struct FirebaseManager {
             }
         }
     }
-    
+
     // MARK: - Ideas
-    
     func fetchIdeas(completion: @escaping ([Idea]) -> Void) {
         db.collection("ideas").getDocuments { snapshot, error in
             if let error = error {
@@ -140,7 +140,7 @@ struct FirebaseManager {
             completion(ideas)
         }
     }
-    
+
     func saveLikedIdea(_ idea: Idea, for userId: String) {
         let data: [String: Any] = [
             "id": idea.id.uuidString,
@@ -160,7 +160,7 @@ struct FirebaseManager {
             }
         }
     }
-    
+
     func saveBookmarkedIdea(_ idea: Idea, for userId: String) {
         let data: [String: Any] = [
             "id": idea.id.uuidString,
@@ -180,9 +180,8 @@ struct FirebaseManager {
             }
         }
     }
-    
-    // MARK: - Events
 
+    // MARK: - Events
     func saveEvent(_ event: FirebaseEvent, for userId: String, completion: @escaping (Result<Void, Error>) -> Void) {
         do {
             let data = try Firestore.Encoder().encode(event)
@@ -193,15 +192,15 @@ struct FirebaseManager {
                 .document(event.id)
                 .setData(data) { error in
                     if let error = error {
-                        print("🔥 Error saving event: \(event.title), Error: \(error.localizedDescription)")
+                        print("Error saving event: \(event.title), Error: \(error.localizedDescription)")
                         completion(.failure(error))
                     } else {
-                        print("✅ Successfully saved event: \(event.title) for user: \(userId)")
+                        print("Successfully saved event: \(event.title) for user: \(userId)")
                         completion(.success(()))
                     }
                 }
         } catch {
-            print("⚠️ Encoding error for event: \(event.title), Error: \(error.localizedDescription)")
+            print("Encoding error for event: \(event.title), Error: \(error.localizedDescription)")
             completion(.failure(error))
         }
     }
@@ -212,7 +211,7 @@ struct FirebaseManager {
             .collection("userEvents")
             .getDocuments { snapshot, error in
                 if let error = error {
-                    print("🔥 Fetch events error: \(error.localizedDescription)")
+                    print("Fetch events error: \(error.localizedDescription)")
                     completion([])
                     return
                 }
@@ -228,18 +227,33 @@ struct FirebaseManager {
                         let event = try Firestore.Decoder().decode(FirebaseEvent.self, from: doc.data())
                         return event
                     } catch {
-                        print("⚠️ Decoding error for document \(doc.documentID): \(error.localizedDescription)")
+                        print("Decoding error for document \(doc.documentID): \(error.localizedDescription)")
                         return nil
                     }
                 }
 
-                print("✅ Fetched \(events.count) events for userId: \(userId)")
+                print("Fetched \(events.count) events for userId: \(userId)")
                 completion(events)
             }
     }
-    
+
+    func deleteEvent(_ eventId: String, for userId: String, completion: @escaping (Result<Void, Error>) -> Void) {
+        db.collection("users")
+            .document(userId)
+            .collection("userEvents")
+            .document(eventId)
+            .delete { error in
+                if let error = error {
+                    print("Error deleting event: \(error.localizedDescription)")
+                    completion(.failure(error))
+                } else {
+                    print("Event deleted: \(eventId)")
+                    completion(.success(()))
+                }
+            }
+    }
+
     // MARK: - Onboarding
-    
     func checkOnboardingStatus(for userId: String, completion: @escaping (Bool) -> Void) {
         db.collection("users").document(userId).getDocument { document, error in
             if let error = error {
@@ -252,7 +266,7 @@ struct FirebaseManager {
             completion(completed)
         }
     }
-    
+
     func setOnboardingCompleted(for userId: String, completion: @escaping (Bool) -> Void = { _ in }) {
         db.collection("users").document(userId).setData(["onboardingCompleted": true], merge: true) { error in
             if let error = error {
@@ -264,9 +278,8 @@ struct FirebaseManager {
             }
         }
     }
-    
+
     // MARK: - User Updates
-    
     func updateEmail(_ email: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let user = Auth.auth().currentUser else {
             print("No user for email update")
@@ -284,7 +297,7 @@ struct FirebaseManager {
             }
         }
     }
-    
+
     func updatePassword(_ password: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let user = Auth.auth().currentUser else {
             print("No user for password update")
@@ -301,7 +314,7 @@ struct FirebaseManager {
             }
         }
     }
-    
+
     func deleteAccount(completion: @escaping (Result<Void, Error>) -> Void) {
         guard let user = Auth.auth().currentUser else {
             print("No user for account deletion")

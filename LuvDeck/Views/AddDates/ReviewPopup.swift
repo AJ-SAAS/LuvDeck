@@ -2,7 +2,8 @@ import SwiftUI
 
 struct ReviewPopupView: View {
     var event: DateEvent
-    var onSubmit: (_ rating: Int, _ notes: String?) -> Void
+    var viewModel: AddDatesViewModel
+    var onDismiss: () -> Void
 
     @State private var rating: Int = 0
     @State private var notes: String = ""
@@ -29,7 +30,18 @@ struct ReviewPopupView: View {
                     .textFieldStyle(.roundedBorder)
 
                 Button(action: {
-                    onSubmit(rating, notes.isEmpty ? nil : notes)
+                    let updatedEvent = DateEvent(
+                        id: event.id,
+                        personName: event.personName,
+                        date: event.date,
+                        eventType: event.eventType,
+                        reminderOn: event.reminderOn,
+                        rating: rating,
+                        notes: notes.isEmpty ? nil : notes,
+                        reviewed: true
+                    )
+                    viewModel.updateEvent(updatedEvent)
+                    onDismiss()
                 }) {
                     Text("Submit")
                         .bold()
