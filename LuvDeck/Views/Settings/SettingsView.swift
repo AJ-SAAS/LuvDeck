@@ -5,6 +5,8 @@ import RevenueCat
 
 struct SettingsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
+    @EnvironmentObject var purchaseVM: PurchaseViewModel   // Added for Paywall
+
     @State private var username = ""
     @State private var email = ""
     @State private var currentPassword = ""
@@ -98,7 +100,7 @@ struct SettingsView: View {
                 )
             }
             .sheet(isPresented: $showPaywall) {
-                PaywallView(isPresented: $showPaywall)
+                PaywallView(isPresented: $showPaywall, purchaseVM: purchaseVM)
             }
             .onAppear {
                 if let user = Auth.auth().currentUser {
@@ -227,6 +229,7 @@ struct SettingsView: View {
                 errorMessage = error.localizedDescription
             } else if customerInfo?.entitlements["premium"]?.isActive == true {
                 successMessage = "Premium restored!"
+                purchaseVM.isPremium = true
             } else {
                 errorMessage = "No active subscription"
             }
@@ -252,7 +255,9 @@ private extension Button {
     }
 }
 
+// MARK: - Preview
 #Preview {
     SettingsView()
         .environmentObject(AuthViewModel())
+        .environmentObject(PurchaseViewModel())
 }

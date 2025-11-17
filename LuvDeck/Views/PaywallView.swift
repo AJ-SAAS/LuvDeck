@@ -1,29 +1,27 @@
 // PaywallView.swift
-// FINAL FIX – Guaranteed white card background, readable text
-
 import SwiftUI
 
 struct PaywallView: View {
     @Binding var isPresented: Bool
+    @ObservedObject var purchaseVM: PurchaseViewModel
 
     @State private var selectedPlan: PaywallPlan = .yearly
-    @State private var showCloseButton: Bool = false
-    @State private var isProcessing: Bool = false
-    @State private var showRestoreAlert: Bool = false
+    @State private var showCloseButton = false
+    @State private var isProcessing = false
+    @State private var restoreMessage = ""
 
     private let accent = Color.red
 
     var body: some View {
         ZStack {
-            Color.white
-                .ignoresSafeArea()
+            Color.white.ignoresSafeArea()
 
             VStack(spacing: 20) {
-                // Close button
+                // Close button (appears after 3 seconds)
                 HStack {
                     Spacer()
                     if showCloseButton {
-                        Button(action: closeTapped) {
+                        Button(action: { isPresented = false }) {
                             Image(systemName: "xmark")
                                 .font(.system(size: 16, weight: .bold))
                                 .foregroundColor(.black.opacity(0.7))
@@ -39,7 +37,7 @@ struct PaywallView: View {
                 }
                 .padding([.horizontal, .top], 16)
 
-                // Logo + Description
+                // Header
                 VStack(spacing: 16) {
                     Image("luvdeckpremium")
                         .resizable()
@@ -50,8 +48,6 @@ struct PaywallView: View {
                         .font(.system(.body, design: .rounded))
                         .foregroundColor(.black.opacity(0.85))
                         .multilineTextAlignment(.center)
-                        .lineLimit(nil)
-                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 32)
                 }
 
@@ -59,42 +55,25 @@ struct PaywallView: View {
 
                 // Plan Cards
                 VStack(spacing: 14) {
-                    PlanCard(
-                        planName: "Weekly – $3.99",
-                        perWeekPrice: "$3.99 / week",
-                        ribbon: nil,
-                        isSelected: selectedPlan == .weekly
-                    ) {
+                    PlanCard(planName: "Weekly – $3.99", perWeekPrice: "$3.99 / week", ribbon: nil, isSelected: selectedPlan == .weekly) {
                         withAnimation { selectedPlan = .weekly }
                     }
-
-                    PlanCard(
-                        planName: "Yearly – $39.99",
-                        perWeekPrice: "$0.77 / week",
-                        ribbon: .bestValue,
-                        isSelected: selectedPlan == .yearly
-                    ) {
+                    PlanCard(planName: "Yearly – $39.99", perWeekPrice: "$0.77 / week", ribbon: .bestValue, isSelected: selectedPlan == .yearly) {
                         withAnimation { selectedPlan = .yearly }
                     }
-
-                    PlanCard(
-                        planName: "Lifetime – $89.99",
-                        perWeekPrice: "One-time payment",
-                        ribbon: nil,
-                        isSelected: selectedPlan == .lifetime
-                    ) {
+                    PlanCard(planName: "Lifetime – $89.99", perWeekPrice: "One-time payment", ribbon: nil, isSelected: selectedPlan == .lifetime) {
                         withAnimation { selectedPlan = .lifetime }
                     }
                 }
                 .padding(.horizontal, 20)
 
                 // Subscribe Button
-                Button(action: continueTapped) {
+                Button {
+                    Task { await purchaseTapped() }
+                } label: {
                     HStack {
                         if isProcessing {
-                            ProgressView()
-                                .tint(.white)
-                                .scaleEffect(0.9)
+                            ProgressView().tint(.white).scaleEffect(0.9)
                         }
                         Text(isProcessing ? "Processing…" : "Subscribe & Continue >")
                             .font(.system(.headline, design: .rounded))
@@ -105,55 +84,78 @@ struct PaywallView: View {
                     .background(isProcessing ? Color.gray : accent)
                     .foregroundColor(.white)
                     .cornerRadius(16)
-                    .shadow(color: accent.opacity(0.3), radius: 12, x: 0, y: 8)
+                    .shadow(color: accent.opacity(0.3), radius: 12, y: 8)
                 }
                 .padding(.horizontal, 20)
                 .padding(.top, 12)
                 .disabled(isProcessing)
 
-                // Legal Links
+                // Legal + Restore
                 HStack(spacing: 20) {
                     Button("Terms") { openURL("https://www.luvdeck.com/r/terms") }
                     Text("|").foregroundColor(.black.opacity(0.3))
                     Button("Privacy") { openURL("https://www.luvdeck.com/r/privacy") }
                     Text("|").foregroundColor(.black.opacity(0.3))
-                    Button("Restore") { showRestoreAlert = true }
+                    Button("Restore") {
+                        Task { await restoreTapped() }
+                    }
                 }
                 .font(.system(.caption, design: .rounded))
                 .foregroundColor(.black.opacity(0.68))
                 .padding(.top, 10)
 
+                if !restoreMessage.isEmpty {
+                    Text(restoreMessage)
+                        .font(.caption)
+                        .foregroundColor(restoreMessage.contains("success") ? .green : .red)
+                        .padding(.top, 8)
+                }
+
                 Spacer(minLength: 20)
             }
             .padding(.bottom, safeAreaBottom() + 10)
-            .alert("Restore Purchases", isPresented: $showRestoreAlert) {
-                Button("OK") {}
-            } message: {
-                Text("Restore functionality is coming soon.")
-            }
-            .onAppear {
-                DispatchQueue.main.asyncAfter(deadline: .now() + 3) {
-                    withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
-                        showCloseButton = true
-                    }
-                }
+        }
+        // Auto-close when user becomes premium
+        .onChange(of: purchaseVM.isPremium) { _, newValue in
+            if newValue { isPresented = false }
+        }
+        .task {
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+                showCloseButton = true
             }
         }
     }
 
-    private func continueTapped() {
-        print("Subscribe & Continue → \(selectedPlan.rawValue)")
-        withAnimation { isProcessing = true }
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
-            withAnimation {
-                isProcessing = false
-                isPresented = false
-            }
+    private func purchaseTapped() async {
+        isProcessing = true
+        restoreMessage = ""
+
+        let productID: String = switch selectedPlan {
+            case .weekly: "luvdeck_weekly_399"
+            case .yearly: "luvdeck_yearly_3999"
+            case .lifetime: "luvdeck_lifetime_8999"
         }
+
+        do {
+            try await purchaseVM.purchase(productID: productID)
+        } catch {
+            restoreMessage = "Purchase failed. Try again."
+            print("Purchase error: \(error)")
+        }
+        isProcessing = false
     }
 
-    private func closeTapped() {
-        withAnimation { isPresented = false }
+    private func restoreTapped() async {
+        isProcessing = true
+        restoreMessage = ""
+        do {
+            try await purchaseVM.restorePurchases()
+            restoreMessage = "Purchases restored successfully!"
+        } catch {
+            restoreMessage = "No purchases to restore."
+        }
+        isProcessing = false
     }
 
     private func safeAreaBottom() -> CGFloat {
@@ -170,7 +172,7 @@ struct PaywallView: View {
     }
 }
 
-// MARK: - Types
+// MARK: - Supporting Types
 private enum PaywallPlan: String { case weekly, yearly, lifetime }
 private enum Ribbon { case bestValue }
 
@@ -184,13 +186,11 @@ private struct PlanCard: View {
     var body: some View {
         Button(action: action) {
             ZStack {
-                // Solid white background – forced at the root
                 Color.white
-
                 HStack(spacing: 12) {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
                         .font(.system(size: 28))
-                        .foregroundColor(isSelected ? Color(#colorLiteral(red: 0.18, green: 0.8, blue: 0.45, alpha: 1)) : Color.black.opacity(0.4))
+                        .foregroundColor(isSelected ? Color(#colorLiteral(red: 0.18, green: 0.8, blue: 0.45, alpha: 1)) : .black.opacity(0.4))
 
                     Text(planName)
                         .font(.system(size: 16, weight: .medium, design: .rounded))
@@ -208,7 +208,6 @@ private struct PlanCard: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(8)
                         }
-
                         Text(perWeekPrice)
                             .font(.system(size: 15, weight: .regular, design: .rounded))
                             .foregroundColor(.black.opacity(0.9))
@@ -223,19 +222,18 @@ private struct PlanCard: View {
                     .stroke(isSelected ? Color.red : Color.gray.opacity(0.3),
                             lineWidth: isSelected ? 3.5 : 1.5)
             )
-            .shadow(color: isSelected ? Color.red.opacity(0.35) : Color.black.opacity(0.06),
+            .shadow(color: isSelected ? Color.red.opacity(0.35) : .black.opacity(0.06),
                     radius: isSelected ? 16 : 6,
                     y: isSelected ? 10 : 4)
         }
         .buttonStyle(.plain)
-        .contentShape(RoundedRectangle(cornerRadius: 18)) // proper tap area
+        .contentShape(RoundedRectangle(cornerRadius: 18))
         .animation(.spring(response: 0.38, dampingFraction: 0.82), value: isSelected)
     }
 }
 
-// MARK: - Preview
 struct PaywallView_Previews: PreviewProvider {
     static var previews: some View {
-        PaywallView(isPresented: .constant(true))
+        PaywallView(isPresented: .constant(true), purchaseVM: PurchaseViewModel())
     }
 }

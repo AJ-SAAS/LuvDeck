@@ -4,18 +4,17 @@ import RevenueCat
 
 @main
 struct LuvDeckApp: App {
+    @StateObject private var purchaseVM = PurchaseViewModel()
+
     init() {
-        // Initialize Firebase
         FirebaseApp.configure()
-        
-        // Initialize RevenueCat
         Purchases.configure(withAPIKey: "appl_XepSOeJujoolVOmttwgpWTfVXrV")
     }
-    
+
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(PurchaseViewModel()) // Inject Purchase ViewModel
+                .environmentObject(purchaseVM)   // SINGLE shared instance
         }
     }
 }
