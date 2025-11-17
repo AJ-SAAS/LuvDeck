@@ -9,7 +9,7 @@ struct CongratulationsView: View {
             Image("luvdecklogo")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 120, height: 120)
+                .frame(width: 160, height: 160) // ↑ increased size
 
             Text("Congratulations!")
                 .font(.largeTitle).bold()

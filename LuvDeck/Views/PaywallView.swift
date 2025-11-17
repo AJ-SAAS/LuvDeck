@@ -1,30 +1,25 @@
 // PaywallView.swift
-// Final version: white bg, red button, left checkmarks, real links, restore placeholder
+// FINAL FIX – Guaranteed white card background, readable text
 
 import SwiftUI
 
 struct PaywallView: View {
     @Binding var isPresented: Bool
 
-    // UI state
     @State private var selectedPlan: PaywallPlan = .yearly
     @State private var showCloseButton: Bool = false
     @State private var isProcessing: Bool = false
     @State private var showRestoreAlert: Bool = false
-    @Environment(\.dismiss) private var dismiss
 
-    // Visual tokens
-    private let cardCorner: CGFloat = 16
     private let accent = Color.red
 
     var body: some View {
         ZStack {
-            // Full-screen white background
             Color.white
                 .ignoresSafeArea()
 
-            VStack(spacing: 18) {
-                // Close button row (top-right)
+            VStack(spacing: 20) {
+                // Close button
                 HStack {
                     Spacer()
                     if showCloseButton {
@@ -36,118 +31,103 @@ struct PaywallView: View {
                                 .background(Color.black.opacity(0.08))
                                 .clipShape(Circle())
                                 .overlay(Circle().stroke(Color.black.opacity(0.12), lineWidth: 0.5))
-                                .accessibilityLabel("Close paywall")
                         }
                         .transition(.opacity.combined(with: .scale))
                     } else {
-                        Rectangle()
-                            .foregroundColor(.clear)
-                            .frame(width: 38, height: 38)
+                        Rectangle().foregroundColor(.clear).frame(width: 38, height: 38)
                     }
                 }
                 .padding([.horizontal, .top], 16)
 
-                Spacer(minLength: 4)
+                // Logo + Description
+                VStack(spacing: 16) {
+                    Image("luvdeckpremium")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(height: 60)
 
-                // Header
-                paywallHeader
+                    Text("Unlock the full experience and become the person they can’t stop thinking about.")
+                        .font(.system(.body, design: .rounded))
+                        .foregroundColor(.black.opacity(0.85))
+                        .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.horizontal, 32)
+                }
 
-                // Plan cards
+                Spacer(minLength: 20)
+
+                // Plan Cards
                 VStack(spacing: 14) {
                     PlanCard(
-                        title: "Weekly",
-                        subtitle: "Billed weekly",
-                        price: "$3.99",
-                        isSelected: selectedPlan == .weekly,
-                        ribbon: nil
+                        planName: "Weekly – $3.99",
+                        perWeekPrice: "$3.99 / week",
+                        ribbon: nil,
+                        isSelected: selectedPlan == .weekly
                     ) {
                         withAnimation { selectedPlan = .weekly }
                     }
 
                     PlanCard(
-                        title: "Yearly",
-                        subtitle: "Billed annually",
-                        price: "$39.99",
-                        isSelected: selectedPlan == .yearly,
-                        ribbon: .mostPopular
+                        planName: "Yearly – $39.99",
+                        perWeekPrice: "$0.77 / week",
+                        ribbon: .bestValue,
+                        isSelected: selectedPlan == .yearly
                     ) {
                         withAnimation { selectedPlan = .yearly }
                     }
 
                     PlanCard(
-                        title: "Lifetime",
-                        subtitle: "One-time purchase",
-                        price: "$89.99",
-                        isSelected: selectedPlan == .lifetime,
-                        ribbon: nil
+                        planName: "Lifetime – $89.99",
+                        perWeekPrice: "One-time payment",
+                        ribbon: nil,
+                        isSelected: selectedPlan == .lifetime
                     ) {
                         withAnimation { selectedPlan = .lifetime }
                     }
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 6)
 
-                // CTA Button (Red)
+                // Subscribe Button
                 Button(action: continueTapped) {
                     HStack {
                         if isProcessing {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                                .tint(.white)
                                 .scaleEffect(0.9)
-                                .padding(.trailing, 6)
                         }
-                        Text(isProcessing ? "Processing…" : "Get LuvDeck Premium")
+                        Text(isProcessing ? "Processing…" : "Subscribe & Continue >")
                             .font(.system(.headline, design: .rounded))
                             .fontWeight(.semibold)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 14)
+                    .padding(.vertical, 18)
                     .background(isProcessing ? Color.gray : accent)
                     .foregroundColor(.white)
-                    .cornerRadius(cardCorner)
-                    .shadow(color: accent.opacity(isProcessing ? 0 : 0.3), radius: 8, x: 0, y: 6)
+                    .cornerRadius(16)
+                    .shadow(color: accent.opacity(0.3), radius: 12, x: 0, y: 8)
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 8)
+                .padding(.top, 12)
                 .disabled(isProcessing)
 
-                // Legal Links + Restore (single line)
-                HStack(spacing: 16) {
-                    Button("Terms") {
-                        openURL("https://www.luvdeck.com/r/terms")
-                    }
-                    .font(.system(.caption, design: .rounded))
-                    .foregroundColor(.black.opacity(0.68))
-
-                    Text("|")
-                        .foregroundColor(.black.opacity(0.3))
-                        .font(.caption)
-
-                    Button("Privacy") {
-                        openURL("https://www.luvdeck.com/r/privacy")
-                    }
-                    .font(.system(.caption, design: .rounded))
-                    .foregroundColor(.black.opacity(0.68))
-
-                    Text("|")
-                        .foregroundColor(.black.opacity(0.3))
-                        .font(.caption)
-
-                    Button("Restore") {
-                        showRestoreAlert = true
-                    }
-                    .font(.system(.caption, design: .rounded))
-                    .foregroundColor(.black.opacity(0.68))
+                // Legal Links
+                HStack(spacing: 20) {
+                    Button("Terms") { openURL("https://www.luvdeck.com/r/terms") }
+                    Text("|").foregroundColor(.black.opacity(0.3))
+                    Button("Privacy") { openURL("https://www.luvdeck.com/r/privacy") }
+                    Text("|").foregroundColor(.black.opacity(0.3))
+                    Button("Restore") { showRestoreAlert = true }
                 }
-                .padding(.top, 8)
+                .font(.system(.caption, design: .rounded))
+                .foregroundColor(.black.opacity(0.68))
+                .padding(.top, 10)
 
                 Spacer(minLength: 20)
             }
-            .padding(.bottom, safeAreaBottom() + 8)
-            .foregroundColor(.black)
-            .animation(.easeInOut, value: showCloseButton)
+            .padding(.bottom, safeAreaBottom() + 10)
             .alert("Restore Purchases", isPresented: $showRestoreAlert) {
-                Button("OK") { }
+                Button("OK") {}
             } message: {
                 Text("Restore functionality is coming soon.")
             }
@@ -161,34 +141,10 @@ struct PaywallView: View {
         }
     }
 
-    // MARK: - Subviews & Helpers
-
-    private var paywallHeader: some View {
-        VStack(spacing: 10) {
-            Text("LuvDeck Premium")
-                .font(.system(.largeTitle, design: .rounded).weight(.bold))
-                .multilineTextAlignment(.center)
-                .minimumScaleFactor(0.5)
-                .lineLimit(2)
-                .padding(.horizontal, 24)
-                .foregroundColor(.black)
-
-            Text("Unlock the full experience and become the person they can’t stop thinking about.")
-                .font(.system(.body, design: .rounded))
-                .foregroundColor(.black.opacity(0.85))
-                .multilineTextAlignment(.center)
-                .padding(.horizontal, 28)
-                .fixedSize(horizontal: false, vertical: true)
-                .minimumScaleFactor(0.5)
-        }
-        .padding(.bottom, 6)
-    }
-
     private func continueTapped() {
-        print("Continue tapped — selectedPlan: \(selectedPlan.rawValue)")
+        print("Subscribe & Continue → \(selectedPlan.rawValue)")
         withAnimation { isProcessing = true }
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 1.2) {
+        DispatchQueue.main.asyncAfter(deadline: .now() + 1.5) {
             withAnimation {
                 isProcessing = false
                 isPresented = false
@@ -208,75 +164,72 @@ struct PaywallView: View {
     }
 
     private func openURL(_ urlString: String) {
-        guard let url = URL(string: urlString) else { return }
-        UIApplication.shared.open(url)
+        if let url = URL(string: urlString) {
+            UIApplication.shared.open(url)
+        }
     }
 }
 
-// MARK: - Plan Components
-
-private enum PaywallPlan: String {
-    case weekly, yearly, lifetime
-}
-
-private enum Ribbon { case mostPopular }
+// MARK: - Types
+private enum PaywallPlan: String { case weekly, yearly, lifetime }
+private enum Ribbon { case bestValue }
 
 private struct PlanCard: View {
-    let title: String
-    let subtitle: String
-    let price: String
-    let isSelected: Bool
+    let planName: String
+    let perWeekPrice: String
     let ribbon: Ribbon?
+    let isSelected: Bool
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
-            HStack(spacing: 12) {
-                // Checkmark on LEFT
-                Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                    .font(.system(size: 26))
-                    .foregroundColor(isSelected ? Color(#colorLiteral(red: 0.180, green: 0.8, blue: 0.447, alpha: 1)) : Color.black.opacity(0.4))
-                    .frame(width: 32)
+            ZStack {
+                // Solid white background – forced at the root
+                Color.white
 
-                VStack(alignment: .leading, spacing: 6) {
-                    HStack(spacing: 8) {
-                        Text(title)
-                            .font(.system(.headline, design: .rounded).bold())
-                            .foregroundColor(.black)
+                HStack(spacing: 12) {
+                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
+                        .font(.system(size: 28))
+                        .foregroundColor(isSelected ? Color(#colorLiteral(red: 0.18, green: 0.8, blue: 0.45, alpha: 1)) : Color.black.opacity(0.4))
 
-                        if ribbon == .mostPopular {
-                            Text("MOST POPULAR")
-                                .font(.system(.caption2, design: .rounded).bold())
-                                .padding(.horizontal, 8).padding(.vertical, 5)
-                                .background(Color.black)
+                    Text(planName)
+                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .foregroundColor(.black)
+
+                    Spacer()
+
+                    VStack(alignment: .trailing, spacing: 6) {
+                        if ribbon == .bestValue {
+                            Text("BEST VALUE")
+                                .font(.system(size: 10, weight: .bold, design: .rounded))
+                                .padding(.horizontal, 12)
+                                .padding(.vertical, 6)
+                                .background(Color.red)
                                 .foregroundColor(.white)
-                                .cornerRadius(6)
+                                .cornerRadius(8)
                         }
+
+                        Text(perWeekPrice)
+                            .font(.system(size: 15, weight: .regular, design: .rounded))
+                            .foregroundColor(.black.opacity(0.9))
                     }
-
-                    Text(subtitle)
-                        .font(.system(.subheadline, design: .rounded))
-                        .foregroundColor(.black.opacity(0.7))
                 }
-
-                Spacer()
-
-                Text(price)
-                    .font(.system(.title3, design: .rounded).bold())
-                    .foregroundColor(.black)
+                .padding(20)
             }
-            .padding(14)
-            .background(
-                RoundedRectangle(cornerRadius: 14)
-                    .fill(isSelected ? Color.black.opacity(0.08) : Color.black.opacity(0.03))
-                    .overlay(
-                        RoundedRectangle(cornerRadius: 14)
-                            .stroke(isSelected ? Color.black.opacity(0.2) : Color.black.opacity(0.08), lineWidth: isSelected ? 1.5 : 1.0)
-                    )
+            .frame(maxWidth: .infinity)
+            .cornerRadius(18)
+            .overlay(
+                RoundedRectangle(cornerRadius: 18)
+                    .stroke(isSelected ? Color.red : Color.gray.opacity(0.3),
+                            lineWidth: isSelected ? 3.5 : 1.5)
             )
+            .shadow(color: isSelected ? Color.red.opacity(0.35) : Color.black.opacity(0.06),
+                    radius: isSelected ? 16 : 6,
+                    y: isSelected ? 10 : 4)
         }
         .buttonStyle(.plain)
-        .accessibilityLabel("\(title). \(subtitle). Price \(price).")
+        .contentShape(RoundedRectangle(cornerRadius: 18)) // proper tap area
+        .animation(.spring(response: 0.38, dampingFraction: 0.82), value: isSelected)
     }
 }
 

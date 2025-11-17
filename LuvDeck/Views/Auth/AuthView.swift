@@ -1,4 +1,6 @@
 // AuthView.swift
+// ULTRA CLEAN VERSION – No animations, no effects, instant & professional
+
 import SwiftUI
 
 struct AuthView: View {
@@ -8,26 +10,22 @@ struct AuthView: View {
     @State private var confirmPassword = ""
     @State private var isSignUp = true
     @FocusState private var focusedField: Field?
-    @State private var animateLogo = false
 
     enum Field { case email, password, confirmPassword }
 
     var body: some View {
         GeometryReader { geometry in
             NavigationView {
-                VStack(spacing: 24) {
-                    // MARK: - Logo
+                VStack(spacing: 28) {
+                    // MARK: - Logo (no animation)
                     Image("luvdecklogo")
                         .resizable()
                         .scaledToFit()
                         .frame(width: min(geometry.size.width * 0.45, 180))
-                        .padding(.top, geometry.size.height * 0.04)
-                        .scaleEffect(animateLogo ? 1.0 : 0.85)
-                        .opacity(animateLogo ? 1.0 : 0.0)
-                        .animation(.easeOut(duration: 0.6), value: animateLogo)
+                        .padding(.top, geometry.size.height * 0.06)
 
                     // MARK: - Title & Fields
-                    VStack(spacing: 14) {
+                    VStack(spacing: 16) {
                         Text(isSignUp ? "Get started" : "Welcome back")
                             .font(.system(size: min(geometry.size.width * 0.07, 28), weight: .bold))
                             .frame(maxWidth: .infinity, alignment: .leading)
@@ -42,6 +40,7 @@ struct AuthView: View {
                         )
                         .keyboardType(.emailAddress)
                         .textContentType(.emailAddress)
+                        .autocapitalization(.none)
 
                         CustomTextField(
                             placeholder: "Password",
@@ -60,7 +59,7 @@ struct AuthView: View {
                                 focusedField: $focusedField,
                                 field: .confirmPassword
                             )
-                            .textContentType(.password)
+                            .textContentType(.newPassword)
                         }
 
                         if let error = viewModel.errorMessage {
@@ -73,7 +72,7 @@ struct AuthView: View {
                         }
                     }
 
-                    // MARK: - Submit Button
+                    // MARK: - Submit Button (no shadow, no bounce)
                     Button(action: submit) {
                         Group {
                             if viewModel.isLoading {
@@ -85,25 +84,23 @@ struct AuthView: View {
                             }
                         }
                         .frame(maxWidth: .infinity)
-                        .padding(.vertical, 16)
+                        .padding(.vertical, 18)
                         .background(Color.black)
                         .foregroundColor(.white)
                         .cornerRadius(12)
                         .padding(.horizontal, min(geometry.size.width * 0.08, 32))
-                        .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
                     }
                     .disabled(viewModel.isLoading || email.isEmpty || password.isEmpty ||
                               (isSignUp && confirmPassword.isEmpty))
 
-                    // MARK: - Toggle Button
+                    // MARK: - Toggle Button (no animation)
                     Button {
-                        withAnimation(.easeInOut(duration: 0.25)) {
-                            isSignUp.toggle()
-                            email = ""
-                            password = ""
-                            confirmPassword = ""
-                            viewModel.errorMessage = nil
-                        }
+                        isSignUp.toggle()
+                        email = ""
+                        password = ""
+                        confirmPassword = ""
+                        viewModel.errorMessage = nil
+                        focusedField = .email
                     } label: {
                         HStack(spacing: 4) {
                             Text(isSignUp ? "Already have an account?" : "Don't have an account?")
@@ -112,9 +109,9 @@ struct AuthView: View {
                                 .fontWeight(.semibold)
                                 .foregroundColor(.blue)
                         }
-                        .font(.system(size: 14))
+                        .font(.system(size: 15))
                     }
-                    .padding(.top, 4)
+                    .padding(.top, 8)
 
                     Spacer()
                 }
@@ -122,13 +119,11 @@ struct AuthView: View {
                 .background(Color(.systemBackground).ignoresSafeArea())
                 .onAppear {
                     focusedField = .email
-                    animateLogo = true
                 }
             }
         }
     }
 
-    // MARK: - Submit Logic
     private func submit() {
         viewModel.errorMessage = nil
 
@@ -154,7 +149,7 @@ struct AuthView: View {
     }
 }
 
-// MARK: - Custom Text Field
+// MARK: - Clean Text Field (no effects)
 struct CustomTextField: View {
     let placeholder: String
     @Binding var text: String
@@ -170,26 +165,28 @@ struct CustomTextField: View {
                 TextField(placeholder, text: $text)
             }
         }
-        .padding(.horizontal, 14)
-        .padding(.vertical, 14)
+        .padding(.horizontal, 16)
+        .padding(.vertical, 16)
+        .font(.system(size: 18))
         .background(
-            RoundedRectangle(cornerRadius: 10)
-                .stroke(Color.gray.opacity(0.4), lineWidth: 1)
-                .background(
-                    RoundedRectangle(cornerRadius: 10)
-                        .fill(Color(.secondarySystemBackground))
+            RoundedRectangle(cornerRadius: 12)
+                .fill(Color(.secondarySystemBackground))
+                .overlay(
+                    RoundedRectangle(cornerRadius: 12)
+                        .stroke(Color.gray.opacity(0.4), lineWidth: 1)
                 )
         )
-        .font(.system(size: 18))
         .focused($focusedField, equals: field)
         .padding(.horizontal, 32)
     }
 }
 
-#Preview("iPhone 14") {
-    AuthView().environmentObject(AuthViewModel())
+#Preview("iPhone") {
+    AuthView()
+        .environmentObject(AuthViewModel())
 }
 
-#Preview("iPad Pro") {
-    AuthView().environmentObject(AuthViewModel())
+#Preview("iPad") {
+    AuthView()
+        .environmentObject(AuthViewModel())
 }

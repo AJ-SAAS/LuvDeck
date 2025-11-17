@@ -1,4 +1,7 @@
 // OnboardingView.swift
+// ULTRA PREMIUM VERSION – November 17, 2025
+// Zero fancy transitions • Instant • Expensive feel
+
 import SwiftUI
 
 struct OnboardingView: View {
@@ -22,11 +25,13 @@ struct OnboardingView: View {
             let isFinalStep = safeStep == screens.count - 1
 
             ZStack {
-                Color(.systemBackground).ignoresSafeArea()
+                Color(.systemBackground)
+                    .ignoresSafeArea()
 
                 VStack(spacing: 0) {
-                    Spacer(minLength: geometry.size.height * 0.05)
+                    Spacer(minLength: geometry.size.height * 0.07)
 
+                    // Icon – Clean & sharp
                     Image(screen.icon)
                         .resizable()
                         .scaledToFit()
@@ -36,62 +41,50 @@ struct OnboardingView: View {
                         .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
                         .padding(.horizontal, 40)
 
-                    Spacer(minLength: 32)
+                    Spacer(minLength: 48)
 
-                    // Crossfade Text
-                    VStack(spacing: 12) {
+                    // Title & Subtitle – INSTANT, no animation
+                    VStack(spacing: 16) {
                         Text(screen.mainText)
-                            .font(.system(size: min(geometry.size.width * 0.07, 28), weight: .bold))
+                            .font(.system(size: titleFontSize(for: geometry), weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
-                            .opacity(0)
-                            .overlay(
-                                Text(screen.mainText)
-                                    .font(.system(size: min(geometry.size.width * 0.07, 28), weight: .bold))
-                                    .foregroundColor(.primary)
-                                    .multilineTextAlignment(.center)
-                                    .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.4)))
-                            )
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .minimumScaleFactor(0.7)
 
                         Text(screen.subText)
-                            .font(.system(size: min(geometry.size.width * 0.04, 17)))
+                            .font(.system(size: subtitleFontSize(for: geometry), weight: .medium, design: .rounded))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
-                            .opacity(0)
-                            .overlay(
-                                Text(screen.subText)
-                                    .font(.system(size: min(geometry.size.width * 0.04, 17)))
-                                    .foregroundColor(.secondary)
-                                    .multilineTextAlignment(.center)
-                                    .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.4)))
-                            )
+                            .lineLimit(nil)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .minimumScaleFactor(0.8)
                     }
-                    .padding(.horizontal, min(geometry.size.width * 0.1, 40))
-                    .frame(maxWidth: .infinity)
-                    .animation(.easeInOut(duration: 0.4), value: safeStep)
+                    .padding(.horizontal, 40)
 
                     Spacer()
 
-                    // Fixed Button Area
+                    // Button Area – Clean & direct
                     VStack(spacing: 12) {
                         if isNotificationStep {
                             Button {
                                 viewModel.requestNotificationPermission(userId: authViewModel.user?.id)
                             } label: {
                                 Text("Allow Notifications")
-                                    .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
                                     .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 16)
+                                    .padding(.vertical, 18)
                                     .background(Color.black)
                                     .foregroundColor(.white)
-                                    .cornerRadius(12)
+                                    .cornerRadius(14)
                             }
-                            .padding(.horizontal, min(geometry.size.width * 0.1, 32))
+                            .padding(.horizontal, 32)
 
                             Button("Skip") {
                                 viewModel.nextStep(userId: authViewModel.user?.id)
                             }
-                            .font(.system(size: 15, weight: .semibold))
+                            .font(.system(size: 17, weight: .semibold))
                             .foregroundColor(.blue)
 
                         } else if isFinalStep {
@@ -100,44 +93,55 @@ struct OnboardingView: View {
                                 NotificationCenter.default.post(name: .showPaywallAfterOnboarding, object: nil)
                             } label: {
                                 Text("Let’s Go")
-                                    .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
                                     .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 16)
+                                    .padding(.vertical, 18)
                                     .background(Color.black)
                                     .foregroundColor(.white)
-                                    .cornerRadius(12)
+                                    .cornerRadius(14)
                             }
-                            .padding(.horizontal, min(geometry.size.width * 0.1, 32))
+                            .padding(.horizontal, 32)
 
                         } else {
                             Button {
                                 viewModel.nextStep(userId: authViewModel.user?.id)
                             } label: {
                                 Text(screen.buttonText)
-                                    .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
                                     .frame(maxWidth: .infinity)
-                                    .padding(.vertical, 16)
+                                    .padding(.vertical, 18)
                                     .background(Color.black)
                                     .foregroundColor(.white)
-                                    .cornerRadius(12)
+                                    .cornerRadius(14)
                             }
-                            .padding(.horizontal, min(geometry.size.width * 0.1, 32))
+                            .padding(.horizontal, 32)
                         }
                     }
-                    .frame(height: 80)
-                    .animation(.easeInOut(duration: 0.3), value: safeStep)
+                    .frame(maxHeight: 100)
 
-                    Spacer(minLength: geometry.size.height * 0.05)
+                    Spacer(minLength: geometry.size.height * 0.07)
                 }
             }
+            // NO ANIMATIONS AT ALL — Instant, premium feel
         }
+    }
+
+    // Clean responsive font sizes
+    private func titleFontSize(for geometry: GeometryProxy) -> CGFloat {
+        min(geometry.size.width * 0.078, 32)
+    }
+
+    private func subtitleFontSize(for geometry: GeometryProxy) -> CGFloat {
+        min(geometry.size.width * 0.045, 18)
     }
 }
 
+// Paywall trigger
 extension Notification.Name {
     static let showPaywallAfterOnboarding = Notification.Name("showPaywallAfterOnboarding")
 }
 
+// Preview
 #Preview {
     OnboardingView()
         .environmentObject(OnboardingViewModel())
