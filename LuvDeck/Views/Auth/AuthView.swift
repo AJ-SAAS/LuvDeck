@@ -1,3 +1,4 @@
+// AuthView.swift
 import SwiftUI
 
 struct AuthView: View {
@@ -7,17 +8,15 @@ struct AuthView: View {
     @State private var confirmPassword = ""
     @State private var isSignUp = true
     @FocusState private var focusedField: Field?
-    @State private var animateLogo = false // for fade + scale animation
+    @State private var animateLogo = false
 
-    enum Field {
-        case email, password, confirmPassword
-    }
+    enum Field { case email, password, confirmPassword }
 
     var body: some View {
         GeometryReader { geometry in
             NavigationView {
                 VStack(spacing: 24) {
-                    // MARK: - App Logo (larger + animated)
+                    // MARK: - Logo
                     Image("luvdecklogo")
                         .resizable()
                         .scaledToFit()
@@ -34,7 +33,6 @@ struct AuthView: View {
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, min(geometry.size.width * 0.08, 32))
 
-                        // MARK: - Email Field
                         CustomTextField(
                             placeholder: "Email",
                             text: $email,
@@ -45,7 +43,6 @@ struct AuthView: View {
                         .keyboardType(.emailAddress)
                         .textContentType(.emailAddress)
 
-                        // MARK: - Password Field
                         CustomTextField(
                             placeholder: "Password",
                             text: $password,
@@ -55,7 +52,6 @@ struct AuthView: View {
                         )
                         .textContentType(.password)
 
-                        // MARK: - Confirm Password (if signup)
                         if isSignUp {
                             CustomTextField(
                                 placeholder: "Confirm Password",
@@ -67,9 +63,8 @@ struct AuthView: View {
                             .textContentType(.password)
                         }
 
-                        // MARK: - Error Message
-                        if let errorMessage = viewModel.errorMessage {
-                            Text(errorMessage)
+                        if let error = viewModel.errorMessage {
+                            Text(error)
                                 .foregroundColor(.red)
                                 .font(.caption)
                                 .frame(maxWidth: .infinity, alignment: .leading)
@@ -79,38 +74,29 @@ struct AuthView: View {
                     }
 
                     // MARK: - Submit Button
-                    Button(action: {
-                        guard !email.isEmpty, !password.isEmpty else {
-                            viewModel.errorMessage = "Please enter email and password"
-                            return
-                        }
-                        guard password.count >= 6 else {
-                            viewModel.errorMessage = "Password must be at least 6 characters"
-                            return
-                        }
-                        if isSignUp {
-                            guard confirmPassword == password else {
-                                viewModel.errorMessage = "Passwords do not match"
-                                return
+                    Button(action: submit) {
+                        Group {
+                            if viewModel.isLoading {
+                                ProgressView()
+                                    .progressViewStyle(CircularProgressViewStyle(tint: .white))
+                            } else {
+                                Text(isSignUp ? "Create Account" : "Sign In")
+                                    .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
                             }
-                            viewModel.signUp(email: email, password: password)
-                        } else {
-                            viewModel.signIn(email: email, password: password)
                         }
-                    }) {
-                        Text(isSignUp ? "Create Account" : "Sign In")
-                            .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
-                            .frame(maxWidth: .infinity)
-                            .padding(.vertical, 16)
-                            .background(Color.black)
-                            .foregroundColor(.white)
-                            .cornerRadius(12)
-                            .padding(.horizontal, min(geometry.size.width * 0.08, 32))
-                            .shadow(color: Color.black.opacity(0.15), radius: 4, x: 0, y: 2)
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(Color.black)
+                        .foregroundColor(.white)
+                        .cornerRadius(12)
+                        .padding(.horizontal, min(geometry.size.width * 0.08, 32))
+                        .shadow(color: .black.opacity(0.15), radius: 4, x: 0, y: 2)
                     }
+                    .disabled(viewModel.isLoading || email.isEmpty || password.isEmpty ||
+                              (isSignUp && confirmPassword.isEmpty))
 
-                    // MARK: - Toggle Auth Mode
-                    Button(action: {
+                    // MARK: - Toggle Button
+                    Button {
                         withAnimation(.easeInOut(duration: 0.25)) {
                             isSignUp.toggle()
                             email = ""
@@ -118,7 +104,7 @@ struct AuthView: View {
                             confirmPassword = ""
                             viewModel.errorMessage = nil
                         }
-                    }) {
+                    } label: {
                         HStack(spacing: 4) {
                             Text(isSignUp ? "Already have an account?" : "Don't have an account?")
                                 .foregroundColor(.primary)
@@ -141,9 +127,34 @@ struct AuthView: View {
             }
         }
     }
+
+    // MARK: - Submit Logic
+    private func submit() {
+        viewModel.errorMessage = nil
+
+        guard !email.isEmpty, !password.isEmpty else {
+            viewModel.errorMessage = "Please enter email and password"
+            return
+        }
+
+        guard password.count >= 6 else {
+            viewModel.errorMessage = "Password must be at least 6 characters"
+            return
+        }
+
+        if isSignUp {
+            guard confirmPassword == password else {
+                viewModel.errorMessage = "Passwords do not match"
+                return
+            }
+            viewModel.signUp(email: email, password: password)
+        } else {
+            viewModel.signIn(email: email, password: password)
+        }
+    }
 }
 
-// MARK: - Custom Text Field Component
+// MARK: - Custom Text Field
 struct CustomTextField: View {
     let placeholder: String
     @Binding var text: String
@@ -176,11 +187,9 @@ struct CustomTextField: View {
 }
 
 #Preview("iPhone 14") {
-    AuthView()
-        .environmentObject(AuthViewModel())
+    AuthView().environmentObject(AuthViewModel())
 }
 
 #Preview("iPad Pro") {
-    AuthView()
-        .environmentObject(AuthViewModel())
+    AuthView().environmentObject(AuthViewModel())
 }

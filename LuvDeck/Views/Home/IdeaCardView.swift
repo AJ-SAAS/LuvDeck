@@ -52,24 +52,30 @@ struct IdeaCardView: View {
 
     @ViewBuilder
     private func bottomOverlay(geometry: GeometryProxy) -> some View {
-        VStack(alignment: .leading, spacing: geometry.size.height * 0.02) {
+        let titleFontSize = geometry.size.height * 0.04
+        let availableWidth = geometry.size.width * 0.9  // ~90% after padding
+
+        VStack(alignment: .leading, spacing: geometry.size.height * 0.015) {
+            // TITLE: 1 line, scales down to fit perfectly
             Text(idea.title)
-                .font(.system(size: geometry.size.height * 0.04, weight: .bold))
+                .font(.system(size: titleFontSize, weight: .bold))
                 .foregroundColor(.white)
                 .shadow(radius: 4)
-                .multilineTextAlignment(.leading)
+                .lineLimit(1)
+                .minimumScaleFactor(0.6)  // Shrink to 60% if needed
+                .frame(maxWidth: availableWidth, alignment: .leading)
+                .layoutPriority(2)
 
+            // DESCRIPTION: Always 3 lines visible
             Text(idea.description)
                 .font(.system(size: geometry.size.height * 0.022))
                 .foregroundColor(.white.opacity(0.95))
                 .multilineTextAlignment(.leading)
                 .lineLimit(3)
+                .layoutPriority(1)
 
-            HStack(spacing: geometry.size.width * 0.05) {
-                statView(title: "Difficulty", value: idea.difficultyStars)
-                statView(title: "Category", value: idea.category)
-                statView(title: "Level", value: idea.level.rawValue)
-            }
+            // LEVEL BADGE: Always visible
+            levelBadge(geometry: geometry)
         }
         .frame(maxWidth: .infinity, alignment: .leading)
         .padding(.horizontal, geometry.size.width * 0.05)
@@ -89,6 +95,33 @@ struct IdeaCardView: View {
             .allowsHitTesting(false)
         )
         .zIndex(2)
+    }
+
+    // MARK: - Level Badge (Capsule Style)
+    private func levelBadge(geometry: GeometryProxy) -> some View {
+        let level = idea.level
+        let bgColor: Color = {
+            switch level {
+            case .cute:      return .pink
+            case .spicy:     return .orange
+            case .epic:      return .purple
+            case .legendary: return .yellow
+            }
+        }()
+
+        return Text(level.rawValue.capitalized)
+            .font(.system(size: geometry.size.height * 0.022, weight: .semibold))
+            .foregroundColor(.white)
+            .padding(.horizontal, 14)
+            .padding(.vertical, 6)
+            .background(
+                Capsule(style: .continuous)
+                    .fill(bgColor.opacity(0.85))
+                    .overlay(
+                        Capsule(style: .continuous)
+                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                    )
+            )
     }
 
     @ViewBuilder
@@ -181,26 +214,6 @@ struct IdeaCardView: View {
                 }
             }
         }
-    }
-
-    // MARK: - Stat View (No Icons, Stars for Difficulty)
-    private func statView(title: String, value: String) -> some View {
-        VStack(alignment: .leading, spacing: 4) {
-            if title == "Difficulty" {
-                Text(value)
-                    .font(.system(size: 16, weight: .medium))
-                    .foregroundColor(.yellow)
-            } else {
-                Text(value)
-                    .font(.system(size: 14, weight: .medium))
-                    .foregroundColor(.pink)
-            }
-            
-            Text(title)
-                .font(.system(size: 12))
-                .foregroundColor(.white.opacity(0.9))
-        }
-        .frame(maxWidth: .infinity, alignment: .leading)
     }
 }
 

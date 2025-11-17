@@ -4,7 +4,6 @@ struct AddDatesView: View {
     @StateObject var viewModel: AddDatesViewModel
     @State private var showAddSheet = false
     @State private var selectedEvent: DateEvent?
-    @State private var showReviewPopup: DateEvent?
     @State private var showHowItWorks = false
 
     var body: some View {
@@ -42,44 +41,40 @@ struct AddDatesView: View {
             .toolbar {
                 // MARK: - Centered Logo (Exact Match with HomeView)
                 ToolbarItem(placement: .principal) {
-                        HStack {
-                            Spacer()
-                            Image("luvdecksmall")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 140, height: 48)
-                                .padding(.vertical, 6)
-                            Spacer()
-                        }
-                        .background(Color.white.opacity(0.95))
-                        .shadow(color: .black.opacity(0.05), radius: 3, y: 1)
-                        .padding(.trailing, 44)
+                    HStack {
+                        Spacer()
+                        Image("luvdecksmall")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(width: 140, height: 48)
+                            .padding(.vertical, 6)
+                        Spacer()
                     }
+                    .background(Color.white.opacity(0.95))
+                    .shadow(color: .black.opacity(0.05), radius: 3, y: 1)
+                    .padding(.trailing, 44)
+                }
 
-                    ToolbarItem(placement: .topBarTrailing) {
-                        Button {
-                            selectedEvent = nil
-                            showAddSheet = true
-                        } label: {
-                            Image(systemName: "plus.circle.fill")
-                                .font(.title2)
-                                .foregroundStyle(.pink)
-                                .symbolRenderingMode(.hierarchical)
+                ToolbarItem(placement: .topBarTrailing) {
+                    Button {
+                        selectedEvent = nil
+                        showAddSheet = true
+                    } label: {
+                        Image(systemName: "plus.circle.fill")
+                            .font(.title2)
+                            .foregroundStyle(.pink)
+                            .symbolRenderingMode(.hierarchical)
                     }
                 }
             }
             .sheet(isPresented: $showAddSheet) {
                 AddDateSheet(viewModel: viewModel, event: selectedEvent)
             }
-            .sheet(item: $showReviewPopup) { event in
-                ReviewPopupView(event: event, viewModel: viewModel) { showReviewPopup = nil }
-            }
             .alert(item: errorBinding) { err in
                 Alert(title: Text("Error"), message: Text(err.message), dismissButton: .default(Text("OK")))
             }
             .onAppear {
                 viewModel.fetchEvents()
-                checkForReview()
             }
 
             // MARK: - Floating "How It Works" Card
@@ -184,13 +179,6 @@ struct AddDatesView: View {
             set: { _ in viewModel.errorMessage = nil }
         )
     }
-
-    private func checkForReview() {
-        for ev in viewModel.events where ev.date < Date() && !ev.reviewed {
-            showReviewPopup = ev
-            break
-        }
-    }
 }
 
 // MARK: - Event Card (Tinder-style)
@@ -252,6 +240,7 @@ struct EventCard: View {
     }
 }
 
+// MARK: - Identifiable Error for Alerts
 struct IdentifiableError: Identifiable {
     let id = UUID()
     let message: String

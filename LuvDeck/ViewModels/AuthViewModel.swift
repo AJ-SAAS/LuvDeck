@@ -3,11 +3,18 @@ import Firebase
 import FirebaseAuth
 import UserNotifications
 
+// MARK: - Notification Names
+extension Notification.Name {
+    static let authDidCompleteSignUp = Notification.Name("authDidCompleteSignUp")
+    static let authDidSignOut = Notification.Name("authDidSignOut")
+}
+
 class AuthViewModel: ObservableObject {
     @Published var user: User?
     @Published var errorMessage: String?
     @Published var didJustSignUp: Bool = false
-    
+    @Published var isLoading = false
+
     init() {
         if let authUser = Auth.auth().currentUser {
             self.user = User(id: authUser.uid, email: authUser.email ?? "")
@@ -17,7 +24,7 @@ class AuthViewModel: ObservableObject {
             print("No user signed in at initialization")
         }
     }
-    
+
     private func checkAndRequestNotificationPermission() {
         UNUserNotificationCenter.current().getNotificationSettings { settings in
             DispatchQueue.main.async {
@@ -25,54 +32,65 @@ class AuthViewModel: ObservableObject {
             }
         }
     }
-    
+
+    // MARK: - Sign In
     func signIn(email: String, password: String) {
-        print("Attempting sign in with email: \(email)")
+        isLoading = true
+        errorMessage = nil
+
         FirebaseManager.shared.signIn(email: email, password: password) { [weak self] result in
             DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.isLoading = false
                 switch result {
                 case .success(let user):
-                    print("Sign in successful: \(user.id)")
-                    self?.user = user
-                    self?.errorMessage = nil
-                    self?.didJustSignUp = false
+                    self.user = user
+                    self.didJustSignUp = false
+                    print("✅ Sign in successful for user: \(user.id)")
                 case .failure(let error):
-                    print("Sign in failed: \(error.localizedDescription)")
-                    self?.errorMessage = error.localizedDescription
+                    self.errorMessage = error.localizedDescription
+                    print("❌ Sign in error: \(error.localizedDescription)")
                 }
             }
         }
     }
-    
+
+    // MARK: - Sign Up
     func signUp(email: String, password: String) {
-        print("Attempting sign up with email: \(email)")
+        isLoading = true
+        errorMessage = nil
+
         FirebaseManager.shared.signUp(email: email, password: password) { [weak self] result in
             DispatchQueue.main.async {
+                guard let self = self else { return }
+                self.isLoading = false
                 switch result {
                 case .success(let user):
-                    print("Sign up successful: \(user.id)")
-                    self?.user = user
-                    self?.errorMessage = nil
-                    self?.didJustSignUp = true
+                    self.user = user
+                    self.didJustSignUp = true
+                    print("✅ Sign up successful for user: \(user.id)")
+                    NotificationCenter.default.post(name: .authDidCompleteSignUp, object: nil)
                 case .failure(let error):
-                    print("Sign up failed: \(error.localizedDescription)")
-                    self?.errorMessage = error.localizedDescription
+                    self.errorMessage = error.localizedDescription
+                    print("❌ Sign up error: \(error.localizedDescription)")
                 }
             }
         }
     }
-    
+
+    // MARK: - Sign Out
     func signOut() {
-        print("Attempting sign out")
         do {
             try FirebaseManager.shared.signOut()
             user = nil
             errorMessage = nil
             didJustSignUp = false
-            print("Sign out successful")
+            isLoading = false
+            print("👋 User signed out")
+            NotificationCenter.default.post(name: .authDidSignOut, object: nil)
         } catch {
-            print("Sign out failed: \(error.localizedDescription)")
             errorMessage = error.localizedDescription
+            print("❌ Sign out error: \(error.localizedDescription)")
         }
     }
 }

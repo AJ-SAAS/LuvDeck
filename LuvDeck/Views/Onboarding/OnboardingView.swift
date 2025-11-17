@@ -1,71 +1,83 @@
+// OnboardingView.swift
 import SwiftUI
 
 struct OnboardingView: View {
     @EnvironmentObject var viewModel: OnboardingViewModel
     @EnvironmentObject var authViewModel: AuthViewModel
-    
+    @EnvironmentObject var purchaseVM: PurchaseViewModel
+
     private let screens: [(icon: String, mainText: String, subText: String, buttonText: String)] = [
-        ("luvdeck1", "Fresh romantic ideas at your fingertips.", "Confidently plan special moments that make your partner smile, without the stress of coming up with them yourself.", "Continue"),
-        ("luvdeck2", "Celebrate love with confidence.", "From birthdays to anniversaries, you’ll always be prepared to make the day feel special.", "Continue"),
-        ("luvdeck3", "Level up your romance game.", "LuvDeck grows with your relationship, giving you the tools to be the partner they dream about.", "Continue"),
-        ("luvdeck4", "Stay in the loop.", "Enable notifications to get timely reminders for your special moments and new date ideas.", "Allow Notifications"),
-        ("luvdeck5", "Your romance journey starts here.", "You now have the inspiration, reminders, and tools to become the most thoughtful partner they’ve ever had.", "Let’s Go")
+        ("onboard1", "Unlock effortless romance.", "Never run out of ways to make your partner light up — even on the busiest day.", "Continue"),
+        ("onboard2", "Always know how to make them feel special.", "From birthdays to anniversaries, LuvDeck helps you show up like the partner every woman secretly hopes for.", "Continue"),
+        ("onboard3", "Grow stronger together.", "Each week, LuvDeck helps you build habits that deepen connection and attraction — without forcing it.", "Continue"),
+        ("onboard4", "Stay ahead of every special moment.", "Turn on reminders so you’ll never forget an anniversary, milestone, or date idea again.", "Allow Notifications"),
+        ("onboard5", "Make romance your secret advantage.", "You now have everything you need to surprise, connect, and lead your relationship with confidence.", "Let’s Go")
     ]
-    
+
     var body: some View {
         GeometryReader { geometry in
-            NavigationView {
-                let safeStep = min(max(0, viewModel.currentStep), screens.count - 1)
-                let screen = screens[safeStep]
-                
-                VStack {
-                    Spacer(minLength: geometry.size.height * 0.05) // small top padding
-                    
-                    // MARK: - Image
+            let safeStep = min(max(0, viewModel.currentStep), screens.count - 1)
+            let screen = screens[safeStep]
+            let isNotificationStep = safeStep == 3
+            let isFinalStep = safeStep == screens.count - 1
+
+            ZStack {
+                Color(.systemBackground).ignoresSafeArea()
+
+                VStack(spacing: 0) {
+                    Spacer(minLength: geometry.size.height * 0.05)
+
                     Image(screen.icon)
                         .resizable()
                         .scaledToFit()
                         .frame(width: min(geometry.size.width * 0.5, 240),
                                height: min(geometry.size.width * 0.5, 240))
-                    
-                    Spacer(minLength: 20) // space between image and title
-                    
-                    // MARK: - Title & Description
+                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                        .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+                        .padding(.horizontal, 40)
+
+                    Spacer(minLength: 32)
+
+                    // Crossfade Text
                     VStack(spacing: 12) {
                         Text(screen.mainText)
                             .font(.system(size: min(geometry.size.width * 0.07, 28), weight: .bold))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal, min(geometry.size.width * 0.1, 32))
-                        
+                            .opacity(0)
+                            .overlay(
+                                Text(screen.mainText)
+                                    .font(.system(size: min(geometry.size.width * 0.07, 28), weight: .bold))
+                                    .foregroundColor(.primary)
+                                    .multilineTextAlignment(.center)
+                                    .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.4)))
+                            )
+
                         Text(screen.subText)
                             .font(.system(size: min(geometry.size.width * 0.04, 17)))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
-                            .padding(.horizontal, min(geometry.size.width * 0.1, 32))
+                            .opacity(0)
+                            .overlay(
+                                Text(screen.subText)
+                                    .font(.system(size: min(geometry.size.width * 0.04, 17)))
+                                    .foregroundColor(.secondary)
+                                    .multilineTextAlignment(.center)
+                                    .transition(AnyTransition.opacity.animation(.easeInOut(duration: 0.4)))
+                            )
                     }
-                    
-                    Spacer() // pushes button toward bottom
-                    
-                    // MARK: - Button
-                    if safeStep < screens.count - 2 {
-                        Button(action: {
-                            viewModel.nextStep(userId: authViewModel.user?.id)
-                        }) {
-                            Text(screen.buttonText)
-                                .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(Color.black)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                                .padding(.horizontal, min(geometry.size.width * 0.1, 32))
-                        }
-                    } else if safeStep == screens.count - 2 {
-                        VStack(spacing: 10) {
-                            Button(action: {
+                    .padding(.horizontal, min(geometry.size.width * 0.1, 40))
+                    .frame(maxWidth: .infinity)
+                    .animation(.easeInOut(duration: 0.4), value: safeStep)
+
+                    Spacer()
+
+                    // Fixed Button Area
+                    VStack(spacing: 12) {
+                        if isNotificationStep {
+                            Button {
                                 viewModel.requestNotificationPermission(userId: authViewModel.user?.id)
-                            }) {
+                            } label: {
                                 Text("Allow Notifications")
                                     .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
                                     .frame(maxWidth: .infinity)
@@ -73,50 +85,62 @@ struct OnboardingView: View {
                                     .background(Color.black)
                                     .foregroundColor(.white)
                                     .cornerRadius(12)
-                                    .padding(.horizontal, min(geometry.size.width * 0.1, 32))
                             }
-                            
-                            Button(action: {
+                            .padding(.horizontal, min(geometry.size.width * 0.1, 32))
+
+                            Button("Skip") {
                                 viewModel.nextStep(userId: authViewModel.user?.id)
-                            }) {
-                                Text("Skip")
-                                    .font(.system(size: 15, weight: .semibold))
-                                    .foregroundColor(.blue)
                             }
-                        }
-                    } else {
-                        Button(action: {
-                            viewModel.completeOnboarding(userId: authViewModel.user?.id)
-                        }) {
-                            Text(screen.buttonText)
-                                .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 16)
-                                .background(Color.black)
-                                .foregroundColor(.white)
-                                .cornerRadius(12)
-                                .padding(.horizontal, min(geometry.size.width * 0.1, 32))
+                            .font(.system(size: 15, weight: .semibold))
+                            .foregroundColor(.blue)
+
+                        } else if isFinalStep {
+                            Button {
+                                viewModel.completeOnboarding(userId: authViewModel.user?.id)
+                                NotificationCenter.default.post(name: .showPaywallAfterOnboarding, object: nil)
+                            } label: {
+                                Text("Let’s Go")
+                                    .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(Color.black)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(12)
+                            }
+                            .padding(.horizontal, min(geometry.size.width * 0.1, 32))
+
+                        } else {
+                            Button {
+                                viewModel.nextStep(userId: authViewModel.user?.id)
+                            } label: {
+                                Text(screen.buttonText)
+                                    .font(.system(size: min(geometry.size.width * 0.05, 22), weight: .semibold))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 16)
+                                    .background(Color.black)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(12)
+                            }
+                            .padding(.horizontal, min(geometry.size.width * 0.1, 32))
                         }
                     }
-                    
-                    Spacer(minLength: geometry.size.height * 0.05) // small bottom padding
+                    .frame(height: 80)
+                    .animation(.easeInOut(duration: 0.3), value: safeStep)
+
+                    Spacer(minLength: geometry.size.height * 0.05)
                 }
-                .animation(.easeInOut(duration: 0.3), value: safeStep)
-                .navigationBarHidden(true)
-                .background(Color(.systemBackground).ignoresSafeArea())
             }
         }
     }
 }
 
-#Preview("iPhone 14") {
-    OnboardingView()
-        .environmentObject(OnboardingViewModel())
-        .environmentObject(AuthViewModel())
+extension Notification.Name {
+    static let showPaywallAfterOnboarding = Notification.Name("showPaywallAfterOnboarding")
 }
 
-#Preview("iPad Pro") {
+#Preview {
     OnboardingView()
         .environmentObject(OnboardingViewModel())
         .environmentObject(AuthViewModel())
+        .environmentObject(PurchaseViewModel())
 }

@@ -7,6 +7,8 @@
 	objects = {
 
 /* Begin PBXBuildFile section */
+		925674D42EC73C2900C1710B /* RevenueCat in Frameworks */ = {isa = PBXBuildFile; productRef = 925674D32EC73C2900C1710B /* RevenueCat */; };
+		925674DD2EC926A700C1710B /* RevenueCatUI in Frameworks */ = {isa = PBXBuildFile; productRef = 925674DC2EC926A700C1710B /* RevenueCatUI */; };
 		92C8A5662E7856CA00B0E887 /* FirebaseAuth in Frameworks */ = {isa = PBXBuildFile; productRef = 92C8A5652E7856CA00B0E887 /* FirebaseAuth */; };
 		92C8A5682E7856CA00B0E887 /* FirebaseAuthCombine-Community in Frameworks */ = {isa = PBXBuildFile; productRef = 92C8A5672E7856CA00B0E887 /* FirebaseAuthCombine-Community */; };
 		92C8A56A2E7856CA00B0E887 /* FirebaseDatabase in Frameworks */ = {isa = PBXBuildFile; productRef = 92C8A5692E7856CA00B0E887 /* FirebaseDatabase */; };
@@ -63,7 +65,9 @@
 			files = (
 				92C8A56A2E7856CA00B0E887 /* FirebaseDatabase in Frameworks */,
 				92C8A56C2E7856CA00B0E887 /* FirebaseFirestore in Frameworks */,
+				925674D42EC73C2900C1710B /* RevenueCat in Frameworks */,
 				92C8A56E2E7856CA00B0E887 /* FirebaseFunctions in Frameworks */,
+				925674DD2EC926A700C1710B /* RevenueCatUI in Frameworks */,
 				92C8A5662E7856CA00B0E887 /* FirebaseAuth in Frameworks */,
 				92C8A5682E7856CA00B0E887 /* FirebaseAuthCombine-Community in Frameworks */,
 				92C8A5702E7856CA00B0E887 /* FirebaseStorage in Frameworks */,
@@ -87,12 +91,20 @@
 /* End PBXFrameworksBuildPhase section */
 
 /* Begin PBXGroup section */
+		925674DB2EC926A600C1710B /* Frameworks */ = {
+			isa = PBXGroup;
+			children = (
+			);
+			name = Frameworks;
+			sourceTree = "<group>";
+		};
 		92C8A52F2E78540600B0E887 = {
 			isa = PBXGroup;
 			children = (
 				92C8A53A2E78540600B0E887 /* LuvDeck */,
 				92C8A5482E78540800B0E887 /* LuvDeckTests */,
 				92C8A5522E78540800B0E887 /* LuvDeckUITests */,
+				925674DB2EC926A600C1710B /* Frameworks */,
 				92C8A5392E78540600B0E887 /* Products */,
 			);
 			sourceTree = "<group>";
@@ -133,6 +145,8 @@
 				92C8A56B2E7856CA00B0E887 /* FirebaseFirestore */,
 				92C8A56D2E7856CA00B0E887 /* FirebaseFunctions */,
 				92C8A56F2E7856CA00B0E887 /* FirebaseStorage */,
+				925674D32EC73C2900C1710B /* RevenueCat */,
+				925674DC2EC926A700C1710B /* RevenueCatUI */,
 			);
 			productName = LuvDeck;
 			productReference = 92C8A5382E78540600B0E887 /* LuvDeck.app */;
@@ -218,6 +232,7 @@
 			minimizedProjectReferenceProxies = 1;
 			packageReferences = (
 				92C8A5642E7856CA00B0E887 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */,
+				925674D22EC73C2900C1710B /* XCRemoteSwiftPackageReference "purchases-ios" */,
 			);
 			preferredProjectObjectVersion = 77;
 			productRefGroup = 92C8A5392E78540600B0E887 /* Products */;
@@ -596,6 +611,14 @@
 /* End XCConfigurationList section */
 
 /* Begin XCRemoteSwiftPackageReference section */
+		925674D22EC73C2900C1710B /* XCRemoteSwiftPackageReference "purchases-ios" */ = {
+			isa = XCRemoteSwiftPackageReference;
+			repositoryURL = "https://github.com/RevenueCat/purchases-ios.git";
+			requirement = {
+				kind = upToNextMajorVersion;
+				minimumVersion = 5.47.1;
+			};
+		};
 		92C8A5642E7856CA00B0E887 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */ = {
 			isa = XCRemoteSwiftPackageReference;
 			repositoryURL = "https://github.com/firebase/firebase-ios-sdk.git";
@@ -607,6 +630,16 @@
 /* End XCRemoteSwiftPackageReference section */
 
 /* Begin XCSwiftPackageProductDependency section */
+		925674D32EC73C2900C1710B /* RevenueCat */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 925674D22EC73C2900C1710B /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCat;
+		};
+		925674DC2EC926A700C1710B /* RevenueCatUI */ = {
+			isa = XCSwiftPackageProductDependency;
+			package = 925674D22EC73C2900C1710B /* XCRemoteSwiftPackageReference "purchases-ios" */;
+			productName = RevenueCatUI;
+		};
 		92C8A5652E7856CA00B0E887 /* FirebaseAuth */ = {
 			isa = XCSwiftPackageProductDependency;
 			package = 92C8A5642E7856CA00B0E887 /* XCRemoteSwiftPackageReference "firebase-ios-sdk" */;
