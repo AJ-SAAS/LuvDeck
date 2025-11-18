@@ -17,25 +17,30 @@ struct PaywallView: View {
             Color.white.ignoresSafeArea()
 
             VStack(spacing: 20) {
-                // Close button (appears after 3 seconds)
+                // Top-right: Loading spinner → X button
                 HStack {
                     Spacer()
-                    if showCloseButton {
-                        Button(action: { isPresented = false }) {
-                            Image(systemName: "xmark")
-                                .font(.system(size: 16, weight: .bold))
-                                .foregroundColor(.black.opacity(0.7))
+                    ZStack {
+                        if showCloseButton {
+                            Button(action: { isPresented = false }) {
+                                Image(systemName: "xmark")
+                                    .font(.system(size: 16, weight: .bold))
+                                    .foregroundColor(.black.opacity(0.7))
+                                    .frame(width: 38, height: 38)
+                                    .background(Color.black.opacity(0.08))
+                                    .clipShape(Circle())
+                                    .overlay(Circle().stroke(Color.black.opacity(0.12), lineWidth: 0.5))
+                            }
+                            .transition(.scale.combined(with: .opacity))
+                        } else {
+                            ProgressView()
+                                .progressViewStyle(CircularProgressViewStyle(tint: .black.opacity(0.4)))
+                                .scaleEffect(0.9)
                                 .frame(width: 38, height: 38)
-                                .background(Color.black.opacity(0.08))
-                                .clipShape(Circle())
-                                .overlay(Circle().stroke(Color.black.opacity(0.12), lineWidth: 0.5))
                         }
-                        .transition(.opacity.combined(with: .scale))
-                    } else {
-                        Rectangle().foregroundColor(.clear).frame(width: 38, height: 38)
                     }
+                    .padding([.horizontal, .top], 16)
                 }
-                .padding([.horizontal, .top], 16)
 
                 // Header
                 VStack(spacing: 16) {
@@ -92,7 +97,7 @@ struct PaywallView: View {
 
                 // Legal + Restore
                 HStack(spacing: 20) {
-                    Button("Terms") { openURL("https://www.luvdeck.com/r/terms") }
+                    Button("Terms of use") { openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") }
                     Text("|").foregroundColor(.black.opacity(0.3))
                     Button("Privacy") { openURL("https://www.luvdeck.com/r/privacy") }
                     Text("|").foregroundColor(.black.opacity(0.3))
@@ -115,13 +120,14 @@ struct PaywallView: View {
             }
             .padding(.bottom, safeAreaBottom() + 10)
         }
-        // Auto-close when user becomes premium
+        // Auto-close when purchase succeeds
         .onChange(of: purchaseVM.isPremium) { _, newValue in
             if newValue { isPresented = false }
         }
+        // Show spinner for 3 seconds → then reveal X button
         .task {
-            try? await Task.sleep(nanoseconds: 3_000_000_000)
-            withAnimation(.spring(response: 0.45, dampingFraction: 0.8)) {
+            try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 showCloseButton = true
             }
         }

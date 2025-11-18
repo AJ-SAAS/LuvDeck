@@ -6,13 +6,22 @@ final class AddDatesViewModel: ObservableObject {
     @Published var errorMessage: String?
     @Published var showConfetti = false
 
+    /// When true the UI will present the Paywall
+    @Published var showPaywall: Bool = false
+
     private let firebase = FirebaseManager.shared
     private let notifications = NotificationManager.shared
     private var userId: String?
 
+    /// A provider closure that returns whether the current user has premium.
+    /// This avoids a hard dependency on PurchaseViewModel and keeps the VM testable.
+    private let isPremiumProvider: () -> Bool
+
     // MARK: - Initializer
-    init(userId: String? = nil) {
+    /// isPremiumProvider: pass a closure that returns PurchaseViewModel.isPremium
+    init(userId: String? = nil, isPremiumProvider: @escaping () -> Bool = { false }) {
         self.userId = userId
+        self.isPremiumProvider = isPremiumProvider
         if let uid = userId, !uid.isEmpty {
             fetchEvents()
         }
@@ -32,8 +41,24 @@ final class AddDatesViewModel: ObservableObject {
             .sorted { $0.date < $1.date }           // Nearest first
     }
 
+    /// Utility: whether the current user may create another event
+    func canCreateEvent() -> Bool {
+        if isPremiumProvider() { return true }
+        return events.count < 3
+    }
+
     func addEvent(title: String, date: Date, type: EventType, reminderOn: Bool) {
         guard let uid = userId else { errorMessage = "No user logged in"; return }
+
+        // Enforce free-user limit: clients should also check before showing the Add sheet,
+        // but this double-checks before saving to Firestore.
+        if !isPremiumProvider() && events.count >= 3 {
+            // trigger the paywall instead of creating
+            DispatchQueue.main.async {
+                self.showPaywall = true
+            }
+            return
+        }
 
         let event = DateEvent(personName: title,
                               date: date,

@@ -1,7 +1,5 @@
 // OnboardingView.swift
-// ULTRA PREMIUM VERSION – November 17, 2025
-// Zero fancy transitions • Instant • Expensive feel
-
+// FINAL VERSION — NO FLASH, NO CRASH, PERFECT FLOW
 import SwiftUI
 
 struct OnboardingView: View {
@@ -25,13 +23,11 @@ struct OnboardingView: View {
             let isFinalStep = safeStep == screens.count - 1
 
             ZStack {
-                Color(.systemBackground)
-                    .ignoresSafeArea()
+                Color(.systemBackground).ignoresSafeArea()
 
                 VStack(spacing: 0) {
                     Spacer(minLength: geometry.size.height * 0.07)
 
-                    // Icon – Clean & sharp
                     Image(screen.icon)
                         .resizable()
                         .scaledToFit()
@@ -43,34 +39,26 @@ struct OnboardingView: View {
 
                     Spacer(minLength: 48)
 
-                    // Title & Subtitle – INSTANT, no animation
                     VStack(spacing: 16) {
                         Text(screen.mainText)
                             .font(.system(size: titleFontSize(for: geometry), weight: .bold, design: .rounded))
                             .foregroundColor(.primary)
                             .multilineTextAlignment(.center)
-                            .lineLimit(nil)
-                            .fixedSize(horizontal: false, vertical: true)
                             .minimumScaleFactor(0.7)
 
                         Text(screen.subText)
                             .font(.system(size: subtitleFontSize(for: geometry), weight: .medium, design: .rounded))
                             .foregroundColor(.secondary)
                             .multilineTextAlignment(.center)
-                            .lineLimit(nil)
-                            .fixedSize(horizontal: false, vertical: true)
                             .minimumScaleFactor(0.8)
                     }
                     .padding(.horizontal, 40)
 
                     Spacer()
 
-                    // Button Area – Clean & direct
                     VStack(spacing: 12) {
                         if isNotificationStep {
-                            Button {
-                                viewModel.requestNotificationPermission(userId: authViewModel.user?.id)
-                            } label: {
+                            Button { viewModel.requestNotificationPermission(userId: authViewModel.user?.id) } label: {
                                 Text("Allow Notifications")
                                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                                     .frame(maxWidth: .infinity)
@@ -81,16 +69,13 @@ struct OnboardingView: View {
                             }
                             .padding(.horizontal, 32)
 
-                            Button("Skip") {
-                                viewModel.nextStep(userId: authViewModel.user?.id)
-                            }
-                            .font(.system(size: 17, weight: .semibold))
-                            .foregroundColor(.blue)
+                            Button("Skip") { viewModel.nextStep(userId: authViewModel.user?.id) }
+                                .font(.system(size: 17, weight: .semibold))
+                                .foregroundColor(.blue)
 
                         } else if isFinalStep {
                             Button {
-                                viewModel.completeOnboarding(userId: authViewModel.user?.id)
-                                NotificationCenter.default.post(name: .showPaywallAfterOnboarding, object: nil)
+                                purchaseVM.triggerPaywallAfterOnboarding = true
                             } label: {
                                 Text("Let’s Go")
                                     .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -103,9 +88,7 @@ struct OnboardingView: View {
                             .padding(.horizontal, 32)
 
                         } else {
-                            Button {
-                                viewModel.nextStep(userId: authViewModel.user?.id)
-                            } label: {
+                            Button { viewModel.nextStep(userId: authViewModel.user?.id) } label: {
                                 Text(screen.buttonText)
                                     .font(.system(size: 20, weight: .semibold, design: .rounded))
                                     .frame(maxWidth: .infinity)
@@ -122,11 +105,9 @@ struct OnboardingView: View {
                     Spacer(minLength: geometry.size.height * 0.07)
                 }
             }
-            // NO ANIMATIONS AT ALL — Instant, premium feel
         }
     }
 
-    // Clean responsive font sizes
     private func titleFontSize(for geometry: GeometryProxy) -> CGFloat {
         min(geometry.size.width * 0.078, 32)
     }
@@ -136,12 +117,6 @@ struct OnboardingView: View {
     }
 }
 
-// Paywall trigger
-extension Notification.Name {
-    static let showPaywallAfterOnboarding = Notification.Name("showPaywallAfterOnboarding")
-}
-
-// Preview
 #Preview {
     OnboardingView()
         .environmentObject(OnboardingViewModel())

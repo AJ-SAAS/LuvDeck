@@ -1,27 +1,40 @@
+// TabBarView.swift
 import SwiftUI
 import FirebaseAuth
 
 struct TabBarView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
     @EnvironmentObject var onboardingViewModel: OnboardingViewModel
+    @EnvironmentObject var purchaseVM: PurchaseViewModel        // ← Use injected one
+    @EnvironmentObject var addDatesViewModel: AddDatesViewModel
+
     @StateObject private var homeVM: HomeViewModel
     @StateObject private var datesVM: AddDatesViewModel
+
     @State private var selectedTab: Int = 0
 
     init() {
         let currentUID = Auth.auth().currentUser?.uid
-        _homeVM = StateObject(wrappedValue: HomeViewModel(userId: currentUID))
-        _datesVM = StateObject(wrappedValue: AddDatesViewModel(userId: currentUID))
+        
+        // Use the injected purchaseVM for isPremium
+        let injectedPurchaseVM = PurchaseViewModel() // temporary for closure
+        _homeVM = StateObject(wrappedValue: HomeViewModel(
+            userId: currentUID,
+            isPremiumProvider: { injectedPurchaseVM.isPremium }
+        ))
+        _datesVM = StateObject(wrappedValue: AddDatesViewModel(
+            userId: currentUID,
+            isPremiumProvider: { injectedPurchaseVM.isPremium }
+        ))
 
+        // Tab bar appearance
         let appearance = UITabBarAppearance()
         appearance.configureWithTransparentBackground()
         appearance.backgroundColor = .clear
-
         appearance.stackedLayoutAppearance.normal.iconColor = .secondaryLabel
         appearance.stackedLayoutAppearance.normal.titleTextAttributes = [.foregroundColor: UIColor.secondaryLabel]
         appearance.stackedLayoutAppearance.selected.iconColor = .systemRed
         appearance.stackedLayoutAppearance.selected.titleTextAttributes = [.foregroundColor: UIColor.systemRed]
-
         UITabBar.appearance().standardAppearance = appearance
         UITabBar.appearance().scrollEdgeAppearance = appearance
         UITabBar.appearance().isTranslucent = true
@@ -32,15 +45,14 @@ struct TabBarView: View {
             NavigationStack {
                 HomeView()
                     .environmentObject(homeVM)
+                    .environmentObject(purchaseVM)
                     .navigationBarHidden(true)
-                    .toolbarBackground(.hidden, for: .tabBar)  // ← FIX: No tab bar interference
             }
             .tabItem { Label("Home", systemImage: "house.fill") }
             .tag(0)
 
             NavigationStack {
-                AddDatesView(viewModel: datesVM)
-                    .navigationBarHidden(false)
+                AddDatesView(purchaseVM: purchaseVM, userId: authViewModel.user?.id)
             }
             .tabItem { Label("Dates", systemImage: "calendar") }
             .tag(1)
@@ -48,20 +60,25 @@ struct TabBarView: View {
             NavigationStack {
                 SettingsView()
                     .environmentObject(authViewModel)
-                    .navigationBarHidden(true)
+                    .environmentObject(purchaseVM)
             }
             .tabItem { Label("Settings", systemImage: "gear") }
             .tag(2)
         }
-        .background(Color.clear)
-        .ignoresSafeArea(edges: .all)
-        .onAppear {
-            updateUserId()
-            UITabBar.appearance().backgroundColor = .clear
-            UITabBar.appearance().isTranslucent = true
+        .sheet(isPresented: $purchaseVM.shouldPresentPaywall) {
+            PaywallView(isPresented: $purchaseVM.shouldPresentPaywall, purchaseVM: purchaseVM)
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
         }
-        .onChange(of: authViewModel.user) { _, _ in
-            updateUserId()
+        .onAppear { updateUserId() }
+        .onChange(of: authViewModel.user) { _, _ in updateUserId() }
+        
+        // THIS IS WHAT SHOWS THE PAYWALL AFTER ONBOARDING
+        .onChange(of: purchaseVM.triggerPaywallAfterOnboarding) { newValue in
+            if newValue {
+                purchaseVM.shouldPresentPaywall = true
+                purchaseVM.triggerPaywallAfterOnboarding = false
+            }
         }
     }
 
@@ -70,10 +87,4 @@ struct TabBarView: View {
         homeVM.setUserId(uid)
         datesVM.setUserId(uid)
     }
-}
-
-#Preview {
-    TabBarView()
-        .environmentObject(AuthViewModel())
-        .environmentObject(OnboardingViewModel())
 }

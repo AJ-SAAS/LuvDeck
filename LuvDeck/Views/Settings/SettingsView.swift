@@ -5,7 +5,7 @@ import RevenueCat
 
 struct SettingsView: View {
     @EnvironmentObject var authViewModel: AuthViewModel
-    @EnvironmentObject var purchaseVM: PurchaseViewModel   // Added for Paywall
+    @EnvironmentObject var purchaseVM: PurchaseViewModel
 
     @State private var username = ""
     @State private var email = ""
@@ -17,97 +17,114 @@ struct SettingsView: View {
     @State private var showingAlert = false
     @State private var alertMessage = ""
     @State private var showPaywall = false
+    @State private var isRestoring = false
 
     var body: some View {
-        NavigationView {
-            List {
-                // MARK: - Error & Success
-                if let error = errorMessage {
-                    Text(error).foregroundColor(.red).font(.caption)
-                }
-                if let success = successMessage {
-                    Text(success).foregroundColor(.green).font(.caption)
+        List {
+            // MARK: - Messages
+            if let error = errorMessage {
+                Text(error)
+                    .foregroundColor(.red)
+                    .font(.caption)
+                    .listRowBackground(Color.clear)
+            }
+            if let success = successMessage {
+                Text(success)
+                    .foregroundColor(.green)
+                    .font(.caption)
+                    .listRowBackground(Color.clear)
+            }
+
+            // MARK: - Profile
+            Section("Profile") {
+                NavigationLink("Username") { updateUsernameView }
+            }
+
+            // MARK: - Account
+            Section("Account") {
+                NavigationLink("Update Email") { updateEmailView }
+                NavigationLink("Update Password") { updatePasswordView }
+            }
+
+            // MARK: - Premium
+            Section("Premium") {
+                Button {
+                    showPaywall = true
+                } label: {
+                    Label("Get LuvDeck Premium", systemImage: "crown.fill")
                 }
 
-                // MARK: - Profile
-                Section("Profile") {
-                    NavigationLink("Username") { updateUsernameView }
-                }
-
-                // MARK: - Account
-                Section("Account") {
-                    NavigationLink("Update Email") { updateEmailView }
-                    NavigationLink("Update Password") { updatePasswordView }
-                }
-
-                // MARK: - Premium (RevenueCat)
-                Section("Premium") {
-                    Button {
-                        showPaywall = true
-                    } label: {
-                        Label("Get LuvDeck Premium", systemImage: "crown.fill")
-                            .foregroundColor(.primary)
-                    }
-
-                    Button {
-                        restorePurchases()
-                    } label: {
+                Button {
+                    Task { await restorePurchases() }
+                } label: {
+                    HStack {
                         Label("Restore Purchases", systemImage: "arrow.clockwise")
-                            .foregroundColor(.primary)
-                    }
-
-                    Button {
-                        openSubscriptionManagement()
-                    } label: {
-                        Label("Manage Subscription", systemImage: "gear")
-                            .foregroundColor(.primary)
+                        if isRestoring {
+                            Spacer()
+                            ProgressView()
+                                .scaleEffect(0.8)
+                        }
                     }
                 }
+                .disabled(isRestoring)
 
-                // MARK: - Support
-                Section("Support") {
-                    Link("Contact Us", destination: URL(string: "mailto:helloluvdeck@gmail.com")!)
-                    Button { sendFeedback() } label: {
-                        Label("Share Your Feedback", systemImage: "message")
-                            .foregroundColor(.blue)
-                    }
+                Button {
+                    openSubscriptionManagement()
+                } label: {
+                    Label("Manage Subscription", systemImage: "gear")
+                }
+            }
+
+            // MARK: - Support
+            Section("Support") {
+                Link("Contact Us", destination: URL(string: "mailto:helloluvdeck@gmail.com")!)
+                Button { sendFeedback() } label: {
+                    Label("Share Your Feedback", systemImage: "message")
+                        .foregroundColor(.blue)
+                }
+            }
+
+            // MARK: - Legal
+            Section("Legal") {
+                Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
+                Link("Privacy Policy", destination: URL(string: "https://www.luvdeck.com/r/privacy")!)
+                Link("Visit Website", destination: URL(string: "https://www.luvdeck.com")!)
+            }
+
+            // MARK: - Danger Zone
+            Section {
+                Button("Sign Out", role: .destructive) {
+                    authViewModel.signOut()
                 }
 
-                // MARK: - Legal
-                Section("Legal") {
-                    Link("Terms of Use", destination: URL(string: "https://www.luvdeck.com/r/terms")!)
-                    Link("Privacy Policy", destination: URL(string: "https://www.luvdeck.com/r/privacy")!)
-                    Link("Visit Website", destination: URL(string: "https://www.luvdeck.com")!)
+                Button("Delete Account", role: .destructive) {
+                    showingAlert = true
+                    alertMessage = "Are you sure you want to delete your account? This action cannot be undone."
                 }
+            }
+        }
+        .navigationTitle("Settings")
+        .navigationBarTitleDisplayMode(.inline)
+        .alert("Delete Account", isPresented: $showingAlert) {
+            Button("Cancel", role: .cancel) { }
+            Button("Delete", role: .destructive) { deleteAccount() }
+        } message: {
+            Text(alertMessage)
+        }
+        .sheet(isPresented: $showPaywall) {
+            PaywallView(isPresented: $showPaywall, purchaseVM: purchaseVM)
+        }
+        .task {
+            await loadCurrentUserData()
+        }
+    }
 
-                // MARK: - Danger Zone
-                Section {
-                    Button("Sign Out", role: .destructive) { authViewModel.signOut() }
-                    Button("Delete Account", role: .destructive) {
-                        showingAlert = true
-                        alertMessage = "Are you sure you want to delete your account? This action cannot be undone."
-                    }
-                }
-            }
-            .navigationTitle("Settings")
-            .navigationBarTitleDisplayMode(.inline)
-            .alert(isPresented: $showingAlert) {
-                Alert(
-                    title: Text("Delete Account"),
-                    message: Text(alertMessage),
-                    primaryButton: .destructive(Text("Delete"), action: deleteAccount),
-                    secondaryButton: .cancel()
-                )
-            }
-            .sheet(isPresented: $showPaywall) {
-                PaywallView(isPresented: $showPaywall, purchaseVM: purchaseVM)
-            }
-            .onAppear {
-                if let user = Auth.auth().currentUser {
-                    username = user.displayName ?? ""
-                    email = user.email ?? ""
-                }
-            }
+    // MARK: - Load Current User Data
+    private func loadCurrentUserData() async {
+        guard let user = Auth.auth().currentUser else { return }
+        await MainActor.run {
+            username = user.displayName ?? ""
+            email = user.email ?? ""
         }
     }
 
@@ -115,6 +132,7 @@ struct SettingsView: View {
     private var updateUsernameView: some View {
         Form {
             TextField("New Username", text: $username)
+                .autocapitalization(.words)
             Button("Save", action: updateUsername)
                 .buttonStylePrimary()
         }
@@ -154,86 +172,99 @@ struct SettingsView: View {
 
     private func deleteAccount() {
         FirebaseManager.shared.deleteAccount { result in
-            switch result {
-            case .success:
-                authViewModel.signOut()
-            case .failure(let error):
-                errorMessage = error.localizedDescription
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    authViewModel.signOut()
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
+                }
             }
         }
     }
 
     private func updateUsername() {
-        guard !username.isEmpty else {
+        guard !username.trimmingCharacters(in: .whitespaces).isEmpty else {
             errorMessage = "Username cannot be empty"; return
         }
         FirebaseManager.shared.updateUsername(username) { result in
-            switch result {
-            case .success: successMessage = "Username updated"
-            case .failure(let error): errorMessage = error.localizedDescription
+            DispatchQueue.main.async {
+                switch result {
+                case .success: successMessage = "Username updated"
+                case .failure(let error): errorMessage = error.localizedDescription
+                }
             }
         }
     }
 
     private func updateEmail() {
-        guard email.contains("@") else {
-            errorMessage = "Invalid email"; return
-        }
-        guard !currentPassword.isEmpty else {
-            errorMessage = "Enter current password"; return
-        }
+        guard email.contains("@") else { errorMessage = "Invalid email"; return }
+        guard !currentPassword.isEmpty else { errorMessage = "Enter current password"; return }
+
         FirebaseManager.shared.reauthenticate(currentPassword: currentPassword) { result in
-            switch result {
-            case .success:
-                FirebaseManager.shared.updateEmail(email) { result in
-                    switch result {
-                    case .success: successMessage = "Verification email sent"
-                    case .failure(let error): errorMessage = error.localizedDescription
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    FirebaseManager.shared.updateEmail(email) { result in
+                        DispatchQueue.main.async {
+                            switch result {
+                            case .success: successMessage = "Verification email sent"
+                            case .failure(let error): errorMessage = error.localizedDescription
+                            }
+                        }
                     }
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
                 }
-            case .failure(let error):
-                errorMessage = error.localizedDescription
             }
         }
     }
 
     private func updatePassword() {
-        guard password.count >= 6 else {
-            errorMessage = "Password too short"; return
-        }
-        guard password == confirmPassword else {
-            errorMessage = "Passwords don't match"; return
-        }
-        guard !currentPassword.isEmpty else {
-            errorMessage = "Enter current password"; return
-        }
+        guard password.count >= 6 else { errorMessage = "Password too short"; return }
+        guard password == confirmPassword else { errorMessage = "Passwords don't match"; return }
+        guard !currentPassword.isEmpty else { errorMessage = "Enter current password"; return }
+
         FirebaseManager.shared.reauthenticate(currentPassword: currentPassword) { result in
-            switch result {
-            case .success:
-                FirebaseManager.shared.updatePassword(password) { result in
-                    switch result {
-                    case .success: successMessage = "Password updated"
-                    case .failure(let error): errorMessage = error.localizedDescription
+            DispatchQueue.main.async {
+                switch result {
+                case .success:
+                    FirebaseManager.shared.updatePassword(password) { result in
+                        DispatchQueue.main.async {
+                            switch result {
+                            case .success: successMessage = "Password updated"
+                            case .failure(let error): errorMessage = error.localizedDescription
+                            }
+                        }
                     }
+                case .failure(let error):
+                    errorMessage = error.localizedDescription
                 }
-            case .failure(let error):
-                errorMessage = error.localizedDescription
             }
         }
     }
 
-    // MARK: - RevenueCat Actions
-    private func restorePurchases() {
-        Purchases.shared.restorePurchases { customerInfo, error in
-            if let error = error {
-                errorMessage = error.localizedDescription
-            } else if customerInfo?.entitlements["premium"]?.isActive == true {
-                successMessage = "Premium restored!"
-                purchaseVM.isPremium = true
+    // MARK: - RevenueCat – Modern async/await
+    private func restorePurchases() async {
+        isRestoring = true
+        errorMessage = nil
+        successMessage = nil
+
+        do {
+            let customerInfo = try await Purchases.shared.restorePurchases()
+            if customerInfo.entitlements["Premium"]?.isActive == true {
+                await MainActor.run {
+                    successMessage = "Premium restored successfully!"
+                    purchaseVM.isPremium = true
+                }
             } else {
-                errorMessage = "No active subscription"
+                await MainActor.run { errorMessage = "No active subscription found" }
             }
+        } catch {
+            await MainActor.run { errorMessage = "Restore failed: \(error.localizedDescription)" }
         }
+
+        await MainActor.run { isRestoring = false }
     }
 
     private func openSubscriptionManagement() {
@@ -243,8 +274,8 @@ struct SettingsView: View {
     }
 }
 
-// MARK: - Button Style
-private extension Button {
+// MARK: - Primary Button Style
+private extension View {
     func buttonStylePrimary() -> some View {
         self.frame(maxWidth: .infinity)
             .padding(.vertical, 14)

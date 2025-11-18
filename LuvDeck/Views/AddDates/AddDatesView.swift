@@ -2,9 +2,18 @@ import SwiftUI
 
 struct AddDatesView: View {
     @StateObject var viewModel: AddDatesViewModel
+    @ObservedObject var purchaseVM: PurchaseViewModel
+
     @State private var showAddSheet = false
     @State private var selectedEvent: DateEvent?
     @State private var showHowItWorks = false
+
+    // MARK: - Custom initializer to wire the isPremium provider into the ViewModel
+    init(purchaseVM: PurchaseViewModel, userId: String? = nil) {
+        // Create the StateObject with the correct provider closure
+        _viewModel = StateObject(wrappedValue: AddDatesViewModel(userId: userId, isPremiumProvider: { purchaseVM.isPremium }))
+        self.purchaseVM = purchaseVM
+    }
 
     var body: some View {
         NavigationStack {
@@ -57,8 +66,14 @@ struct AddDatesView: View {
 
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        selectedEvent = nil
-                        showAddSheet = true
+                        // Check limit BEFORE opening the Add sheet
+                        if viewModel.canCreateEvent() {
+                            selectedEvent = nil
+                            showAddSheet = true
+                        } else {
+                            // show paywall instead of the add sheet
+                            viewModel.showPaywall = true
+                        }
                     } label: {
                         Image(systemName: "plus.circle.fill")
                             .font(.title2)
@@ -69,6 +84,10 @@ struct AddDatesView: View {
             }
             .sheet(isPresented: $showAddSheet) {
                 AddDateSheet(viewModel: viewModel, event: selectedEvent)
+            }
+            // Present the Paywall when the viewModel toggles it
+            .sheet(isPresented: Binding(get: { viewModel.showPaywall }, set: { viewModel.showPaywall = $0 })) {
+                PaywallView(isPresented: Binding(get: { viewModel.showPaywall }, set: { viewModel.showPaywall = $0 }), purchaseVM: purchaseVM)
             }
             .alert(item: errorBinding) { err in
                 Alert(title: Text("Error"), message: Text(err.message), dismissButton: .default(Text("OK")))
@@ -244,4 +263,11 @@ struct EventCard: View {
 struct IdentifiableError: Identifiable {
     let id = UUID()
     let message: String
+}
+
+// MARK: - Previews
+struct AddDatesView_Previews: PreviewProvider {
+    static var previews: some View {
+        AddDatesView(purchaseVM: PurchaseViewModel(), userId: nil)
+    }
 }

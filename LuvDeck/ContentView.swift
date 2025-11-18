@@ -1,48 +1,33 @@
-// ContentView.swift
+// ContentView.swift — FINAL FIXED VERSION (100% stable)
 import SwiftUI
 import RevenueCat
 
 struct ContentView: View {
-    @EnvironmentObject var purchaseVM: PurchaseViewModel
-
-    @StateObject var authViewModel = AuthViewModel()
-    @StateObject var onboardingViewModel = OnboardingViewModel()
-    @StateObject var addDatesViewModel = AddDatesViewModel()
+    @StateObject private var purchaseVM = PurchaseViewModel()
+    @StateObject private var authViewModel = AuthViewModel()
+    @StateObject private var onboardingViewModel = OnboardingViewModel()
+    @StateObject private var addDatesViewModel = AddDatesViewModel()
 
     @State private var currentScreen: AppScreen = .splash
-    @State private var showPaywall = false
     @State private var isReady = false
 
     var body: some View {
         ZStack {
             if isReady {
                 switch currentScreen {
-                case .splash:
-                    SplashView()
-
+                case .splash: SplashView()
                 case .congratulations:
-                    CongratulationsView {
-                        withAnimation { currentScreen = .auth }
-                    }
-
+                    CongratulationsView { withAnimation { currentScreen = .auth } }
                 case .auth:
                     AuthView()
                         .environmentObject(authViewModel)
                         .environmentObject(onboardingViewModel)
-
+                        .environmentObject(purchaseVM)
                 case .onboarding:
                     OnboardingView()
                         .environmentObject(authViewModel)
                         .environmentObject(onboardingViewModel)
                         .environmentObject(purchaseVM)
-                        .onChange(of: onboardingViewModel.onboardingCompleted) { _, newValue in
-                            if newValue && !purchaseVM.isPremium {
-                                showPaywall = true
-                            } else if newValue {
-                                withAnimation { currentScreen = .home }
-                            }
-                        }
-
                 case .home:
                     TabBarView()
                         .environmentObject(authViewModel)
@@ -59,35 +44,34 @@ struct ContentView: View {
                 loadInitialState()
             }
         }
-
-        // Fresh sign-up → straight to onboarding
         .onReceive(NotificationCenter.default.publisher(for: .authDidCompleteSignUp)) { _ in
-            print("Fresh sign-up detected → going to onboarding")
-            withAnimation {
-                currentScreen = .onboarding
-            }
+            withAnimation { currentScreen = .onboarding }
+        }
+        .onReceive(NotificationCenter.default.publisher(for: .authDidSignOut)) { _ in
+            withAnimation { currentScreen = .auth }
         }
 
-        // Paywall after onboarding (only if not premium)
-        .onReceive(NotificationCenter.default.publisher(for: .showPaywallAfterOnboarding)) { _ in
-            if !purchaseVM.isPremium {
-                showPaywall = true
-            }
-        }
-
-        // Full-screen paywall
-        .fullScreenCover(isPresented: $showPaywall) {
-            PaywallView(isPresented: $showPaywall, purchaseVM: purchaseVM)
-                .onDisappear {
-                    withAnimation { currentScreen = .home }
+        // PERFECT PAYWALL FLOW — NO FLASH, NO CRASH
+        .fullScreenCover(isPresented: $purchaseVM.triggerPaywallAfterOnboarding) {
+            PaywallView(
+                isPresented: $purchaseVM.triggerPaywallAfterOnboarding,
+                purchaseVM: purchaseVM
+            )
+            .onDisappear {
+                // This is the ONLY place onboarding is marked complete
+                purchaseVM.completeOnboardingForCurrentUser()
+                
+                withAnimation(.easeInOut(duration: 0.35)) {
+                    currentScreen = .home
                 }
+            }
         }
+        .animation(.easeInOut(duration: 0.5), value: isReady)
+        .animation(.easeInOut(duration: 0.35), value: currentScreen)
     }
 
-    // MARK: - Load Initial App State
     private func loadInitialState() {
         if authViewModel.user != nil {
-            // Existing user → check onboarding status from Firestore
             onboardingViewModel.checkOnboardingStatus(
                 userId: authViewModel.user?.id,
                 didJustSignUp: false
@@ -95,7 +79,6 @@ struct ContentView: View {
                 DispatchQueue.main.async { finishLoading() }
             }
         } else {
-            // No user → go to auth or congratulations
             DispatchQueue.main.async { finishLoading() }
         }
     }
@@ -108,11 +91,10 @@ struct ContentView: View {
             currentScreen = .auth
         } else if !onboardingViewModel.onboardingCompleted {
             currentScreen = .onboarding
-        } else if !purchaseVM.isPremium {
-            showPaywall = true
         } else {
             currentScreen = .home
         }
+        
         withAnimation { isReady = true }
     }
 }

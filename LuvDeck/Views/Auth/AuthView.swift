@@ -1,5 +1,5 @@
 // AuthView.swift
-// ULTRA CLEAN VERSION – No animations, no effects, instant & professional
+// ULTRA CLEAN VERSION – Bigger, bolder logo + PERFECT KEYBOARD DISMISSAL
 
 import SwiftUI
 
@@ -17,12 +17,12 @@ struct AuthView: View {
         GeometryReader { geometry in
             NavigationView {
                 VStack(spacing: 28) {
-                    // MARK: - Logo (no animation)
+                    // MARK: - Logo – BIGGER & BOLDER
                     Image("luvdecklogo")
                         .resizable()
                         .scaledToFit()
-                        .frame(width: min(geometry.size.width * 0.45, 180))
-                        .padding(.top, geometry.size.height * 0.06)
+                        .frame(width: min(geometry.size.width * 0.62, 260))
+                        .padding(.top, geometry.size.height * 0.08)
 
                     // MARK: - Title & Fields
                     VStack(spacing: 16) {
@@ -72,7 +72,7 @@ struct AuthView: View {
                         }
                     }
 
-                    // MARK: - Submit Button (no shadow, no bounce)
+                    // MARK: - Submit Button
                     Button(action: submit) {
                         Group {
                             if viewModel.isLoading {
@@ -93,7 +93,7 @@ struct AuthView: View {
                     .disabled(viewModel.isLoading || email.isEmpty || password.isEmpty ||
                               (isSignUp && confirmPassword.isEmpty))
 
-                    // MARK: - Toggle Button (no animation)
+                    // MARK: - Toggle Button
                     Button {
                         isSignUp.toggle()
                         email = ""
@@ -125,6 +125,9 @@ struct AuthView: View {
     }
 
     private func submit() {
+        // THIS LINE FIXES THE KEYBOARD LINGERING BUG
+        UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
+        
         viewModel.errorMessage = nil
 
         guard !email.isEmpty, !password.isEmpty else {
@@ -149,7 +152,7 @@ struct AuthView: View {
     }
 }
 
-// MARK: - Clean Text Field (no effects)
+// MARK: - Clean Text Field (unchanged)
 struct CustomTextField: View {
     let placeholder: String
     @Binding var text: String

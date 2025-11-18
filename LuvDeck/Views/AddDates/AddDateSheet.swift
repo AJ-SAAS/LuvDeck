@@ -51,13 +51,21 @@ struct AddDateSheet: View {
                                                     notes: ev.notes,
                                                     reviewed: ev.reviewed)
                             viewModel.updateEvent(updated)
+                            dismiss()
                         } else {
-                            viewModel.addEvent(title: title,
-                                               date: date,
-                                               type: eventType,
-                                               reminderOn: reminderOn)
+                            // NEW EVENT: check free-user limit BEFORE attempting to save or dismiss
+                            if viewModel.canCreateEvent() {
+                                viewModel.addEvent(title: title,
+                                                   date: date,
+                                                   type: eventType,
+                                                   reminderOn: reminderOn)
+                                dismiss()
+                            } else {
+                                // Trigger paywall presentation (viewModel exposes showPaywall)
+                                viewModel.showPaywall = true
+                                // do NOT dismiss — let user decide to upgrade
+                            }
                         }
-                        dismiss()
                     }
                     .disabled(title.isEmpty)
                 }

@@ -1,3 +1,5 @@
+// HomeViewModel.swift
+// FINAL VERSION – Legendary cards appear every 12th position
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
@@ -6,11 +8,19 @@ class HomeViewModel: ObservableObject {
     @Published var ideas: [Idea] = []
     @Published var currentIndex: Int = 0
     @Published var isLoading: Bool = true
-    private var userId: String?
     
-    init(userId: String?) {
+    // Premium Teaser Banner — appears once every 70 swipes
+    @Published var showTeaserBanner: Bool = false
+    
+    private var swipeCount: Int = 0
+    private var hasShownTeaserThisSession = false
+    private let teaserInterval: Int = 70
+    private var userId: String?
+    private let isPremiumProvider: () -> Bool
+    
+    init(userId: String?, isPremiumProvider: @escaping () -> Bool = { false }) {
         self.userId = userId
-        print("HomeViewModel initialized with userId: \(userId ?? "nil")")
+        self.isPremiumProvider = isPremiumProvider
         DispatchQueue.main.asyncAfter(deadline: .now() + 0.1) {
             self.fetchIdeas()
         }
@@ -18,122 +28,117 @@ class HomeViewModel: ObservableObject {
     
     func setUserId(_ userId: String?) {
         self.userId = userId
-        print("HomeViewModel userId updated to: \(userId ?? "nil")")
         fetchIdeas()
     }
     
-    func fetchIdeas() {
-        print("Loading ideas from JSON (bypassing Firestore)")
-        loadIdeasFromJSON()
+    // Called every time user successfully swipes to a new card
+    func didSwipe() {
+        guard !isPremiumProvider() else { return }
+        guard !hasShownTeaserThisSession else { return }
+        
+        swipeCount += 1
+        
+        if swipeCount >= teaserInterval {
+            withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
+                showTeaserBanner = true
+            }
+            hasShownTeaserThisSession = true
+        }
     }
     
-    private func loadIdeasFromJSON() {
+    func dismissTeaserBanner() {
+        withAnimation(.spring()) {
+            showTeaserBanner = false
+        }
+    }
+    
+    func resetTeaserSession() {
+        hasShownTeaserThisSession = false
+        swipeCount = 0
+    }
+    
+    // MARK: - Data Loading – Legendary every 12th card
+    func fetchIdeas() {
         guard let url = Bundle.main.url(forResource: "SwipeDeck", withExtension: "json") else {
-            print("SwipeDeck.json not found in bundle. Using sample ideas")
-            self.ideas = sampleIdeas().shuffled()
-            self.isLoading = false
-            self.currentIndex = self.ideas.isEmpty ? 0 : Int.random(in: 0..<self.ideas.count)
-            print("Loaded and shuffled \(self.ideas.count) sample ideas, starting at index: \(self.currentIndex), title: \(self.ideas[safe: self.currentIndex]?.title ?? "none")")
+            loadSampleIdeas()
             return
         }
         
         do {
             let data = try Data(contentsOf: url)
-            let decoder = JSONDecoder()
-            let decodedIdeas = try decoder.decode([Idea].self, from: data)
-            self.ideas = decodedIdeas.shuffled()
+            let decoded = try JSONDecoder().decode([Idea].self, from: data)
+            
+            // Separate Legendary from regular ideas
+            let legendaryIdeas = decoded.filter { $0.level == .legendary }
+            let regularIdeas = decoded.filter { $0.level != .legendary }
+            
+            // Shuffle only the regular ideas
+            let shuffledRegular = regularIdeas.shuffled()
+            
+            var finalDeck: [Idea] = []
+            var regularIndex = 0
+            
+            // Build infinite deck: 11 regular → 1 Legendary → repeat
+            for position in 0..<1000 {  // 1000+ cards = feels infinite
+                if (position + 1) % 12 == 0 && !legendaryIdeas.isEmpty {
+                    // Insert Legendary (cycle through all of them fairly)
+                    let legendaryIndex = (position / 12) % legendaryIdeas.count
+                    finalDeck.append(legendaryIdeas[legendaryIndex])
+                } else if regularIndex < shuffledRegular.count {
+                    finalDeck.append(shuffledRegular[regularIndex])
+                    regularIndex += 1
+                    if regularIndex >= shuffledRegular.count {
+                        regularIndex = 0  // loop regular ideas forever
+                    }
+                }
+            }
+            
+            self.ideas = finalDeck
+            self.currentIndex = 0
             self.isLoading = false
-            self.currentIndex = decodedIdeas.isEmpty ? 0 : Int.random(in: 0..<decodedIdeas.count)
-            print("Loaded and shuffled \(decodedIdeas.count) ideas from JSON, starting at index: \(self.currentIndex), title: \(self.ideas[safe: self.currentIndex]?.title ?? "none")")
+            
         } catch {
-            print("Error decoding SwipeDeck.json: \(error)")
-            self.ideas = sampleIdeas().shuffled()
-            self.isLoading = false
-            self.currentIndex = self.ideas.isEmpty ? 0 : Int.random(in: 0..<self.ideas.count)
-            print("Loaded and shuffled \(self.ideas.count) sample ideas due to JSON error, starting at index: \(self.currentIndex), title: \(self.ideas[safe: self.currentIndex]?.title ?? "none")")
+            print("JSON load error: \(error)")
+            loadSampleIdeas()
         }
     }
     
-    private func sampleIdeas() -> [Idea] {
-        return [
-            Idea(
-                id: UUID(),
-                title: "Romantic Dinner",
-                description: "Plan a candlelit dinner at home with your partner’s favorite meal.",
-                category: "Romantic",
-                difficulty: 2,
-                impressive: 4,
-                imageName: "romanticDinner",
-                level: .cute
-            ),
-            Idea(
-                id: UUID(),
-                title: "Sunset Hike",
-                description: "Take a scenic hike and watch the sunset from a hilltop.",
-                category: "Adventure",
-                difficulty: 3,
-                impressive: 3,
-                imageName: "sunsetHike",
-                level: .epic
-            ),
-            Idea(
-                id: UUID(),
-                title: "DIY Spa Day",
-                description: "Create a relaxing spa experience at home with candles and bath bombs.",
-                category: "Relaxation",
-                difficulty: 1,
-                impressive: 2,
-                imageName: "spaDay",
-                level: .spicy
-            )
+    private func loadSampleIdeas() {
+        // For testing — includes one Legendary
+        let sample = [
+            Idea(title: "Romantic Dinner", description: "Candlelit home dinner.", category: "Romantic", difficulty: 2, impressive: 4, imageName: "romanticDinner", level: .cute),
+            Idea(title: "Sunset Hike", description: "Watch sunset from a hilltop.", category: "Adventure", difficulty: 3, impressive: 3, imageName: "sunsetHike", level: .epic),
+            Idea(title: "DIY Spa Day", description: "Relaxing spa night at home.", category: "Relaxation", difficulty: 1, impressive: 2, imageName: "spaDay", level: .spicy),
+            Idea(title: "Private Yacht Night", description: "Sail under the stars with champagne.", category: "Luxury", difficulty: 5, impressive: 5, imageName: "yachtNight", level: .legendary)
         ]
+        self.ideas = sample.shuffled()
+        self.currentIndex = 0
+        self.isLoading = false
     }
     
-    // MARK: - Controlled Scrolling
+    // MARK: - Actions
     func nextIdea() {
         guard !ideas.isEmpty else { return }
-        currentIndex = (currentIndex + 1) % ideas.count // Loop to start
-        print("Moved to next idea: index=\(currentIndex), title=\(ideas[safe: currentIndex]?.title ?? "none")")
+        currentIndex = (currentIndex + 1) % ideas.count
     }
     
     func previousIdea() {
         guard !ideas.isEmpty else { return }
-        currentIndex = (currentIndex - 1 + ideas.count) % ideas.count // Loop to end
-        print("Moved to previous idea: index=\(currentIndex), title=\(ideas[safe: currentIndex]?.title ?? "none")")
+        currentIndex = (currentIndex - 1 + ideas.count) % ideas.count
     }
     
-    // MARK: - Other actions
     func likeIdea(_ idea: Idea) {
-        guard let userId = userId else {
-            print("No userId for liking idea")
-            return
-        }
-        FirebaseManager.shared.saveLikedIdea(idea, for: userId)
-        print("Liked idea: \(idea.title)")
+        FirebaseManager.shared.saveLikedIdea(idea, for: userId ?? "")
     }
     
     func saveIdea(_ idea: Idea) {
-        guard let userId = userId else {
-            print("No userId for saving idea")
-            return
-        }
-        FirebaseManager.shared.saveBookmarkedIdea(idea, for: userId)
-        print("Saved idea: \(idea.title)")
+        FirebaseManager.shared.saveBookmarkedIdea(idea, for: userId ?? "")
     }
     
     func shareIdea(_ idea: Idea) {
-        let shareText = "\(idea.title): \(idea.description)"
-        let activityVC = UIActivityViewController(activityItems: [shareText], applicationActivities: nil)
-        
-        if let windowScene = UIApplication.shared.connectedScenes
-            .compactMap({ $0 as? UIWindowScene })
-            .first,
-           let rootVC = windowScene.windows.first?.rootViewController {
-            DispatchQueue.main.async {
-                rootVC.present(activityVC, animated: true)
-                print("Sharing idea: \(idea.title)")
-            }
-        }
+        let text = "\(idea.title): \(idea.description)"
+        let avc = UIActivityViewController(activityItems: [text], applicationActivities: nil)
+        UIApplication.shared.windows.first?.rootViewController?.present(avc, animated: true)
     }
 }
 
