@@ -1,3 +1,4 @@
+// LuvDeckApp.swift
 import SwiftUI
 import Firebase
 import RevenueCat
@@ -9,12 +10,13 @@ struct LuvDeckApp: App {
     init() {
         FirebaseApp.configure()
         Purchases.configure(withAPIKey: "appl_XepSOeJujoolVOmttwgpWTfVXrV")
+        // Removed setPersistence — no longer needed or available
     }
 
     var body: some Scene {
         WindowGroup {
             ContentView()
-                .environmentObject(purchaseVM)   // SINGLE shared instance
+                .environmentObject(purchaseVM)
         }
     }
 }

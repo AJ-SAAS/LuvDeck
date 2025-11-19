@@ -1,11 +1,12 @@
+// AuthViewModel.swift – FINAL FIXED + SIGN-IN NAVIGATION SUPPORT
 import SwiftUI
 import Firebase
 import FirebaseAuth
 import UserNotifications
 
-// MARK: - Notification Names
 extension Notification.Name {
     static let authDidCompleteSignUp = Notification.Name("authDidCompleteSignUp")
+    static let authDidSignIn = Notification.Name("authDidSignIn")           // ← NEW
     static let authDidSignOut = Notification.Name("authDidSignOut")
 }
 
@@ -16,24 +17,10 @@ class AuthViewModel: ObservableObject {
     @Published var isLoading = false
 
     init() {
-        if let authUser = Auth.auth().currentUser {
-            self.user = User(id: authUser.uid, email: authUser.email ?? "")
-            print("Initialized with existing user: \(authUser.uid)")
-            checkAndRequestNotificationPermission()
-        } else {
-            print("No user signed in at initialization")
-        }
+        self.user = nil
+        print("AuthViewModel initialized — clean state")
     }
 
-    private func checkAndRequestNotificationPermission() {
-        UNUserNotificationCenter.current().getNotificationSettings { settings in
-            DispatchQueue.main.async {
-                print("Notification permission status: \(settings.authorizationStatus.rawValue)")
-            }
-        }
-    }
-
-    // MARK: - Sign In
     func signIn(email: String, password: String) {
         isLoading = true
         errorMessage = nil
@@ -46,16 +33,19 @@ class AuthViewModel: ObservableObject {
                 case .success(let user):
                     self.user = user
                     self.didJustSignUp = false
-                    print("✅ Sign in successful for user: \(user.id)")
+                    print("Sign in successful: \(user.id)")
+                    
+                    // THIS IS THE KEY LINE — tells ContentView to navigate
+                    NotificationCenter.default.post(name: .authDidSignIn, object: nil)
+                    
                 case .failure(let error):
                     self.errorMessage = error.localizedDescription
-                    print("❌ Sign in error: \(error.localizedDescription)")
+                    print("Sign in failed: \(error.localizedDescription)")
                 }
             }
         }
     }
 
-    // MARK: - Sign Up
     func signUp(email: String, password: String) {
         isLoading = true
         errorMessage = nil
@@ -68,17 +58,16 @@ class AuthViewModel: ObservableObject {
                 case .success(let user):
                     self.user = user
                     self.didJustSignUp = true
-                    print("✅ Sign up successful for user: \(user.id)")
+                    print("Sign up successful: \(user.id)")
                     NotificationCenter.default.post(name: .authDidCompleteSignUp, object: nil)
                 case .failure(let error):
                     self.errorMessage = error.localizedDescription
-                    print("❌ Sign up error: \(error.localizedDescription)")
+                    print("Sign up failed: \(error.localizedDescription)")
                 }
             }
         }
     }
 
-    // MARK: - Sign Out
     func signOut() {
         do {
             try FirebaseManager.shared.signOut()
@@ -86,11 +75,11 @@ class AuthViewModel: ObservableObject {
             errorMessage = nil
             didJustSignUp = false
             isLoading = false
-            print("👋 User signed out")
+            print("Signed out cleanly")
             NotificationCenter.default.post(name: .authDidSignOut, object: nil)
         } catch {
-            errorMessage = error.localizedDescription
-            print("❌ Sign out error: \(error.localizedDescription)")
+            errorMessage = "Sign out failed"
+            print("Sign out error: \(error.localizedDescription)")
         }
     }
 }

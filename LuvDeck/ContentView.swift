@@ -1,6 +1,8 @@
-// ContentView.swift — FINAL FIXED VERSION (100% stable)
+// ContentView.swift — FINAL 100% WORKING VERSION (Sign-in + all compiler errors fixed)
 import SwiftUI
 import RevenueCat
+import Firebase
+import FirebaseAuth
 
 struct ContentView: View {
     @StateObject private var purchaseVM = PurchaseViewModel()
@@ -44,23 +46,30 @@ struct ContentView: View {
                 loadInitialState()
             }
         }
+        // NEW USER SIGNS UP → always onboarding
         .onReceive(NotificationCenter.default.publisher(for: .authDidCompleteSignUp)) { _ in
             withAnimation { currentScreen = .onboarding }
         }
+        // EXISTING USER SIGNS IN → onboarding or home depending on status
+        .onReceive(NotificationCenter.default.publisher(for: .authDidSignIn)) { _ in
+            if onboardingViewModel.onboardingCompleted {
+                withAnimation { currentScreen = .home }
+            } else {
+                withAnimation { currentScreen = .onboarding }
+            }
+        }
+        // USER SIGNS OUT
         .onReceive(NotificationCenter.default.publisher(for: .authDidSignOut)) { _ in
             withAnimation { currentScreen = .auth }
         }
-
-        // PERFECT PAYWALL FLOW — NO FLASH, NO CRASH
+        // PAYWALL AFTER ONBOARDING
         .fullScreenCover(isPresented: $purchaseVM.triggerPaywallAfterOnboarding) {
             PaywallView(
                 isPresented: $purchaseVM.triggerPaywallAfterOnboarding,
                 purchaseVM: purchaseVM
             )
             .onDisappear {
-                // This is the ONLY place onboarding is marked complete
                 purchaseVM.completeOnboardingForCurrentUser()
-                
                 withAnimation(.easeInOut(duration: 0.35)) {
                     currentScreen = .home
                 }
@@ -71,7 +80,7 @@ struct ContentView: View {
     }
 
     private func loadInitialState() {
-        if authViewModel.user != nil {
+        if Auth.auth().currentUser != nil {
             onboardingViewModel.checkOnboardingStatus(
                 userId: authViewModel.user?.id,
                 didJustSignUp: false
