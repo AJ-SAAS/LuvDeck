@@ -63,7 +63,7 @@ struct PaywallView: View {
                     PlanCard(planName: "Weekly – $3.99", perWeekPrice: "$3.99 / week", ribbon: nil, isSelected: selectedPlan == .weekly) {
                         withAnimation { selectedPlan = .weekly }
                     }
-                    PlanCard(planName: "Yearly – $39.99", perWeekPrice: "$0.77 / week", ribbon: .bestValue, isSelected: selectedPlan == .yearly) {
+                    PlanCard(planName: "Yearly – $39.99", perWeekPrice: "", ribbon: .bestValue, isSelected: selectedPlan == .yearly) {
                         withAnimation { selectedPlan = .yearly }
                     }
                     PlanCard(planName: "Lifetime – $89.99", perWeekPrice: "One-time payment", ribbon: nil, isSelected: selectedPlan == .lifetime) {
@@ -195,11 +195,11 @@ private struct PlanCard: View {
                 Color.white
                 HStack(spacing: 12) {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 28))
+                        .font(.system(size: 24)) // slightly smaller checkmark
                         .foregroundColor(isSelected ? Color(#colorLiteral(red: 0.18, green: 0.8, blue: 0.45, alpha: 1)) : .black.opacity(0.4))
 
                     Text(planName)
-                        .font(.system(size: 16, weight: .medium, design: .rounded))
+                        .font(.system(size: 16, weight: .semibold, design: .rounded)) // bolder plan name
                         .foregroundColor(.black)
 
                     Spacer()
@@ -214,9 +214,12 @@ private struct PlanCard: View {
                                 .foregroundColor(.white)
                                 .cornerRadius(8)
                         }
-                        Text(perWeekPrice)
-                            .font(.system(size: 15, weight: .regular, design: .rounded))
-                            .foregroundColor(.black.opacity(0.9))
+
+                        if !perWeekPrice.isEmpty {
+                            Text(perWeekPrice)
+                                .font(.system(size: 14, weight: .regular, design: .rounded)) // 1px smaller
+                                .foregroundColor(.black.opacity(0.45)) // lighter grey
+                        }
                     }
                 }
                 .padding(20)
@@ -243,3 +246,4 @@ struct PaywallView_Previews: PreviewProvider {
         PaywallView(isPresented: .constant(true), purchaseVM: PurchaseViewModel())
     }
 }
+
