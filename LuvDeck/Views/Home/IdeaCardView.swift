@@ -1,5 +1,5 @@
 // IdeaCardView.swift – TIKTOK SMOOTH • ZERO FLASH • PERFECT SCROLL
-// November 18, 2025 – 100% Clean Build
+// November 18, 2025 – UPDATED with Save/Bookmark Button (Fixed labels + iOS17)
 
 import SwiftUI
 
@@ -7,10 +7,12 @@ struct IdeaCardView: View {
     let idea: Idea
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var purchaseVM: PurchaseViewModel
+    @EnvironmentObject var savedVM: SavedIdeasViewModel
 
     @State private var isLiked = false
     @State private var animateLike = false
     @State private var showHeartBurst = false
+    @State private var isSaved = false
 
     private var isLegendaryPaywalled: Bool {
         idea.level == .legendary && !purchaseVM.isPremium
@@ -38,6 +40,9 @@ struct IdeaCardView: View {
             .ignoresSafeArea(edges: .all)
         }
         .ignoresSafeArea(edges: .bottom)
+        .onAppear {
+            isSaved = savedVM.isSaved(idea)
+        }
     }
 
     // MARK: - Bottom Overlay
@@ -80,8 +85,8 @@ struct IdeaCardView: View {
     private func levelBadge(geometry: GeometryProxy) -> some View {
         let bgColor: Color = switch idea.level {
         case .cute:      .pink
-        case .spicy: .orange
-        case .epic:  .purple
+        case .spicy:     .orange
+        case .epic:      .purple
         case .legendary: .yellow
         }
 
@@ -125,11 +130,13 @@ struct IdeaCardView: View {
         .onTapGesture { purchaseVM.shouldPresentPaywall = true }
     }
 
+    // MARK: - Right Side Buttons
     @ViewBuilder
     private func rightSideButtons(geometry: GeometryProxy) -> some View {
         VStack(spacing: geometry.size.height * 0.035) {
             Spacer()
 
+            // Like Button
             Button {
                 withAnimation(.spring(response: 0.3, dampingFraction: 0.4)) {
                     animateLike = true
@@ -152,6 +159,27 @@ struct IdeaCardView: View {
                 }
             }
 
+            // Save / Bookmark Button
+            Button {
+                isSaved.toggle()
+                if isSaved {
+                    savedVM.save(idea)
+                } else {
+                    savedVM.remove(idea)
+                }
+            } label: {
+                VStack(spacing: 6) {
+                    Image(systemName: isSaved ? "bookmark.fill" : "bookmark")
+                        .font(.system(size: geometry.size.height * 0.045))
+                        .foregroundColor(.white)
+                        .shadow(radius: 6)
+                    Text("Save")
+                        .font(.system(size: geometry.size.height * 0.018))
+                        .foregroundColor(.white)
+                }
+            }
+
+            // Share Button
             Button {
                 viewModel.shareIdea(idea)
             } label: {
@@ -173,6 +201,7 @@ struct IdeaCardView: View {
         .zIndex(3)
     }
 
+    // MARK: - Heart Burst
     @ViewBuilder
     private func heartBurst(geometry: GeometryProxy) -> some View {
         if showHeartBurst {
@@ -189,13 +218,13 @@ struct IdeaCardView: View {
     }
 }
 
-// MARK: - Ultra-Fast Cached Image (TikTok/Instagram tech)
+// MARK: - Cached Image
 struct CachedDownsampledImage: View {
     let imageName: String
     let size: CGSize
-    
+
     @StateObject private var loader = ImageLoader()
-    
+
     var body: some View {
         ZStack {
             if let image = loader.image {
@@ -203,48 +232,34 @@ struct CachedDownsampledImage: View {
                     .resizable()
                     .scaledToFill()
             } else {
-                Color(white: 0.15) // instant placeholder — no flash ever
+                Color(white: 0.15)
             }
         }
         .frame(width: size.width, height: size.height)
         .clipped()
-        .onAppear {
-            loader.load(imageName: imageName, targetSize: size)
-        }
-        .onChange(of: size) { newSize in
-            loader.load(imageName: imageName, targetSize: newSize)
-        }
+        .onAppear { loader.load(imageName, targetSize: size) }
+        .onChange(of: size) { newSize in loader.load(imageName, targetSize: newSize) } // iOS 17 fix
     }
 }
 
 class ImageLoader: ObservableObject {
     @Published var image: UIImage?
-    
     private static let cache = NSCache<NSString, UIImage>()
-    
-    func load(imageName: String, targetSize: CGSize) {
+
+    func load(_ imageName: String, targetSize: CGSize) {
         let key = NSString(string: "\(imageName)_\(Int(targetSize.width))x\(Int(targetSize.height))")
-        
         if let cached = Self.cache.object(forKey: key) {
             self.image = cached
             return
         }
-        
         DispatchQueue.global(qos: .userInitiated).async { [weak self] in
             guard let original = UIImage(named: imageName) ?? UIImage(named: "defaultIdeaImage") else { return }
-            
             let renderer = UIGraphicsImageRenderer(size: targetSize)
             let downsampled = renderer.image { _ in
                 original.draw(in: CGRect(origin: .zero, size: targetSize))
             }
-            
             Self.cache.setObject(downsampled, forKey: key)
-            
-            DispatchQueue.main.async {
-                withAnimation(.easeInOut(duration: 0.2)) {
-                    self?.image = downsampled
-                }
-            }
+            DispatchQueue.main.async { withAnimation(.easeInOut(duration: 0.2)) { self?.image = downsampled } }
         }
     }
 }

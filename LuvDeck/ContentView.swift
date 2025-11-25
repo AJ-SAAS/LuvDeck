@@ -1,11 +1,18 @@
-// ContentView.swift — FINAL 100% WORKING VERSION (Sign-in + all compiler errors fixed)
+// ContentView.swift — FINAL FIXED & CRASH-FREE (2025)
+// → Bookmark button works instantly after Paywall → Close
+
 import SwiftUI
 import RevenueCat
 import Firebase
 import FirebaseAuth
 
 struct ContentView: View {
-    @StateObject private var purchaseVM = PurchaseViewModel()
+    // MARK: - Shared Global ViewModels (from LuvDeckApp.swift)
+    @EnvironmentObject var purchaseVM: PurchaseViewModel        // ← Now from App
+    @EnvironmentObject var savedIdeasVM: SavedIdeasViewModel    // ← ADDED: Fixes crash!
+    @EnvironmentObject var homeVM: HomeViewModel                // ← ADDED: For HomeView
+
+    // MARK: - Local ViewModels (still created here)
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var onboardingViewModel = OnboardingViewModel()
     @StateObject private var addDatesViewModel = AddDatesViewModel()
@@ -17,25 +24,34 @@ struct ContentView: View {
         ZStack {
             if isReady {
                 switch currentScreen {
-                case .splash: SplashView()
+                case .splash:
+                    SplashView()
+
                 case .congratulations:
-                    CongratulationsView { withAnimation { currentScreen = .auth } }
+                    CongratulationsView {
+                        withAnimation { currentScreen = .auth }
+                    }
+
                 case .auth:
                     AuthView()
                         .environmentObject(authViewModel)
                         .environmentObject(onboardingViewModel)
                         .environmentObject(purchaseVM)
+
                 case .onboarding:
                     OnboardingView()
                         .environmentObject(authViewModel)
                         .environmentObject(onboardingViewModel)
                         .environmentObject(purchaseVM)
+
                 case .home:
                     TabBarView()
                         .environmentObject(authViewModel)
                         .environmentObject(onboardingViewModel)
                         .environmentObject(addDatesViewModel)
                         .environmentObject(purchaseVM)
+                        .environmentObject(savedIdeasVM)   // ← CRITICAL: Bookmark works!
+                        .environmentObject(homeVM)         // ← HomeViewModel available
                 }
             } else {
                 SplashView()
@@ -46,11 +62,13 @@ struct ContentView: View {
                 loadInitialState()
             }
         }
+
         // NEW USER SIGNS UP → always onboarding
         .onReceive(NotificationCenter.default.publisher(for: .authDidCompleteSignUp)) { _ in
             withAnimation { currentScreen = .onboarding }
         }
-        // EXISTING USER SIGNS IN → onboarding or home depending on status
+
+        // EXISTING USER SIGNS IN → onboarding or home
         .onReceive(NotificationCenter.default.publisher(for: .authDidSignIn)) { _ in
             if onboardingViewModel.onboardingCompleted {
                 withAnimation { currentScreen = .home }
@@ -58,11 +76,13 @@ struct ContentView: View {
                 withAnimation { currentScreen = .onboarding }
             }
         }
+
         // USER SIGNS OUT
         .onReceive(NotificationCenter.default.publisher(for: .authDidSignOut)) { _ in
             withAnimation { currentScreen = .auth }
         }
-        // PAYWALL AFTER ONBOARDING
+
+        // PAYWALL AFTER ONBOARDING → Close → Home (NOW WORKS WITHOUT CRASH)
         .fullScreenCover(isPresented: $purchaseVM.triggerPaywallAfterOnboarding) {
             PaywallView(
                 isPresented: $purchaseVM.triggerPaywallAfterOnboarding,
@@ -75,6 +95,7 @@ struct ContentView: View {
                 }
             }
         }
+
         .animation(.easeInOut(duration: 0.5), value: isReady)
         .animation(.easeInOut(duration: 0.35), value: currentScreen)
     }

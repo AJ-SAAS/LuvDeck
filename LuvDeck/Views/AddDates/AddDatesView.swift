@@ -3,14 +3,15 @@ import SwiftUI
 struct AddDatesView: View {
     @StateObject var viewModel: AddDatesViewModel
     @ObservedObject var purchaseVM: PurchaseViewModel
+    @EnvironmentObject var savedVM: SavedIdeasViewModel  // ADDED
 
     @State private var showAddSheet = false
     @State private var selectedEvent: DateEvent?
     @State private var showHowItWorks = false
+    @State private var showSavedIdeas = false // ADDED
 
     // MARK: - Custom initializer to wire the isPremium provider into the ViewModel
     init(purchaseVM: PurchaseViewModel, userId: String? = nil) {
-        // Create the StateObject with the correct provider closure
         _viewModel = StateObject(wrappedValue: AddDatesViewModel(userId: userId, isPremiumProvider: { purchaseVM.isPremium }))
         self.purchaseVM = purchaseVM
     }
@@ -34,6 +35,29 @@ struct AddDatesView: View {
                             .padding(.horizontal)
                     }
                     .padding(.top, 20)
+
+                    // MARK: - Saved Ideas Card (NEW)
+                    Button {
+                        showSavedIdeas = true
+                    } label: {
+                        HStack {
+                            Image(systemName: "bookmark.fill")
+                                .foregroundStyle(.white)           // ← Forces white icon
+                            Text("Saved Ideas")
+                                .font(.headline)
+                                .foregroundStyle(.white)
+                        }
+                        .padding()
+                        .frame(maxWidth: .infinity)
+                        .background(Color.red.opacity(0.9))
+                        .cornerRadius(16)
+                        .shadow(color: .black.opacity(0.1), radius: 6, y: 3)
+                    }
+                    .tint(.white)   // ← This ensures the icon is always white, even on iOS 18+
+                    .sheet(isPresented: $showSavedIdeas) {
+                        SavedIdeasView()
+                            .environmentObject(savedVM)
+                    }
 
                     // MARK: - Event Cards (Upcoming only)
                     if viewModel.upcomingEvents.isEmpty {
@@ -269,5 +293,7 @@ struct IdentifiableError: Identifiable {
 struct AddDatesView_Previews: PreviewProvider {
     static var previews: some View {
         AddDatesView(purchaseVM: PurchaseViewModel(), userId: nil)
+            .environmentObject(SavedIdeasViewModel()) // ADDED for preview
     }
 }
+
