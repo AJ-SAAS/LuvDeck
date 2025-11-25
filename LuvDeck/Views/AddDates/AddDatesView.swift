@@ -3,14 +3,13 @@ import SwiftUI
 struct AddDatesView: View {
     @StateObject var viewModel: AddDatesViewModel
     @ObservedObject var purchaseVM: PurchaseViewModel
-    @EnvironmentObject var savedVM: SavedIdeasViewModel  // ADDED
+    @EnvironmentObject var savedVM: SavedIdeasViewModel
 
     @State private var showAddSheet = false
     @State private var selectedEvent: DateEvent?
     @State private var showHowItWorks = false
-    @State private var showSavedIdeas = false // ADDED
+    @State private var showSavedIdeas = false
 
-    // MARK: - Custom initializer to wire the isPremium provider into the ViewModel
     init(purchaseVM: PurchaseViewModel, userId: String? = nil) {
         _viewModel = StateObject(wrappedValue: AddDatesViewModel(userId: userId, isPremiumProvider: { purchaseVM.isPremium }))
         self.purchaseVM = purchaseVM
@@ -20,6 +19,7 @@ struct AddDatesView: View {
         NavigationStack {
             ScrollView {
                 VStack(spacing: 24) {
+
                     // MARK: - Hero Tagline
                     VStack(spacing: 12) {
                         Text("Never forget what matters.")
@@ -36,13 +36,13 @@ struct AddDatesView: View {
                     }
                     .padding(.top, 20)
 
-                    // MARK: - Saved Ideas Card (NEW)
+                    // MARK: - Saved Ideas Card
                     Button {
                         showSavedIdeas = true
                     } label: {
                         HStack {
                             Image(systemName: "bookmark.fill")
-                                .foregroundStyle(.white)           // ← Forces white icon
+                                .foregroundStyle(.white)
                             Text("Saved Ideas")
                                 .font(.headline)
                                 .foregroundStyle(.white)
@@ -53,13 +53,13 @@ struct AddDatesView: View {
                         .cornerRadius(16)
                         .shadow(color: .black.opacity(0.1), radius: 6, y: 3)
                     }
-                    .tint(.white)   // ← This ensures the icon is always white, even on iOS 18+
+                    .tint(.white)
                     .sheet(isPresented: $showSavedIdeas) {
                         SavedIdeasView()
                             .environmentObject(savedVM)
                     }
 
-                    // MARK: - Event Cards (Upcoming only)
+                    // MARK: - Event Cards
                     if viewModel.upcomingEvents.isEmpty {
                         emptyStateCard
                     } else {
@@ -72,7 +72,8 @@ struct AddDatesView: View {
             }
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                // MARK: - Centered Logo (Exact Match with HomeView)
+
+                // MARK: - PERFECTLY CENTERED LOGO (matching SparkView)
                 ToolbarItem(placement: .principal) {
                     HStack {
                         Spacer()
@@ -83,19 +84,16 @@ struct AddDatesView: View {
                             .padding(.vertical, 6)
                         Spacer()
                     }
-                    .background(Color.white.opacity(0.95))
-                    .shadow(color: .black.opacity(0.05), radius: 3, y: 1)
-                    .padding(.trailing, 44)
+                    .frame(maxWidth: .infinity)
                 }
 
+                // MARK: - Plus Button
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
-                        // Check limit BEFORE opening the Add sheet
                         if viewModel.canCreateEvent() {
                             selectedEvent = nil
                             showAddSheet = true
                         } else {
-                            // show paywall instead of the add sheet
                             viewModel.showPaywall = true
                         }
                     } label: {
@@ -109,9 +107,10 @@ struct AddDatesView: View {
             .sheet(isPresented: $showAddSheet) {
                 AddDateSheet(viewModel: viewModel, event: selectedEvent)
             }
-            // Present the Paywall when the viewModel toggles it
             .sheet(isPresented: Binding(get: { viewModel.showPaywall }, set: { viewModel.showPaywall = $0 })) {
                 PaywallView(isPresented: Binding(get: { viewModel.showPaywall }, set: { viewModel.showPaywall = $0 }), purchaseVM: purchaseVM)
+                    .presentationDetents([.large])
+                    .presentationDragIndicator(.visible)
             }
             .alert(item: errorBinding) { err in
                 Alert(title: Text("Error"), message: Text(err.message), dismissButton: .default(Text("OK")))
@@ -120,7 +119,7 @@ struct AddDatesView: View {
                 viewModel.fetchEvents()
             }
 
-            // MARK: - Floating "How It Works" Card
+            // MARK: - How It Works Card
             .overlay(alignment: .bottom) {
                 howItWorksCard
                     .padding(.horizontal)
@@ -154,7 +153,7 @@ struct AddDatesView: View {
         )
     }
 
-    // MARK: - Event Cards (Upcoming only)
+    // MARK: - Event Cards
     private var eventCards: some View {
         ForEach(viewModel.upcomingEvents) { event in
             EventCard(event: event, viewModel: viewModel)
@@ -165,7 +164,7 @@ struct AddDatesView: View {
         }
     }
 
-    // MARK: - How It Works Card (Collapsible) — CENTERED + PINK
+    // MARK: - How It Works Card
     private var howItWorksCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Button {
@@ -190,9 +189,8 @@ struct AddDatesView: View {
                     bulletPoint("Build rituals that keep love growing, week after week")
                 }
                 .font(.subheadline)
-                .foregroundStyle(.pink.opacity(0.9))
-                .multilineTextAlignment(.center)
-                .frame(maxWidth: .infinity)
+                .foregroundStyle(.black)
+                .multilineTextAlignment(.leading)
                 .transition(.opacity.combined(with: .scale))
             }
         }
@@ -224,21 +222,20 @@ struct AddDatesView: View {
     }
 }
 
-// MARK: - Event Card (Tinder-style)
+// MARK: - Event Card
 struct EventCard: View {
     let event: DateEvent
     let viewModel: AddDatesViewModel
 
     var body: some View {
         HStack(alignment: .center, spacing: 16) {
-            // Icon
+
             Image(systemName: event.eventType.sfSymbolName)
                 .font(.title)
                 .foregroundStyle(eventTypeColor)
                 .frame(width: 50, height: 50)
                 .background(Circle().fill(eventTypeColor.opacity(0.15)))
 
-            // Details
             VStack(alignment: .leading, spacing: 4) {
                 Text(event.personName)
                     .font(.headline)
@@ -257,7 +254,6 @@ struct EventCard: View {
 
             Spacer()
 
-            // Reminder Toggle
             Image(systemName: event.reminderOn ? "bell.fill" : "bell.slash")
                 .foregroundStyle(event.reminderOn ? .pink : .secondary)
                 .onTapGesture {
@@ -283,17 +279,14 @@ struct EventCard: View {
     }
 }
 
-// MARK: - Identifiable Error for Alerts
 struct IdentifiableError: Identifiable {
     let id = UUID()
     let message: String
 }
 
-// MARK: - Previews
 struct AddDatesView_Previews: PreviewProvider {
     static var previews: some View {
         AddDatesView(purchaseVM: PurchaseViewModel(), userId: nil)
-            .environmentObject(SavedIdeasViewModel()) // ADDED for preview
+            .environmentObject(SavedIdeasViewModel())
     }
 }
-
