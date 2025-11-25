@@ -95,6 +95,16 @@ struct PaywallView: View {
                 .padding(.top, 12)
                 .disabled(isProcessing)
 
+                // "Maybe later.." soft dismiss
+                Button {
+                    isPresented = false
+                } label: {
+                    Text("Maybe later.. >")
+                        .font(.system(.headline, design: .rounded))
+                        .foregroundColor(.black.opacity(0.65))
+                }
+                .padding(.top, 10)
+
                 // Legal + Restore
                 HStack(spacing: 20) {
                     Button("Terms of use") { openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") }
@@ -195,11 +205,11 @@ private struct PlanCard: View {
                 Color.white
                 HStack(spacing: 12) {
                     Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 24)) // slightly smaller checkmark
+                        .font(.system(size: 24))
                         .foregroundColor(isSelected ? Color(#colorLiteral(red: 0.18, green: 0.8, blue: 0.45, alpha: 1)) : .black.opacity(0.4))
 
                     Text(planName)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded)) // bolder plan name
+                        .font(.system(size: 16, weight: .semibold, design: .rounded))
                         .foregroundColor(.black)
 
                     Spacer()
@@ -217,8 +227,8 @@ private struct PlanCard: View {
 
                         if !perWeekPrice.isEmpty {
                             Text(perWeekPrice)
-                                .font(.system(size: 14, weight: .regular, design: .rounded)) // 1px smaller
-                                .foregroundColor(.black.opacity(0.45)) // lighter grey
+                                .font(.system(size: 14, weight: .regular, design: .rounded))
+                                .foregroundColor(.black.opacity(0.45))
                         }
                     }
                 }
@@ -246,4 +256,3 @@ struct PaywallView_Previews: PreviewProvider {
         PaywallView(isPresented: .constant(true), purchaseVM: PurchaseViewModel())
     }
 }
-
