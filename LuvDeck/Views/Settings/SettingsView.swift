@@ -93,6 +93,16 @@ struct SettingsView: View {
                     Label("Share Your Feedback", systemImage: "message")
                         .foregroundColor(.blue)
                 }
+                
+                // MARK: - Rate Us Button (new)
+                Button {
+                    if let url = URL(string: "https://apps.apple.com/us/app/relationship-dates-luvdeck/id6755172208?action=write-review") {
+                        UIApplication.shared.open(url)
+                    }
+                } label: {
+                    Label("Rate Us ⭐️", systemImage: "star.fill")
+                        .foregroundColor(.blue)
+                }
             }
 
             // MARK: - Legal → Black

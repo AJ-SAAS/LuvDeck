@@ -64,18 +64,19 @@ struct SparkView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
 
+                // MARK: - Invisible leading item for perfect centering
+                ToolbarItem(placement: .topBarLeading) {
+                    Color.clear
+                        .frame(width: 24, height: 24)
+                }
+
                 // MARK: - PERFECTLY CENTERED LOGO
                 ToolbarItem(placement: .principal) {
-                    HStack {
-                        Spacer()
-                        Image("luvdecksmall")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 140, height: 48)
-                            .padding(.vertical, 6)
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity)
+                    Image("luvdeckclean")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 140, height: 48)
+                        .padding(.vertical, 6)
                 }
             }
 
@@ -92,6 +93,9 @@ struct SparkView: View {
                     .padding(.horizontal)
                     .padding(.bottom, 20)
                     .animation(.spring(response: 0.4), value: showHowItWorks)
+            }
+            .onDisappear {
+                showHowItWorks = false // <-- close overlay when leaving view
             }
         }
     }

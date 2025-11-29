@@ -6,10 +6,11 @@ struct CongratulationsView: View {
     
     var body: some View {
         VStack(spacing: 32) {
-            Image("luvdecklogo")
+            Image("newlogosmile")
                 .resizable()
                 .scaledToFit()
-                .frame(width: 160, height: 160) // ↑ increased size
+                .frame(width: 160, height: 160)
+                .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous)) // ← curved edges
 
             Text("Congratulations!")
                 .font(.largeTitle).bold()

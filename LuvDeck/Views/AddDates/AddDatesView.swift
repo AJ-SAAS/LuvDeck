@@ -11,7 +11,10 @@ struct AddDatesView: View {
     @State private var showSavedIdeas = false
 
     init(purchaseVM: PurchaseViewModel, userId: String? = nil) {
-        _viewModel = StateObject(wrappedValue: AddDatesViewModel(userId: userId, isPremiumProvider: { purchaseVM.isPremium }))
+        _viewModel = StateObject(wrappedValue: AddDatesViewModel(
+            userId: userId,
+            isPremiumProvider: { purchaseVM.isPremium }
+        ))
         self.purchaseVM = purchaseVM
     }
 
@@ -73,18 +76,19 @@ struct AddDatesView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
 
-                // MARK: - PERFECTLY CENTERED LOGO (matching SparkView)
+                // MARK: - Invisible item to balance trailing button
+                ToolbarItem(placement: .topBarLeading) {
+                    Color.clear
+                        .frame(width: 24, height: 24)
+                }
+
+                // MARK: - Perfectly Centered Logo
                 ToolbarItem(placement: .principal) {
-                    HStack {
-                        Spacer()
-                        Image("luvdecksmall")
-                            .resizable()
-                            .scaledToFit()
-                            .frame(width: 140, height: 48)
-                            .padding(.vertical, 6)
-                        Spacer()
-                    }
-                    .frame(maxWidth: .infinity)
+                    Image("luvdeckclean")
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: 140, height: 48)
+                        .padding(.vertical, 6)
                 }
 
                 // MARK: - Plus Button
@@ -107,19 +111,35 @@ struct AddDatesView: View {
             .sheet(isPresented: $showAddSheet) {
                 AddDateSheet(viewModel: viewModel, event: selectedEvent)
             }
-            .sheet(isPresented: Binding(get: { viewModel.showPaywall }, set: { viewModel.showPaywall = $0 })) {
-                PaywallView(isPresented: Binding(get: { viewModel.showPaywall }, set: { viewModel.showPaywall = $0 }), purchaseVM: purchaseVM)
-                    .presentationDetents([.large])
-                    .presentationDragIndicator(.visible)
+            .sheet(isPresented: Binding(
+                get: { viewModel.showPaywall },
+                set: { viewModel.showPaywall = $0 }
+            )) {
+                PaywallView(
+                    isPresented: Binding(
+                        get: { viewModel.showPaywall },
+                        set: { viewModel.showPaywall = $0 }
+                    ),
+                    purchaseVM: purchaseVM
+                )
+                .presentationDetents([.large])
+                .presentationDragIndicator(.visible)
             }
             .alert(item: errorBinding) { err in
-                Alert(title: Text("Error"), message: Text(err.message), dismissButton: .default(Text("OK")))
+                Alert(
+                    title: Text("Error"),
+                    message: Text(err.message),
+                    dismissButton: .default(Text("OK"))
+                )
             }
             .onAppear {
                 viewModel.fetchEvents()
             }
+            .onDisappear {
+                showHowItWorks = false // <-- Close overlay when leaving view
+            }
 
-            // MARK: - How It Works Card
+            // MARK: - How It Works Card Overlay
             .overlay(alignment: .bottom) {
                 howItWorksCard
                     .padding(.horizontal)
@@ -213,7 +233,7 @@ struct AddDatesView: View {
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Error Binding
     private var errorBinding: Binding<IdentifiableError?> {
         Binding(
             get: { viewModel.errorMessage.map { IdentifiableError(message: $0) } },
@@ -279,6 +299,7 @@ struct EventCard: View {
     }
 }
 
+// MARK: - Identifiable Error
 struct IdentifiableError: Identifiable {
     let id = UUID()
     let message: String

@@ -1,11 +1,10 @@
-// PremiumTeaserBanner.swift
+// PremiumTeaserBanner.swift – FIXED 2025 (compiles perfectly)
 import SwiftUI
 
 struct PremiumTeaserBanner: View {
     @Binding var isPresented: Bool
-    @EnvironmentObject var viewModel: HomeViewModel       // ← Fixed: comma was missing
-    @EnvironmentObject var purchaseVM: PurchaseViewModel
-
+    @EnvironmentObject var purchaseVM: PurchaseViewModel   // We only need this one
+    
     var body: some View {
         if isPresented {
             VStack(spacing: 12) {
@@ -23,7 +22,7 @@ struct PremiumTeaserBanner: View {
                     Button {
                         withAnimation(.spring()) {
                             isPresented = false
-                            viewModel.dismissTeaserBanner()
+                            // No need to call HomeViewModel — the banner is controlled purely by the parent
                         }
                     } label: {
                         Image(systemName: "xmark")
@@ -63,6 +62,5 @@ struct PremiumTeaserBanner: View {
 
 #Preview {
     PremiumTeaserBanner(isPresented: .constant(true))
-        .environmentObject(HomeViewModel(userId: nil))
         .environmentObject(PurchaseViewModel())
 }

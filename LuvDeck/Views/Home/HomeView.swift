@@ -70,7 +70,7 @@ struct HomeView: View {
             // Top Logo
             HStack {
                 Spacer()
-                Image("luvdecksmall")
+                Image("luvdeckclean")
                     .resizable()
                     .scaledToFit()
                     .frame(width: 140, height: 48)
