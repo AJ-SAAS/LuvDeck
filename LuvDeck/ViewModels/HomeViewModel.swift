@@ -1,8 +1,8 @@
 // HomeViewModel.swift
-// FINAL VERSION – Legendary cards appear every 12th position
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
+import StoreKit
 
 class HomeViewModel: ObservableObject {
     @Published var ideas: [Idea] = []
@@ -17,6 +17,12 @@ class HomeViewModel: ObservableObject {
     private let teaserInterval: Int = 70
     private var userId: String?
     private let isPremiumProvider: () -> Bool
+    
+    // MARK: - Review Prompt Settings
+    private let reviewSwipeThreshold = 8
+    private let reviewCooldownDays: Double = 30
+    private let lastReviewKey = "lastReviewRequestDate"
+    private let lastVersionKey = "lastVersionReviewed"
     
     init(userId: String?, isPremiumProvider: @escaping () -> Bool = { false }) {
         self.userId = userId
@@ -34,15 +40,44 @@ class HomeViewModel: ObservableObject {
     // Called every time user successfully swipes to a new card
     func didSwipe() {
         guard !isPremiumProvider() else { return }
-        guard !hasShownTeaserThisSession else { return }
         
         swipeCount += 1
-        
+        checkTeaserBanner()
+        checkReviewPrompt()
+    }
+    
+    private func checkTeaserBanner() {
+        guard !hasShownTeaserThisSession else { return }
         if swipeCount >= teaserInterval {
             withAnimation(.spring(response: 0.6, dampingFraction: 0.7)) {
                 showTeaserBanner = true
             }
             hasShownTeaserThisSession = true
+        }
+    }
+    
+    // MARK: - Review Prompt Logic
+    private func checkReviewPrompt() {
+        guard swipeCount >= reviewSwipeThreshold else { return }
+        
+        let now = Date()
+        let lastRequest = UserDefaults.standard.object(forKey: lastReviewKey) as? Date ?? .distantPast
+        let lastVersion = UserDefaults.standard.string(forKey: lastVersionKey)
+        let currentVersion = Bundle.main.infoDictionary?["CFBundleShortVersionString"] as? String ?? "0"
+        
+        // Only prompt if 30+ days passed OR app version changed
+        if now.timeIntervalSince(lastRequest) > reviewCooldownDays * 86400 || lastVersion != currentVersion {
+            requestReview()
+            UserDefaults.standard.set(now, forKey: lastReviewKey)
+            UserDefaults.standard.set(currentVersion, forKey: lastVersionKey)
+        }
+    }
+    
+    private func requestReview() {
+        DispatchQueue.main.async {
+            if let scene = UIApplication.shared.connectedScenes.first as? UIWindowScene {
+                SKStoreReviewController.requestReview(in: scene)
+            }
         }
     }
     
@@ -68,28 +103,21 @@ class HomeViewModel: ObservableObject {
             let data = try Data(contentsOf: url)
             let decoded = try JSONDecoder().decode([Idea].self, from: data)
             
-            // Separate Legendary from regular ideas
             let legendaryIdeas = decoded.filter { $0.level == .legendary }
             let regularIdeas = decoded.filter { $0.level != .legendary }
             
-            // Shuffle only the regular ideas
             let shuffledRegular = regularIdeas.shuffled()
-            
             var finalDeck: [Idea] = []
             var regularIndex = 0
             
-            // Build infinite deck: 11 regular → 1 Legendary → repeat
-            for position in 0..<1000 {  // 1000+ cards = feels infinite
+            for position in 0..<1000 {
                 if (position + 1) % 12 == 0 && !legendaryIdeas.isEmpty {
-                    // Insert Legendary (cycle through all of them fairly)
                     let legendaryIndex = (position / 12) % legendaryIdeas.count
                     finalDeck.append(legendaryIdeas[legendaryIndex])
                 } else if regularIndex < shuffledRegular.count {
                     finalDeck.append(shuffledRegular[regularIndex])
                     regularIndex += 1
-                    if regularIndex >= shuffledRegular.count {
-                        regularIndex = 0  // loop regular ideas forever
-                    }
+                    if regularIndex >= shuffledRegular.count { regularIndex = 0 }
                 }
             }
             
@@ -104,7 +132,6 @@ class HomeViewModel: ObservableObject {
     }
     
     private func loadSampleIdeas() {
-        // For testing — includes one Legendary
         let sample = [
             Idea(title: "Romantic Dinner", description: "Candlelit home dinner.", category: "Romantic", difficulty: 2, impressive: 4, imageName: "romanticDinner", level: .cute),
             Idea(title: "Sunset Hike", description: "Watch sunset from a hilltop.", category: "Adventure", difficulty: 3, impressive: 3, imageName: "sunsetHike", level: .epic),
