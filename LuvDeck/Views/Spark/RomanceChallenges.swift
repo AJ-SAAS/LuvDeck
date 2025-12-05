@@ -1,5 +1,3 @@
-// RomanceChallenges.swift
-// 30 High-Energy Romance Challenges (Pure fire, zero lameness)
 let romanceChallenges: [String] = [
     "Slow-dance in the kitchen right now — no music required.",
     "Leave a trail of kisses from their neck to wherever you want.",
@@ -19,7 +17,7 @@ let romanceChallenges: [String] = [
     "Leave a hickey in a place only you’ll see.",
     "Cook dinner wearing only an apron (or less).",
     "Create a 5-second couple handshake that ends in a kiss.",
-    "Send ‘I’m not wearing…’ and finish the sentence.",
+    "Send ‘I’m not wearing…’ and finish the sentence.", // replaced
     "Re-enact your favorite movie kiss scene.",
     "Give them a lap dance — 30 seconds, full confidence.",
     "Write a 3-line love poem on their thigh with a pen.",
@@ -29,6 +27,6 @@ let romanceChallenges: [String] = [
     "Whisper ‘You’re mine’ possessively during a hug.",
     "Challenge: no kissing on the lips until midnight — tease only.",
     "Leave lipstick kisses on the mirror spelling ‘Tonight’",
-    "Tell them exactly how you want to be touched tonight.",
-    "End the night with ‘Round two starts now.’"
+    "Tell them exactly how you want to be touched tonight.", // replaced
+    "End the night with ‘Round two starts now.’" // replaced
 ]

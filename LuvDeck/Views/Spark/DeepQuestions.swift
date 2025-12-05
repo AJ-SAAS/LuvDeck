@@ -1,5 +1,3 @@
-// DeepQuestions.swift
-// 30 Deep-but-Playful Questions — Build confidence, intimacy, and excitement
 let deepQuestions: [String] = [
     "When do you feel most alive and electric when we’re together?",
     "What’s one moment with me that still gives you butterflies?",
@@ -28,7 +26,7 @@ let deepQuestions: [String] = [
     "How has loving me made you feel more powerful?",
     "What’s one look I give you that instantly melts you?",
     "When do you feel the most playful and turned on at the same time?",
-    "What’s a dream date you’ve never told anyone — until now?",
-    "What’s something I do that makes you grin like an idiot?",
-    "How do you want to be kissed tonight?"
+    "What’s a dream date you’ve never told anyone — until now?", // replaced
+    "What’s something I do that makes you grin like an idiot?", // replaced
+    "How do you want to be kissed tonight?" // replaced
 ]

@@ -1,4 +1,3 @@
-// PaywallView.swift
 import SwiftUI
 
 struct PaywallView: View {
@@ -49,11 +48,59 @@ struct PaywallView: View {
                         .scaledToFit()
                         .frame(height: 60)
 
-                    Text("Unlock the full experience and become the person they can’t stop thinking about.")
-                        .font(.system(.body, design: .rounded))
+                    Text("Unlock the full experience and become the person they can’t stop thinking about")
+                        .font(.system(size: 18, weight: .bold, design: .rounded)) // +3px and bold
                         .foregroundColor(.black.opacity(0.85))
                         .multilineTextAlignment(.center)
+                        .lineLimit(nil)
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 32)
+
+                    // Bullet Points
+                    VStack(alignment: .leading, spacing: 10) {
+
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.red)
+                            Text("Unlock Ideas: ")
+                                .bold() +
+                            Text("Legendary sparks inside")
+                                .font(.system(size: 16, weight: .regular, design: .rounded))
+                                .foregroundColor(.black.opacity(0.75))
+                        }
+
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.red)
+                            Text("Plan Dates: ")
+                                .bold() +
+                            Text("Add unlimited moments")
+                                .font(.system(size: 16, weight: .regular, design: .rounded))
+                                .foregroundColor(.black.opacity(0.75))
+                        }
+
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.red)
+                            Text("Flirty Prompts: ")
+                                .bold() +
+                            Text("Unlock full deck")
+                                .font(.system(size: 16, weight: .regular, design: .rounded))
+                                .foregroundColor(.black.opacity(0.75))
+                        }
+
+                        HStack(alignment: .top, spacing: 8) {
+                            Image(systemName: "checkmark.circle.fill")
+                                .foregroundColor(.red)
+                            Text("Make Love Stronger: ")
+                                .bold() +
+                            Text("Transform every date")
+                                .font(.system(size: 16, weight: .regular, design: .rounded))
+                                .foregroundColor(.black.opacity(0.75))
+                        }
+
+                    }
+                    .padding(.horizontal, 32)
                 }
 
                 Spacer(minLength: 20)
