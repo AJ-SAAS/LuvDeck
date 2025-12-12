@@ -3,10 +3,8 @@ import SwiftUI
 
 struct SparkView: View {
 
-    // Use @StateObject default init for the view model (no main-actor initializer issues)
+    // ViewModels
     @StateObject private var vm = SparkViewModel()
-
-    // Keep a single PurchaseViewModel instance for the Paywall
     @StateObject private var purchaseVM = PurchaseViewModel()
 
     @State private var showHowItWorks = false
@@ -16,7 +14,7 @@ struct SparkView: View {
             ScrollView {
                 VStack(spacing: 24) {
 
-                    // HERO
+                    // HERO SECTION
                     VStack(spacing: 12) {
                         Text("One tap. More love today.")
                             .font(.title2.bold())
@@ -32,7 +30,7 @@ struct SparkView: View {
                     }
                     .padding(.top, 20)
 
-                    // GRID
+                    // SPARK GRID
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
                         sparkCard(
                             title: "Conversation\nStarters",
@@ -92,14 +90,13 @@ struct SparkView: View {
                     .presentationDragIndicator(.visible)
             }
 
-            // PAYWALL SHEET (shows when vm.showPaywall becomes true)
+            // PAYWALL SHEET
             .sheet(isPresented: $vm.showPaywall) {
                 PaywallView(isPresented: $vm.showPaywall, purchaseVM: purchaseVM)
             }
 
-            // Sync PurchaseViewModel premium state -> local AppStorage via vm.setPremium(_:).
-            // This makes the PurchaseViewModel purchase reflect immediately in the SparkViewModel (which uses @AppStorage)
-            .onChange(of: purchaseVM.isPremium) { newValue in
+            // Sync premium state
+            .onChange(of: purchaseVM.isSubscribed) { newValue in
                 vm.setPremium(newValue)
             }
 
@@ -116,7 +113,7 @@ struct SparkView: View {
         }
     }
 
-    // MARK: - Spark Card with taps-left badge
+    // MARK: - Spark Card
     private func sparkCard(title: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
 
         Button(action: action) {
@@ -139,7 +136,7 @@ struct SparkView: View {
                 .cornerRadius(20)
                 .shadow(color: color.opacity(0.4), radius: 12, y: 8)
 
-                // Taps-left badge (only shown if NOT premium)
+                // Taps-left badge
                 if !vm.isPremium {
                     Text("\(vm.tapsRemaining) left")
                         .font(.caption2.bold())
@@ -149,14 +146,14 @@ struct SparkView: View {
                         .foregroundStyle(.white)
                         .clipShape(Capsule())
                         .padding(8)
-                        .opacity(vm.tapsRemaining > 0 ? 1.0 : 0.0) // hide zero gracefully
+                        .opacity(vm.tapsRemaining > 0 ? 1.0 : 0.0)
                 }
             }
         }
         .buttonStyle(SparkButtonStyle())
     }
 
-    // HOW IT WORKS card
+    // MARK: - How It Works
     private var howItWorksCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Button {
@@ -207,7 +204,7 @@ struct SparkView: View {
     }
 }
 
-// MARK: - Button Style (keep this in same file for scope)
+// MARK: - Button Style
 struct SparkButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

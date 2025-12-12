@@ -1,11 +1,13 @@
 import SwiftUI
+import StoreKit
 
 struct PaywallView: View {
     @Binding var isPresented: Bool
     @ObservedObject var purchaseVM: PurchaseViewModel
 
-    @State private var selectedPlan: PaywallPlan = .yearly
+    @State private var selectedPlan: PaywallPlan = .lifetime
     @State private var showCloseButton = false
+    @State private var showMaybeLater = false
     @State private var isProcessing = false
     @State private var restoreMessage = ""
 
@@ -15,8 +17,9 @@ struct PaywallView: View {
         ZStack {
             Color.white.ignoresSafeArea()
 
-            VStack(spacing: 20) {
-                // Top-right: Loading spinner → X button
+            VStack(spacing: 18) {
+
+                // Top-right: delayed X button
                 HStack {
                     Spacer()
                     ZStack {
@@ -33,12 +36,15 @@ struct PaywallView: View {
                             .transition(.scale.combined(with: .opacity))
                         } else {
                             ProgressView()
-                                .progressViewStyle(CircularProgressViewStyle(tint: .black.opacity(0.4)))
+                                .progressViewStyle(
+                                    CircularProgressViewStyle(tint: .black.opacity(0.4))
+                                )
                                 .scaleEffect(0.9)
                                 .frame(width: 38, height: 38)
                         }
                     }
-                    .padding([.horizontal, .top], 16)
+                    .padding(.trailing, 16)
+                    .padding(.top, 30)
                 }
 
                 // Header
@@ -48,78 +54,52 @@ struct PaywallView: View {
                         .scaledToFit()
                         .frame(height: 60)
 
-                    Text("Unlock the full experience and become the person they can’t stop thinking about")
-                        .font(.system(size: 18, weight: .bold, design: .rounded)) // +3px and bold
+                    // Increased +2px -> 29
+                    Text("Premium Access")
+                        .font(.system(size: 29, weight: .bold, design: .rounded))
                         .foregroundColor(.black.opacity(0.85))
                         .multilineTextAlignment(.center)
-                        .lineLimit(nil)
-                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 32)
 
-                    // Bullet Points
-                    VStack(alignment: .leading, spacing: 10) {
-
-                        HStack(alignment: .top, spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.red)
-                            Text("Unlock Ideas: ")
-                                .bold() +
-                            Text("Legendary sparks inside")
-                                .font(.system(size: 16, weight: .regular, design: .rounded))
-                                .foregroundColor(.black.opacity(0.75))
-                        }
-
-                        HStack(alignment: .top, spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.red)
-                            Text("Plan Dates: ")
-                                .bold() +
-                            Text("Add unlimited moments")
-                                .font(.system(size: 16, weight: .regular, design: .rounded))
-                                .foregroundColor(.black.opacity(0.75))
-                        }
-
-                        HStack(alignment: .top, spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.red)
-                            Text("Flirty Prompts: ")
-                                .bold() +
-                            Text("Unlock full deck")
-                                .font(.system(size: 16, weight: .regular, design: .rounded))
-                                .foregroundColor(.black.opacity(0.75))
-                        }
-
-                        HStack(alignment: .top, spacing: 8) {
-                            Image(systemName: "checkmark.circle.fill")
-                                .foregroundColor(.red)
-                            Text("Make Love Stronger: ")
-                                .bold() +
-                            Text("Transform every date")
-                                .font(.system(size: 16, weight: .regular, design: .rounded))
-                                .foregroundColor(.black.opacity(0.75))
-                        }
-
+                    VStack(alignment: .leading, spacing: 14) {
+                        Text("• Get Unlimited Date Ideas")
+                        Text("• Schedule Every Special Moment")
+                        Text("• Unlock Entire Spark Deck")
+                        Text("• Remove Boring Dates Forever")
                     }
+                    .font(.system(size: 18, weight: .regular, design: .rounded))
+                    .foregroundColor(.black.opacity(0.75))
                     .padding(.horizontal, 32)
                 }
 
-                Spacer(minLength: 20)
+                Spacer(minLength: 10)
 
                 // Plan Cards
                 VStack(spacing: 14) {
-                    PlanCard(planName: "Weekly – $3.99", perWeekPrice: "$3.99 / week", ribbon: nil, isSelected: selectedPlan == .weekly) {
-                        withAnimation { selectedPlan = .weekly }
-                    }
-                    PlanCard(planName: "Yearly – $39.99", perWeekPrice: "", ribbon: .bestValue, isSelected: selectedPlan == .yearly) {
-                        withAnimation { selectedPlan = .yearly }
-                    }
-                    PlanCard(planName: "Lifetime – $89.99", perWeekPrice: "One-time payment", ribbon: nil, isSelected: selectedPlan == .lifetime) {
-                        withAnimation { selectedPlan = .lifetime }
-                    }
+
+                    PlanCard(
+                        planName: "Lifetime Plan",
+                        price: "$17.99",
+                        rightText: "BEST VALUE",
+                        isSelected: selectedPlan == .lifetime,
+                        isPremium: true
+                    ) { withAnimation { selectedPlan = .lifetime } }
+
+                    PlanCard(
+                        planName: "3-Day Trial",
+                        price: "$4.99 per week",
+                        rightText: "Short Term",
+                        isSelected: selectedPlan == .weekly
+                    ) { withAnimation { selectedPlan = .weekly } }
+
+                    Text("NO PAYMENT REQUIRED TODAY")
+                        .font(.system(size: 16, weight: .bold, design: .rounded))
+                        .foregroundColor(.black.opacity(0.6))
+                        .padding(.top, 2)
                 }
                 .padding(.horizontal, 20)
 
-                // Subscribe Button
+                // Subscribe button
                 Button {
                     Task { await purchaseTapped() }
                 } label: {
@@ -132,25 +112,29 @@ struct PaywallView: View {
                             .fontWeight(.semibold)
                     }
                     .frame(maxWidth: .infinity)
-                    .padding(.vertical, 18)
+                    .padding(.vertical, 16)
                     .background(isProcessing ? Color.gray : accent)
                     .foregroundColor(.white)
                     .cornerRadius(16)
                     .shadow(color: accent.opacity(0.3), radius: 12, y: 8)
                 }
                 .padding(.horizontal, 20)
-                .padding(.top, 12)
+                .padding(.top, 4)
                 .disabled(isProcessing)
 
-                // "Maybe later.." soft dismiss
-                Button {
-                    isPresented = false
-                } label: {
-                    Text("Maybe later.. >")
-                        .font(.system(.headline, design: .rounded))
-                        .foregroundColor(.black.opacity(0.65))
+                // Maybe later (delayed 6 seconds)
+                if showMaybeLater {
+                    Button { isPresented = false } label: {
+                        Text("Maybe later.. >")
+                            .font(.system(.headline, design: .rounded))
+                            .foregroundColor(.black.opacity(0.65))
+                    }
+                    .padding(.top, 10)
+                    .transition(.opacity.combined(with: .scale))
+                } else {
+                    // Spacer to avoid UI jump
+                    Spacer().frame(height: 40)
                 }
-                .padding(.top, 10)
 
                 // Legal + Restore
                 HStack(spacing: 20) {
@@ -158,9 +142,7 @@ struct PaywallView: View {
                     Text("|").foregroundColor(.black.opacity(0.3))
                     Button("Privacy") { openURL("https://www.luvdeck.com/r/privacy") }
                     Text("|").foregroundColor(.black.opacity(0.3))
-                    Button("Restore") {
-                        Task { await restoreTapped() }
-                    }
+                    Button("Restore") { Task { await restoreTapped() } }
                 }
                 .font(.system(.caption, design: .rounded))
                 .foregroundColor(.black.opacity(0.68))
@@ -177,47 +159,47 @@ struct PaywallView: View {
             }
             .padding(.bottom, safeAreaBottom() + 10)
         }
-        // Auto-close when purchase succeeds
-        .onChange(of: purchaseVM.isPremium) { _, newValue in
+        .onChange(of: purchaseVM.isSubscribed) { _, newValue in
             if newValue { isPresented = false }
         }
-        // Show spinner for 3 seconds → then reveal X button
         .task {
-            try? await Task.sleep(nanoseconds: 3_000_000_000) // 3 seconds
+            // X button delay (3 seconds)
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 showCloseButton = true
+            }
+
+            // Maybe Later delay (6 seconds)
+            try? await Task.sleep(nanoseconds: 3_000_000_000)
+            withAnimation(.easeOut(duration: 0.4)) {
+                showMaybeLater = true
             }
         }
     }
 
+    // MARK: Logic
     private func purchaseTapped() async {
         isProcessing = true
         restoreMessage = ""
 
-        let productID: String = switch selectedPlan {
-            case .weekly: "luvdeck_weekly_399"
-            case .yearly: "luvdeck_yearly_3999"
-            case .lifetime: "luvdeck_lifetime_8999"
+        let productID = selectedPlan == .weekly
+            ? "luvdeck_weekly_399"
+            : "luvdeck_lifetime_8999"
+
+        guard let product = purchaseVM.allProducts.first(where: { $0.id == productID }) else {
+            isProcessing = false
+            return
         }
 
-        do {
-            try await purchaseVM.purchase(productID: productID)
-        } catch {
-            restoreMessage = "Purchase failed. Try again."
-            print("Purchase error: \(error)")
-        }
+        await purchaseVM.purchase(product: product)
         isProcessing = false
     }
 
     private func restoreTapped() async {
         isProcessing = true
         restoreMessage = ""
-        do {
-            try await purchaseVM.restorePurchases()
-            restoreMessage = "Purchases restored successfully!"
-        } catch {
-            restoreMessage = "No purchases to restore."
-        }
+        await purchaseVM.restorePurchases()
+        restoreMessage = "Purchases restored successfully!"
         isProcessing = false
     }
 
@@ -229,72 +211,90 @@ struct PaywallView: View {
     }
 
     private func openURL(_ urlString: String) {
-        if let url = URL(string: urlString) {
-            UIApplication.shared.open(url)
-        }
+        if let url = URL(string: urlString) { UIApplication.shared.open(url) }
     }
 }
 
 // MARK: - Supporting Types
-private enum PaywallPlan: String { case weekly, yearly, lifetime }
-private enum Ribbon { case bestValue }
+private enum PaywallPlan: String { case weekly, lifetime }
 
 private struct PlanCard: View {
+
     let planName: String
-    let perWeekPrice: String
-    let ribbon: Ribbon?
+    let price: String
+    let rightText: String?
     let isSelected: Bool
+    var isPremium: Bool = false
     let action: () -> Void
 
     var body: some View {
         Button(action: action) {
             ZStack {
                 Color.white
-                HStack(spacing: 12) {
-                    Image(systemName: isSelected ? "checkmark.circle.fill" : "circle")
-                        .font(.system(size: 24))
-                        .foregroundColor(isSelected ? Color(#colorLiteral(red: 0.18, green: 0.8, blue: 0.45, alpha: 1)) : .black.opacity(0.4))
 
-                    Text(planName)
-                        .font(.system(size: 16, weight: .semibold, design: .rounded))
-                        .foregroundColor(.black)
+                HStack(spacing: 16) {
+
+                    VStack(alignment: .leading, spacing: 4) {
+                        Text(planName)
+                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                            .foregroundColor(.black)
+
+                        Text(price)
+                            .font(.system(size: 15, weight: .regular, design: .rounded))
+                            .foregroundColor(.black.opacity(0.7))
+                    }
 
                     Spacer()
 
-                    VStack(alignment: .trailing, spacing: 6) {
-                        if ribbon == .bestValue {
-                            Text("BEST VALUE")
-                                .font(.system(size: 10, weight: .bold, design: .rounded))
-                                .padding(.horizontal, 12)
-                                .padding(.vertical, 6)
-                                .background(Color.red)
-                                .foregroundColor(.white)
-                                .cornerRadius(8)
-                        }
+                    if let right = rightText {
+                        HStack(spacing: 10) {
 
-                        if !perWeekPrice.isEmpty {
-                            Text(perWeekPrice)
-                                .font(.system(size: 14, weight: .regular, design: .rounded))
-                                .foregroundColor(.black.opacity(0.45))
+                            Text(right)
+                                .font(.system(
+                                    size: right == "Short Term" ? 15 : 12,
+                                    weight: .bold,
+                                    design: .rounded
+                                ))
+                                .padding(.horizontal, 10)
+                                .padding(.vertical, 4)
+                                .background(right == "BEST VALUE" ? Color.red : Color.clear)
+                                .foregroundColor(right == "BEST VALUE" ? .white : .black)
+                                .cornerRadius(6)
+
+                            ZStack {
+                                Circle()
+                                    .stroke(Color.gray.opacity(0.3), lineWidth: 2)
+                                    .frame(width: 26, height: 26)
+
+                                if isSelected {
+                                    Circle()
+                                        .fill(Color.green)
+                                        .frame(width: 26, height: 26)
+
+                                    Image(systemName: "checkmark")
+                                        .font(.system(size: 12, weight: .bold))
+                                        .foregroundColor(.white)
+                                }
+                            }
                         }
                     }
                 }
-                .padding(20)
+                .padding(isPremium ? 24 : 20)
             }
             .frame(maxWidth: .infinity)
             .cornerRadius(18)
             .overlay(
                 RoundedRectangle(cornerRadius: 18)
                     .stroke(isSelected ? Color.red : Color.gray.opacity(0.3),
-                            lineWidth: isSelected ? 3.5 : 1.5)
+                            lineWidth: isSelected ? 3 : 1.5)
             )
-            .shadow(color: isSelected ? Color.red.opacity(0.35) : .black.opacity(0.06),
-                    radius: isSelected ? 16 : 6,
-                    y: isSelected ? 10 : 4)
+            .shadow(
+                color: isSelected ? Color.red.opacity(0.35) : Color.black.opacity(0.06),
+                radius: isSelected ? 14 : 6,
+                y: isSelected ? 10 : 4
+            )
         }
         .buttonStyle(.plain)
-        .contentShape(RoundedRectangle(cornerRadius: 18))
-        .animation(.spring(response: 0.38, dampingFraction: 0.82), value: isSelected)
     }
 }
 

@@ -1,5 +1,3 @@
-// OnboardingView.swift
-// FINAL VERSION — NO FLASH, NO CRASH, PERFECT FLOW
 import SwiftUI
 
 struct OnboardingView: View {
@@ -24,7 +22,6 @@ struct OnboardingView: View {
 
             ZStack {
                 Color(.systemBackground).ignoresSafeArea()
-
                 VStack(spacing: 0) {
                     Spacer(minLength: geometry.size.height * 0.07)
 
@@ -115,11 +112,4 @@ struct OnboardingView: View {
     private func subtitleFontSize(for geometry: GeometryProxy) -> CGFloat {
         min(geometry.size.width * 0.045, 18)
     }
-}
-
-#Preview {
-    OnboardingView()
-        .environmentObject(OnboardingViewModel())
-        .environmentObject(AuthViewModel())
-        .environmentObject(PurchaseViewModel())
 }

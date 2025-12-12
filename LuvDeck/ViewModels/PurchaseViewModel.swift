@@ -1,55 +1,116 @@
-// PurchaseViewModel.swift
-// FINAL MEMORY-SAFE VERSION — NO CRASH EVER
 import Foundation
-import RevenueCat
+import StoreKit
 import SwiftUI
 
 @MainActor
 class PurchaseViewModel: ObservableObject {
-    @Published var isPremium: Bool = false
+    @Published var isSubscribed: Bool = false
+    @Published var purchasedItems: [Product] = []
+    @Published var allProducts: [Product] = []
+    @Published var isLoading: Bool = false
+    @Published var showError: Bool = false
+    @Published var errorMessage: String = ""
+
+    // MARK: - Paywall & onboarding flags
     @Published var shouldPresentPaywall: Bool = false
     @Published var triggerPaywallAfterOnboarding: Bool = false
 
-    private let entitlementID = "Premium"
+    // MARK: - Premium shortcut
+    var isPremium: Bool { isSubscribed }
+
+    private let entitlementID = "premium"
+    private let userDefaultsKey = "isSubscribed"
 
     init() {
-        Task { await checkEntitlement() }
-    }
-
-    // MARK: - 100% SAFE: No Firebase, no crash
-    func completeOnboardingForCurrentUser() {
-        // We only need local flag — Firestore write happens later when user is confirmed
-        UserDefaults.standard.set(true, forKey: "onboardingCompleted")
-    }
-
-    func purchase(productID: String) async throws {
-        let products = await Purchases.shared.products([productID])
-        guard let product = products.first else {
-            throw NSError(domain: "PurchaseError", code: -1, userInfo: [NSLocalizedDescriptionKey: "Product not found"])
-        }
-        let result = try await Purchases.shared.purchase(product: product)
-        self.isPremium = result.customerInfo.entitlements[entitlementID]?.isActive ?? false
-        
-        if self.isPremium {
-            completeOnboardingForCurrentUser()
+        Task {
+            await fetchProducts()
+            await updateSubscriptionStatus()
         }
     }
 
-    func restorePurchases() async throws {
-        let info = try await Purchases.shared.restorePurchases()
-        self.isPremium = info.entitlements[entitlementID]?.isActive ?? false
-        
-        if self.isPremium {
-            completeOnboardingForCurrentUser()
-        }
-    }
-
-    func checkEntitlement() async {
+    // MARK: - Fetch Products
+    func fetchProducts() async {
         do {
-            let info = try await Purchases.shared.customerInfo()
-            self.isPremium = info.entitlements[entitlementID]?.isActive ?? false
+            let productIDs: Set<String> = [
+                "luvdeck_weekly_399",
+                "luvdeck_lifetime_8999"
+            ]
+            let products = try await Product.products(for: productIDs)
+            DispatchQueue.main.async {
+                self.allProducts = products.sorted { $0.displayName < $1.displayName }
+            }
         } catch {
-            print("Entitlement check failed: \(error)")
+            print("Error fetching products: \(error)")
         }
+    }
+
+    // MARK: - Purchase
+    func purchase(product: Product) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let result = try await product.purchase()
+            switch result {
+            case .success(let verification):
+                switch verification {
+                case .verified(let transaction):
+                    await transaction.finish()
+                    await updateSubscriptionStatus()
+                case .unverified:
+                    print("Unverified transaction")
+                }
+            case .userCancelled: break
+            case .pending: break
+            default: break
+            }
+        } catch {
+            errorMessage = "Purchase failed: \(error.localizedDescription)"
+            showError = true
+        }
+    }
+
+    // MARK: - Restore Purchases
+    func restorePurchases() async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            try await AppStore.sync()
+            await updateSubscriptionStatus()
+        } catch {
+            errorMessage = "Restore failed: \(error.localizedDescription)"
+            showError = true
+        }
+    }
+
+    // MARK: - Update Subscription Status
+    func updateSubscriptionStatus() async {
+        for await result in Transaction.currentEntitlements {
+            switch result {
+            case .verified(let transaction):
+                if transaction.productID == "luvdeck_weekly_399" ||
+                   transaction.productID == "luvdeck_lifetime_8999" {
+                    DispatchQueue.main.async {
+                        self.isSubscribed = true
+                        UserDefaults.standard.set(true, forKey: self.userDefaultsKey)
+                    }
+                    return
+                }
+            case .unverified: break
+            }
+        }
+
+        DispatchQueue.main.async {
+            self.isSubscribed = false
+            UserDefaults.standard.set(false, forKey: self.userDefaultsKey)
+        }
+    }
+
+    // MARK: - Complete Onboarding Helper
+    func completeOnboardingForCurrentUser() {
+        // Example: Save onboarding completion to UserDefaults or Firebase
+        UserDefaults.standard.set(true, forKey: "onboardingCompleted")
+        triggerPaywallAfterOnboarding = false
     }
 }

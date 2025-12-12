@@ -1,6 +1,3 @@
-// IdeaCardView.swift – TIKTOK SMOOTH • ZERO FLASH • PERFECT SCROLL
-// November 18, 2025 – UPDATED with Save/Bookmark Button (Fixed labels + iOS17)
-
 import SwiftUI
 
 struct IdeaCardView: View {
@@ -13,26 +10,44 @@ struct IdeaCardView: View {
     @State private var animateLike = false
     @State private var showHeartBurst = false
     @State private var isSaved = false
+    @State private var showPaywall = false
+    @State private var overlayPulse = false  // <-- New pulse state
 
-    private var isLegendaryPaywalled: Bool {
-        idea.level == .legendary && !purchaseVM.isPremium
+    // MARK: - Premium Only (Epic + Legendary)
+    private var isPremiumPaywalled: Bool {
+        (idea.level == .legendary || idea.level == .epic) && !purchaseVM.isSubscribed
     }
 
     var body: some View {
         GeometryReader { geometry in
             ZStack(alignment: .bottomLeading) {
-                CachedDownsampledImage(imageName: idea.imageName, size: geometry.size)
-                    .brightness(isLegendaryPaywalled ? -0.12 : 0)
+                Image(idea.imageName)
+                    .resizable()
+                    .scaledToFill()
+                    .frame(width: geometry.size.width, height: geometry.size.height)
+                    .clipped()
+                    .brightness(isPremiumPaywalled ? -0.12 : 0)
+                    .blur(radius: isPremiumPaywalled ? 3 : 0)
                     .offset(y: -geometry.safeAreaInsets.top * 0.3)
 
-                if !isLegendaryPaywalled {
+                if !isPremiumPaywalled {
                     bottomOverlay(geometry: geometry)
                     rightSideButtons(geometry: geometry)
                     heartBurst(geometry: geometry)
                 }
 
-                if isLegendaryPaywalled {
-                    legendaryOverlay
+                if isPremiumPaywalled {
+                    premiumOverlay
+                        .scaleEffect(overlayPulse ? 1.02 : 1.0)
+                        .animation(
+                            Animation.easeInOut(duration: 1.2).repeatForever(autoreverses: true),
+                            value: overlayPulse
+                        )
+                        .onAppear { overlayPulse = true }
+                        .onTapGesture { showPaywall = true }
+                        .sheet(isPresented: $showPaywall) {
+                            PaywallView(isPresented: $showPaywall, purchaseVM: purchaseVM)
+                        }
                 }
             }
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
@@ -40,9 +55,7 @@ struct IdeaCardView: View {
             .ignoresSafeArea(edges: .all)
         }
         .ignoresSafeArea(edges: .bottom)
-        .onAppear {
-            isSaved = savedVM.isSaved(idea)
-        }
+        .onAppear { isSaved = savedVM.isSaved(idea) }
     }
 
     // MARK: - Bottom Overlay
@@ -55,7 +68,6 @@ struct IdeaCardView: View {
                 .shadow(radius: 4)
                 .lineLimit(2)
                 .minimumScaleFactor(0.7)
-                .layoutPriority(3)
 
             Text(idea.description)
                 .font(.system(size: min(geometry.size.height * 0.019, 17), weight: .medium))
@@ -82,52 +94,65 @@ struct IdeaCardView: View {
         .zIndex(2)
     }
 
+    // MARK: - Level Badge (Epic + Legendary Premium)
     private func levelBadge(geometry: GeometryProxy) -> some View {
-        let bgColor: Color = switch idea.level {
-        case .cute:      .pink
-        case .spicy:     .orange
-        case .epic:      .purple
-        case .legendary: .yellow
+        let bgColor: Color
+        switch idea.level {
+        case .cute: bgColor = .pink
+        case .spicy: bgColor = .orange
+        case .epic: bgColor = .purple
+        case .legendary: bgColor = .yellow
         }
 
-        return Text(idea.level.rawValue.capitalized)
-            .font(.system(size: geometry.size.height * 0.020, weight: .semibold))
-            .foregroundColor(.white)
-            .padding(.horizontal, 14)
-            .padding(.vertical, 6)
-            .background(
-                Capsule(style: .continuous)
-                    .fill(bgColor.opacity(0.85))
-                    .overlay(
-                        Capsule(style: .continuous)
-                            .stroke(Color.white.opacity(0.3), lineWidth: 1)
-                    )
-            )
+        return HStack(spacing: 4) {
+            if idea.level == .epic || idea.level == .legendary {
+                Image(systemName: "crown.fill")
+                    .font(.system(size: geometry.size.height * 0.018))
+                    .foregroundColor(.white)
+                    .shadow(color: .white.opacity(0.6), radius: 2)
+            }
+
+            Text(idea.level.rawValue.capitalized)
+                .font(.system(size: geometry.size.height * 0.020, weight: .semibold))
+                .foregroundColor(.white)
+        }
+        .padding(.horizontal, 14)
+        .padding(.vertical, 6)
+        .background(
+            Capsule(style: .continuous)
+                .fill(bgColor.opacity((idea.level == .epic || idea.level == .legendary) ? 0.95 : 0.85))
+                .shadow(color: (idea.level == .epic || idea.level == .legendary) ? .white.opacity(0.2) : .clear, radius: 4)
+                .overlay(
+                    Capsule(style: .continuous)
+                        .stroke(Color.white.opacity(0.3), lineWidth: 1)
+                )
+        )
     }
 
-    private var legendaryOverlay: some View {
+    // MARK: - Premium Overlay (Pulse)
+    private var premiumOverlay: some View {
         ZStack {
-            Color.white.opacity(0.82).blur(radius: 6)
+            Color.black.opacity(0.45)
             VStack(spacing: 20) {
                 Image(systemName: "crown.fill")
                     .font(.system(size: 64))
                     .foregroundColor(.yellow)
                     .shadow(color: .black.opacity(0.3), radius: 8)
-                Text("LEGENDARY")
+                Text(idea.level.rawValue.uppercased())
                     .font(.system(size: 34, weight: .black, design: .serif))
-                    .foregroundColor(.black.opacity(0.95))
+                    .foregroundColor(.white.opacity(0.95))
                 Text("Premium Only")
                     .font(.system(size: 18, weight: .semibold))
-                    .foregroundColor(.black.opacity(0.85))
+                    .foregroundColor(.white.opacity(0.85))
                 Text("Tap to unlock this masterpiece")
                     .font(.system(size: 16))
                     .multilineTextAlignment(.center)
                     .padding(.horizontal, 50)
-                    .foregroundColor(.black.opacity(0.78))
+                    .foregroundColor(.white.opacity(0.78))
             }
         }
-        .contentShape(Rectangle())
-        .onTapGesture { purchaseVM.shouldPresentPaywall = true }
+        .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
+        .shadow(radius: 12)
     }
 
     // MARK: - Right Side Buttons
@@ -218,70 +243,12 @@ struct IdeaCardView: View {
     }
 }
 
-// MARK: - Cached Image
-struct CachedDownsampledImage: View {
-    let imageName: String
-    let size: CGSize
-
-    @StateObject private var loader = ImageLoader()
-
-    var body: some View {
-        ZStack {
-            if let image = loader.image {
-                Image(uiImage: image)
-                    .resizable()
-                    .scaledToFill()
-            } else {
-                Color(white: 0.15)
-            }
-        }
-        .frame(width: size.width, height: size.height)
-        .clipped()
-        .onAppear { loader.load(imageName, targetSize: size) }
-        .onChange(of: size) { newSize in loader.load(imageName, targetSize: newSize) } // iOS 17 fix
-    }
-}
-
-class ImageLoader: ObservableObject {
-    @Published var image: UIImage?
-    private static let cache = NSCache<NSString, UIImage>()
-
-    func load(_ imageName: String, targetSize: CGSize) {
-        let key = NSString(string: "\(imageName)_\(Int(targetSize.width))x\(Int(targetSize.height))")
-        if let cached = Self.cache.object(forKey: key) {
-            self.image = cached
-            return
-        }
-        DispatchQueue.global(qos: .userInitiated).async { [weak self] in
-            guard let original = UIImage(named: imageName) ?? UIImage(named: "defaultIdeaImage") else { return }
-            let renderer = UIGraphicsImageRenderer(size: targetSize)
-            let downsampled = renderer.image { _ in
-                original.draw(in: CGRect(origin: .zero, size: targetSize))
-            }
-            Self.cache.setObject(downsampled, forKey: key)
-            DispatchQueue.main.async { withAnimation(.easeInOut(duration: 0.2)) { self?.image = downsampled } }
-        }
-    }
-}
-
-// MARK: - Heart Particle
+// MARK: - HeartParticleView
 struct HeartParticleView: View {
-    @State private var randomX: CGFloat = CGFloat.random(in: -20...20)
-    @State private var randomY: CGFloat = CGFloat.random(in: -150 ... -50)
-    @State private var opacity: Double = 1
-    @State private var scale: CGFloat = 1
-
     var body: some View {
         Image(systemName: "heart.fill")
             .foregroundColor(.red)
-            .opacity(opacity)
-            .scaleEffect(scale)
-            .onAppear {
-                withAnimation(.easeOut(duration: 1.0)) {
-                    opacity = 0
-                    scale = 1.4
-                }
-            }
-            .offset(x: randomX, y: randomY)
+            .scaleEffect(Double.random(in: 0.5...1.0))
+            .opacity(Double.random(in: 0.3...0.9))
     }
 }

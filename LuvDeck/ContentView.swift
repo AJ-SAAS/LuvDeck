@@ -10,7 +10,7 @@ struct ContentView: View {
     // MARK: - Shared Global ViewModels (from LuvDeckApp.swift)
     @EnvironmentObject var purchaseVM: PurchaseViewModel        // ← Now from App
     @EnvironmentObject var savedIdeasVM: SavedIdeasViewModel    // ← ADDED: Fixes crash!
-    @EnvironmentObject var homeVM: HomeViewModel                // ← ADDED: For HomeView
+    @EnvironmentObject var homeVM: HomeViewModel                // ← HomeViewModel available
 
     // MARK: - Local ViewModels (still created here)
     @StateObject private var authViewModel = AuthViewModel()
@@ -82,7 +82,7 @@ struct ContentView: View {
             withAnimation { currentScreen = .auth }
         }
 
-        // PAYWALL AFTER ONBOARDING → Close → Home (NOW WORKS WITHOUT CRASH)
+        // PAYWALL AFTER ONBOARDING → Close → Home
         .fullScreenCover(isPresented: $purchaseVM.triggerPaywallAfterOnboarding) {
             PaywallView(
                 isPresented: $purchaseVM.triggerPaywallAfterOnboarding,
