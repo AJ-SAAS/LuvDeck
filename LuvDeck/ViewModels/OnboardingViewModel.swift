@@ -1,15 +1,37 @@
 // OnboardingViewModel.swift
 import Foundation
 import UserNotifications
+import FirebaseFirestore
 
 class OnboardingViewModel: ObservableObject {
-    @Published var onboardingCompleted: Bool = UserDefaults.standard.bool(forKey: "onboardingCompleted")
+
+    // =====================================
+    // EXISTING (UNCHANGED)
+    // =====================================
+    @Published var onboardingCompleted: Bool =
+        UserDefaults.standard.bool(forKey: "onboardingCompleted")
+
     @Published var currentStep: Int = 0
-    
-    // MARK: - Check Onboarding Status (with completion)
-    func checkOnboardingStatus(userId: String?, didJustSignUp: Bool, completion: @escaping () -> Void = {}) {
+
+    // =====================================
+    // NEW ONBOARDING ANSWERS (CONSISTENT)
+    // =====================================
+
+    @Published var referralSource: String? = nil
+    @Published var relationshipFocus: Set<String> = []
+    @Published var dailyCommitment: Int? = nil
+
+    // FIXED: Now 9 steps total (0–8)
+    private let totalSteps = 9   // ← CHANGED FROM 8 TO 9
+
+    // MARK: - Check Onboarding Status (UNCHANGED LOGIC)
+    func checkOnboardingStatus(
+        userId: String?,
+        didJustSignUp: Bool,
+        completion: @escaping () -> Void = {}
+    ) {
         print("Checking onboarding status: userId=\(userId ?? "nil"), didJustSignUp=\(didJustSignUp)")
-        
+
         if didJustSignUp {
             if !UserDefaults.standard.bool(forKey: "onboardingCompleted") {
                 onboardingCompleted = false
@@ -41,18 +63,19 @@ class OnboardingViewModel: ObservableObject {
             completion()
         }
     }
-    
-    // MARK: - Next Step
+
+    // MARK: - Next Step (EXTENDED, SAFE)
     func nextStep(userId: String?) {
         print("Next step called: currentStep=\(currentStep)")
-        if currentStep < 4 {
+
+        if currentStep < totalSteps - 1 {
             currentStep += 1
         } else {
             completeOnboarding(userId: userId)
         }
     }
-    
-    // MARK: - Request Notification Permission
+
+    // MARK: - Request Notification Permission (UNCHANGED)
     func requestNotificationPermission(userId: String?) {
         NotificationManager.shared.requestPermission { success in
             DispatchQueue.main.async {
@@ -61,22 +84,32 @@ class OnboardingViewModel: ObservableObject {
             }
         }
     }
-    
-    // MARK: - Complete Onboarding
+
+    // MARK: - Complete Onboarding (EXTENDED, SAFE)
     func completeOnboarding(userId: String?) {
         print("Completing onboarding for userId: \(userId ?? "nil")")
+
         DispatchQueue.main.async {
             self.onboardingCompleted = true
             self.currentStep = 5
             UserDefaults.standard.set(true, forKey: "onboardingCompleted")
-            
-            if let userId = userId {
-                FirebaseManager.shared.setOnboardingCompleted(for: userId) { success in
-                    DispatchQueue.main.async {
-                        print(success ? "Firestore: Onboarding completed" : "Firestore: Failed")
-                    }
-                }
-            }
+
+            guard let userId else { return }
+
+            // EXISTING behavior
+            FirebaseManager.shared.setOnboardingCompleted(for: userId)
+
+            // NEW: persist onboarding answers (merge, non-blocking)
+            let data: [String: Any] = [
+                "referralSource": self.referralSource ?? "",
+                "relationshipFocus": Array(self.relationshipFocus),
+                "dailyCommitmentMinutes": self.dailyCommitment ?? 0
+            ]
+
+            Firestore.firestore()
+                .collection("users")
+                .document(userId)
+                .setData(data, merge: true)
         }
     }
 }

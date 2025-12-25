@@ -1,4 +1,4 @@
-// SettingsView.swift — FINAL DESIGN (2025)
+// SettingsView.swift — FINAL DESIGN (2025) – Dark Mode Fixed
 import SwiftUI
 import FirebaseAuth
 import RevenueCat
@@ -24,39 +24,39 @@ struct SettingsView: View {
             // MARK: - Messages
             if let error = errorMessage {
                 Text(error)
-                    .foregroundColor(.red)
+                    .foregroundStyle(.red)
                     .font(.caption)
                     .listRowBackground(Color.clear)
             }
             if let success = successMessage {
                 Text(success)
-                    .foregroundColor(.green)
+                    .foregroundStyle(.green)
                     .font(.caption)
                     .listRowBackground(Color.clear)
             }
 
-            // MARK: - Profile → Black text
+            // MARK: - Profile
             Section("Profile") {
                 NavigationLink("Username") { updateUsernameView }
-                    .foregroundColor(.black)
+                    .foregroundStyle(.primary)  // ← Adapts to dark mode
             }
 
-            // MARK: - Account → Black text
+            // MARK: - Account
             Section("Account") {
                 NavigationLink("Update Email") { updateEmailView }
-                    .foregroundColor(.black)
+                    .foregroundStyle(.primary)
                 NavigationLink("Update Password") { updatePasswordView }
-                    .foregroundColor(.black)
+                    .foregroundStyle(.primary)
             }
 
-            // MARK: - Premium → "Get Premium" red bold, others black
+            // MARK: - Premium
             Section("Premium") {
                 Button {
                     showPaywall = true
                 } label: {
                     Label("Get LuvDeck Premium", systemImage: "crown.fill")
                         .fontWeight(.bold)
-                        .foregroundColor(.red)           // RED + BOLD
+                        .foregroundStyle(.red)           // Intentional red
                 }
 
                 Button {
@@ -70,7 +70,7 @@ struct SettingsView: View {
                                 .scaleEffect(0.8)
                         }
                     }
-                    .foregroundColor(.black)             // Black
+                    .foregroundStyle(.primary)           // ← Now adapts
                 }
                 .disabled(isRestoring)
 
@@ -78,44 +78,43 @@ struct SettingsView: View {
                     openSubscriptionManagement()
                 } label: {
                     Label("Manage Subscription", systemImage: "gear")
-                        .foregroundColor(.black)         // Black
+                        .foregroundStyle(.primary)       // ← Now adapts
                 }
             }
 
-            // MARK: - Support → Blue + icon on Contact Us
+            // MARK: - Support
             Section("Support") {
                 Link(destination: URL(string: "mailto:helloluvdeck@gmail.com")!) {
                     Label("Contact Us", systemImage: "envelope.fill")
-                        .foregroundColor(.blue)
+                        .foregroundStyle(.blue)
                 }
                 
                 Button { sendFeedback() } label: {
                     Label("Share Your Feedback", systemImage: "message")
-                        .foregroundColor(.blue)
+                        .foregroundStyle(.blue)
                 }
                 
-                // MARK: - Rate Us Button (new)
                 Button {
                     if let url = URL(string: "https://apps.apple.com/us/app/relationship-dates-luvdeck/id6755172208?action=write-review") {
                         UIApplication.shared.open(url)
                     }
                 } label: {
                     Label("Rate Us ⭐️", systemImage: "star.fill")
-                        .foregroundColor(.blue)
+                        .foregroundStyle(.blue)
                 }
             }
 
-            // MARK: - Legal → Black
+            // MARK: - Legal
             Section("Legal") {
                 Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
-                    .foregroundColor(.black)
+                    .foregroundStyle(.primary)  // ← Adapts
                 Link("Privacy Policy", destination: URL(string: "https://www.luvdeck.com/r/privacy")!)
-                    .foregroundColor(.black)
+                    .foregroundStyle(.primary)
                 Link("Visit Website", destination: URL(string: "https://www.luvdeck.com")!)
-                    .foregroundColor(.black)
+                    .foregroundStyle(.primary)
             }
 
-            // MARK: - Danger Zone → Red
+            // MARK: - Danger Zone
             Section {
                 Button("Sign Out", role: .destructive) {
                     authViewModel.signOut()
@@ -152,7 +151,7 @@ struct SettingsView: View {
         }
     }
 
-    // MARK: - Subviews (unchanged)
+    // MARK: - Subviews
     private var updateUsernameView: some View {
         Form {
             TextField("New Username", text: $username)
@@ -186,7 +185,7 @@ struct SettingsView: View {
         .navigationTitle("Password")
     }
 
-    // MARK: - Actions (unchanged)
+    // MARK: - Actions
     private func sendFeedback() {
         let subject = "Feedback%20on%20LuvDeck%20App"
         if let url = URL(string: "mailto:helloluvdeck@gmail.com?subject=\(subject)") {
@@ -221,7 +220,7 @@ private extension View {
         self.frame(maxWidth: .infinity)
             .padding(.vertical, 14)
             .background(Color.black)
-            .foregroundColor(.white)
+            .foregroundStyle(.white)
             .cornerRadius(10)
             .padding(.horizontal)
     }
@@ -231,4 +230,5 @@ private extension View {
     SettingsView()
         .environmentObject(AuthViewModel())
         .environmentObject(PurchaseViewModel())
+        .preferredColorScheme(.dark)  // Preview in dark mode
 }

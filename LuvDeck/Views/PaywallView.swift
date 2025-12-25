@@ -19,7 +19,7 @@ struct PaywallView: View {
 
             VStack(spacing: 18) {
 
-                // Top-right: delayed X button
+                // Top-right: delayed X button – now properly positioned
                 HStack {
                     Spacer()
                     ZStack {
@@ -44,7 +44,7 @@ struct PaywallView: View {
                         }
                     }
                     .padding(.trailing, 16)
-                    .padding(.top, 30)
+                    .padding(.top, 50)  // Increased to avoid notch/status bar overlap
                 }
 
                 // Header
@@ -54,17 +54,17 @@ struct PaywallView: View {
                         .scaledToFit()
                         .frame(height: 60)
 
-                    // Increased +2px -> 29
-                    Text("Premium Access")
+                    Text("PREMIUM ACCESS")
                         .font(.system(size: 29, weight: .bold, design: .rounded))
                         .foregroundColor(.black.opacity(0.85))
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
 
                     VStack(alignment: .leading, spacing: 14) {
+                        Text("• 100+ Expert-backed questions")
                         Text("• Get Unlimited Date Ideas")
-                        Text("• Schedule Every Special Moment")
-                        Text("• Unlock Entire Spark Deck")
+                        Text("• Unlock Unlimited Date Reminders")
+                        Text("• Full Access to All Spark Deck")
                         Text("• Remove Boring Dates Forever")
                     }
                     .font(.system(size: 18, weight: .regular, design: .rounded))
@@ -72,22 +72,23 @@ struct PaywallView: View {
                     .padding(.horizontal, 32)
                 }
 
-                Spacer(minLength: 10)
-
+                // Reduced gap here – no extra Spacer
                 // Plan Cards
                 VStack(spacing: 14) {
 
                     PlanCard(
                         planName: "Lifetime Plan",
                         price: "$17.99",
+                        subtitle: "One-time payment",
                         rightText: "BEST VALUE",
                         isSelected: selectedPlan == .lifetime,
-                        isPremium: true
+                        isPremium: true  // Reduced padding inside PlanCard below
                     ) { withAnimation { selectedPlan = .lifetime } }
 
                     PlanCard(
                         planName: "3-Day Trial",
                         price: "$4.99 per week",
+                        subtitle: nil,
                         rightText: "Short Term",
                         isSelected: selectedPlan == .weekly
                     ) { withAnimation { selectedPlan = .weekly } }
@@ -99,7 +100,7 @@ struct PaywallView: View {
                 }
                 .padding(.horizontal, 20)
 
-                // Subscribe button
+                // Subscribe button – even larger text (+3pt → 23pt)
                 Button {
                     Task { await purchaseTapped() }
                 } label: {
@@ -107,9 +108,8 @@ struct PaywallView: View {
                         if isProcessing {
                             ProgressView().tint(.white).scaleEffect(0.9)
                         }
-                        Text(isProcessing ? "Processing…" : "Subscribe & Continue >")
-                            .font(.system(.headline, design: .rounded))
-                            .fontWeight(.semibold)
+                        Text(isProcessing ? "Processing…" : "Subscribe & Start now")
+                            .font(.system(size: 23, weight: .semibold, design: .rounded))  // ← +3pt
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
@@ -122,6 +122,13 @@ struct PaywallView: View {
                 .padding(.top, 4)
                 .disabled(isProcessing)
 
+                // "Cancel anytime" – closer to button
+                Text("Cancel anytime, no commitment")
+                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                    .foregroundColor(.black.opacity(0.8))
+                    .padding(.top, 4)  // Even tighter
+                    .padding(.horizontal, 20)
+
                 // Maybe later (delayed 6 seconds)
                 if showMaybeLater {
                     Button { isPresented = false } label: {
@@ -132,7 +139,6 @@ struct PaywallView: View {
                     .padding(.top, 10)
                     .transition(.opacity.combined(with: .scale))
                 } else {
-                    // Spacer to avoid UI jump
                     Spacer().frame(height: 40)
                 }
 
@@ -163,13 +169,11 @@ struct PaywallView: View {
             if newValue { isPresented = false }
         }
         .task {
-            // X button delay (3 seconds)
             try? await Task.sleep(nanoseconds: 3_000_000_000)
             withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
                 showCloseButton = true
             }
 
-            // Maybe Later delay (6 seconds)
             try? await Task.sleep(nanoseconds: 3_000_000_000)
             withAnimation(.easeOut(duration: 0.4)) {
                 showMaybeLater = true
@@ -222,6 +226,7 @@ private struct PlanCard: View {
 
     let planName: String
     let price: String
+    let subtitle: String?
     let rightText: String?
     let isSelected: Bool
     var isPremium: Bool = false
@@ -239,9 +244,17 @@ private struct PlanCard: View {
                             .font(.system(size: 18, weight: .bold, design: .rounded))
                             .foregroundColor(.black)
 
-                        Text(price)
-                            .font(.system(size: 15, weight: .regular, design: .rounded))
-                            .foregroundColor(.black.opacity(0.7))
+                        VStack(alignment: .leading, spacing: 2) {
+                            Text(price)
+                                .font(.system(size: 20, weight: .bold, design: .rounded))
+                                .foregroundColor(.black)
+
+                            if let subtitle = subtitle {
+                                Text(subtitle)
+                                    .font(.system(size: 13, weight: .medium, design: .rounded))
+                                    .foregroundColor(.black.opacity(0.8))
+                            }
+                        }
                     }
 
                     Spacer()
@@ -250,11 +263,7 @@ private struct PlanCard: View {
                         HStack(spacing: 10) {
 
                             Text(right)
-                                .font(.system(
-                                    size: right == "Short Term" ? 15 : 12,
-                                    weight: .bold,
-                                    design: .rounded
-                                ))
+                                .font(.system(size: right == "Short Term" ? 15 : 15, weight: .bold, design: .rounded))  // ← BEST VALUE +3pt
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 4)
                                 .background(right == "BEST VALUE" ? Color.red : Color.clear)
@@ -279,7 +288,7 @@ private struct PlanCard: View {
                         }
                     }
                 }
-                .padding(isPremium ? 24 : 20)
+                .padding(isPremium ? 18 : 20)  // ← Reduced padding for Lifetime card
             }
             .frame(maxWidth: .infinity)
             .cornerRadius(18)

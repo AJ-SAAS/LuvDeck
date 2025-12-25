@@ -1,6 +1,8 @@
 import Foundation
 import StoreKit
 import SwiftUI
+import FirebaseAuth
+import FirebaseFirestore
 
 @MainActor
 class PurchaseViewModel: ObservableObject {
@@ -107,10 +109,18 @@ class PurchaseViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Complete Onboarding Helper
+    // MARK: - Complete Onboarding Helper (IMPROVED)
     func completeOnboardingForCurrentUser() {
-        // Example: Save onboarding completion to UserDefaults or Firebase
         UserDefaults.standard.set(true, forKey: "onboardingCompleted")
+        
+        // Sync to Firestore if user is logged in
+        if let userId = Auth.auth().currentUser?.uid {
+            Firestore.firestore()
+                .collection("users")
+                .document(userId)
+                .setData(["onboardingCompleted": true], merge: true)
+        }
+        
         triggerPaywallAfterOnboarding = false
     }
 }

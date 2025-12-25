@@ -128,7 +128,6 @@ struct FirebaseManager {
         db.collection("users").document(userId).collection("bookmarkedIdeas").document(idea.id.uuidString).setData(data)
     }
 
-    // MARK: - Remove Bookmarked Idea
     func removeBookmarkedIdea(_ idea: Idea, for userId: String, completion: ((Error?) -> Void)? = nil) {
         db.collection("users")
             .document(userId)
@@ -142,7 +141,6 @@ struct FirebaseManager {
             }
     }
 
-    // MARK: - NEW: Fetch Bookmarked Ideas (THIS FIXES THE ERRORS)
     func fetchBookmarkedIdeas(for userId: String, completion: @escaping ([Idea]) -> Void) {
         db.collection("users")
             .document(userId)
@@ -233,6 +231,46 @@ struct FirebaseManager {
         db.collection("users").document(userId).setData(["onboardingCompleted": true], merge: true) { _ in completion(true) }
     }
 
+    // =====================================================
+    // 🔥 NEW: Onboarding Answers (ADDITIVE ONLY)
+    // =====================================================
+
+    func saveOnboardingAnswer(
+        userId: String,
+        key: String,
+        value: String
+    ) {
+        db.collection("users")
+            .document(userId)
+            .setData([
+                "onboardingAnswers.\(key)": value
+            ], merge: true)
+    }
+
+    func saveOnboardingStep(
+        userId: String,
+        step: Int
+    ) {
+        db.collection("users")
+            .document(userId)
+            .setData([
+                "onboardingStep": step
+            ], merge: true)
+    }
+
+    func fetchOnboardingAnswers(
+        userId: String,
+        completion: @escaping ([String: String]) -> Void
+    ) {
+        db.collection("users")
+            .document(userId)
+            .getDocument { snapshot, _ in
+                let answers = snapshot?.data()?["onboardingAnswers"] as? [String: String] ?? [:]
+                completion(answers)
+            }
+    }
+
+    // MARK: - Email / Password / Account
     func updateEmail(_ email: String, completion: @escaping (Result<Void, Error>) -> Void) {
         guard let user = Auth.auth().currentUser else {
             completion(.failure(NSError(domain: "", code: -1, userInfo: [NSLocalizedDescriptionKey: "No user logged in"])))

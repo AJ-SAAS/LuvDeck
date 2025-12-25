@@ -76,13 +76,11 @@ struct AddDatesView: View {
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
 
-                // MARK: - Invisible item to balance trailing button
                 ToolbarItem(placement: .topBarLeading) {
                     Color.clear
                         .frame(width: 24, height: 24)
                 }
 
-                // MARK: - Perfectly Centered Logo
                 ToolbarItem(placement: .principal) {
                     Image("luvdeckclean")
                         .resizable()
@@ -91,7 +89,6 @@ struct AddDatesView: View {
                         .padding(.vertical, 6)
                 }
 
-                // MARK: - Plus Button
                 ToolbarItem(placement: .topBarTrailing) {
                     Button {
                         if viewModel.canCreateEvent() {
@@ -136,7 +133,7 @@ struct AddDatesView: View {
                 viewModel.fetchEvents()
             }
             .onDisappear {
-                showHowItWorks = false // <-- Close overlay when leaving view
+                showHowItWorks = false
             }
 
             // MARK: - How It Works Card Overlay
@@ -209,7 +206,7 @@ struct AddDatesView: View {
                     bulletPoint("Build rituals that keep love growing, week after week")
                 }
                 .font(.subheadline)
-                .foregroundStyle(.black)
+                .foregroundStyle(.primary)  // ← Changed from .black to .primary
                 .multilineTextAlignment(.leading)
                 .transition(.opacity.combined(with: .scale))
             }

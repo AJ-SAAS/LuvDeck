@@ -1,5 +1,5 @@
 // AuthView.swift
-// ULTRA CLEAN VERSION – Bigger, bolder logo + PERFECT KEYBOARD DISMISSAL
+// ULTRA CLEAN VERSION – Bigger, bolder logo + PERFECT KEYBOARD DISMISSAL + FORCED LIGHT MODE
 
 import SwiftUI
 
@@ -28,6 +28,7 @@ struct AuthView: View {
                     VStack(spacing: 16) {
                         Text(isSignUp ? "Get started" : "Welcome back")
                             .font(.system(size: min(geometry.size.width * 0.07, 28), weight: .bold))
+                            .foregroundStyle(.primary)
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding(.horizontal, min(geometry.size.width * 0.08, 32))
 
@@ -64,7 +65,7 @@ struct AuthView: View {
 
                         if let error = viewModel.errorMessage {
                             Text(error)
-                                .foregroundColor(.red)
+                                .foregroundStyle(.red)
                                 .font(.caption)
                                 .frame(maxWidth: .infinity, alignment: .leading)
                                 .padding(.horizontal, min(geometry.size.width * 0.08, 32))
@@ -86,7 +87,7 @@ struct AuthView: View {
                         .frame(maxWidth: .infinity)
                         .padding(.vertical, 18)
                         .background(Color.black)
-                        .foregroundColor(.white)
+                        .foregroundStyle(.white)
                         .cornerRadius(12)
                         .padding(.horizontal, min(geometry.size.width * 0.08, 32))
                     }
@@ -104,10 +105,10 @@ struct AuthView: View {
                     } label: {
                         HStack(spacing: 4) {
                             Text(isSignUp ? "Already have an account?" : "Don't have an account?")
-                                .foregroundColor(.primary)
+                                .foregroundStyle(.primary)
                             Text(isSignUp ? "Sign in" : "Sign up")
                                 .fontWeight(.semibold)
-                                .foregroundColor(.blue)
+                                .foregroundStyle(.blue)
                         }
                         .font(.system(size: 15))
                     }
@@ -116,16 +117,13 @@ struct AuthView: View {
                     Spacer()
                 }
                 .navigationBarHidden(true)
-                .background(Color(.systemBackground).ignoresSafeArea())
-                .onAppear {
-                    focusedField = .email
-                }
+                .background(Color.white.ignoresSafeArea())
             }
         }
+        .preferredColorScheme(.light)  // ← FORCES LIGHT MODE FOR ENTIRE AUTH SCREEN
     }
 
     private func submit() {
-        // THIS LINE FIXES THE KEYBOARD LINGERING BUG
         UIApplication.shared.sendAction(#selector(UIResponder.resignFirstResponder), to: nil, from: nil, for: nil)
         
         viewModel.errorMessage = nil
@@ -152,7 +150,7 @@ struct AuthView: View {
     }
 }
 
-// MARK: - Clean Text Field (unchanged)
+// MARK: - Clean Text Field
 struct CustomTextField: View {
     let placeholder: String
     @Binding var text: String
@@ -187,6 +185,7 @@ struct CustomTextField: View {
 #Preview("iPhone") {
     AuthView()
         .environmentObject(AuthViewModel())
+        .preferredColorScheme(.dark)  // Preview will still show light mode!
 }
 
 #Preview("iPad") {

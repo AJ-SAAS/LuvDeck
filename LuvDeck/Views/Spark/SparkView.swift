@@ -1,9 +1,7 @@
-// SparkView.swift
 import SwiftUI
 
 struct SparkView: View {
 
-    // ViewModels
     @StateObject private var vm = SparkViewModel()
     @StateObject private var purchaseVM = PurchaseViewModel()
 
@@ -179,7 +177,7 @@ struct SparkView: View {
                     bulletPoint("Science-backed: small actions create big bonds")
                 }
                 .font(.subheadline)
-                .foregroundStyle(.black)
+                .foregroundStyle(.primary)  // ← Changed from .black to .primary (adapts to dark mode)
                 .multilineTextAlignment(.leading)
                 .transition(.opacity.combined(with: .scale))
             }
