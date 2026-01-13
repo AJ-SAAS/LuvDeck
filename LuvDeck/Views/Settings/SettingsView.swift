@@ -38,7 +38,7 @@ struct SettingsView: View {
             // MARK: - Profile
             Section("Profile") {
                 NavigationLink("Username") { updateUsernameView }
-                    .foregroundStyle(.primary)  // ← Adapts to dark mode
+                    .foregroundStyle(.primary)
             }
 
             // MARK: - Account
@@ -56,7 +56,7 @@ struct SettingsView: View {
                 } label: {
                     Label("Get LuvDeck Premium", systemImage: "crown.fill")
                         .fontWeight(.bold)
-                        .foregroundStyle(.red)           // Intentional red
+                        .foregroundStyle(.red)
                 }
 
                 Button {
@@ -70,7 +70,7 @@ struct SettingsView: View {
                                 .scaleEffect(0.8)
                         }
                     }
-                    .foregroundStyle(.primary)           // ← Now adapts
+                    .foregroundStyle(.primary)
                 }
                 .disabled(isRestoring)
 
@@ -78,7 +78,7 @@ struct SettingsView: View {
                     openSubscriptionManagement()
                 } label: {
                     Label("Manage Subscription", systemImage: "gear")
-                        .foregroundStyle(.primary)       // ← Now adapts
+                        .foregroundStyle(.primary)
                 }
             }
 
@@ -88,12 +88,12 @@ struct SettingsView: View {
                     Label("Contact Us", systemImage: "envelope.fill")
                         .foregroundStyle(.blue)
                 }
-                
+
                 Button { sendFeedback() } label: {
                     Label("Share Your Feedback", systemImage: "message")
                         .foregroundStyle(.blue)
                 }
-                
+
                 Button {
                     if let url = URL(string: "https://apps.apple.com/us/app/relationship-dates-luvdeck/id6755172208?action=write-review") {
                         UIApplication.shared.open(url)
@@ -106,12 +106,23 @@ struct SettingsView: View {
 
             // MARK: - Legal
             Section("Legal") {
-                Link("Terms of Use", destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!)
-                    .foregroundStyle(.primary)  // ← Adapts
-                Link("Privacy Policy", destination: URL(string: "https://www.luvdeck.com/r/privacy")!)
-                    .foregroundStyle(.primary)
-                Link("Visit Website", destination: URL(string: "https://www.luvdeck.com")!)
-                    .foregroundStyle(.primary)
+                Link(
+                    "Terms of Use",
+                    destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
+                )
+                .foregroundStyle(.primary)
+
+                Link(
+                    "Privacy Policy",
+                    destination: URL(string: "https://www.luvdeck.com/r/privacy")!
+                )
+                .foregroundStyle(.primary)
+
+                Link(
+                    "Visit Website",
+                    destination: URL(string: "https://www.luvdeck.com")!
+                )
+                .foregroundStyle(.primary)
             }
 
             // MARK: - Danger Zone
@@ -126,6 +137,10 @@ struct SettingsView: View {
                 }
             }
         }
+        // ✅ FORCE WHITE TAB BAR BACKGROUND (Settings ONLY)
+        .toolbarBackground(Color.white, for: .tabBar)
+        .toolbarBackground(.visible, for: .tabBar)
+
         .navigationTitle("Settings")
         .navigationBarTitleDisplayMode(.inline)
         .alert("Delete Account", isPresented: $showingAlert) {
@@ -230,5 +245,5 @@ private extension View {
     SettingsView()
         .environmentObject(AuthViewModel())
         .environmentObject(PurchaseViewModel())
-        .preferredColorScheme(.dark)  // Preview in dark mode
+        .preferredColorScheme(.dark)
 }
