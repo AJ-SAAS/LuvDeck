@@ -1,16 +1,29 @@
 import SwiftUI
+import UIKit
 
 struct CongratulationsView: View {
-    // This closure is called when the user taps “Get Started”
     var onGetStarted: () -> Void
     
+    @State private var pulse = false
+
     var body: some View {
         VStack(spacing: 32) {
+            
+            // MARK: - Pulsing Image
             Image("newlogosmile")
                 .resizable()
                 .scaledToFit()
                 .frame(width: 160, height: 160)
                 .clipShape(RoundedRectangle(cornerRadius: 32, style: .continuous))
+                .scaleEffect(pulse ? 1.08 : 1.0)
+                .animation(
+                    .easeInOut(duration: 0.9)
+                    .repeatForever(autoreverses: true),
+                    value: pulse
+                )
+                .onAppear {
+                    pulse = true
+                }
 
             Text("Congratulations!")
                 .font(.largeTitle.bold())
@@ -20,22 +33,27 @@ struct CongratulationsView: View {
                 .multilineTextAlignment(.center)
                 .padding(.horizontal)
 
+            // MARK: - Get Started Button
             Button {
+                // Haptic feedback
+                let generator = UIImpactFeedbackGenerator(style: .medium)
+                generator.impactOccurred()
+                
                 onGetStarted()
             } label: {
                 Text("Get Started")
                     .font(.title3.bold())
                     .frame(maxWidth: .infinity)
                     .padding()
-                    .background(Color.red)  // ← Now red — visible in dark mode!
+                    .background(Color.black)
                     .foregroundStyle(.white)
-                    .cornerRadius(12)
-                    .shadow(color: .black.opacity(0.2), radius: 8, y: 4)  // Subtle lift
+                    .cornerRadius(14)
+                    .shadow(color: .black.opacity(0.25), radius: 10, y: 6)
             }
             .padding(.horizontal, 40)
         }
         .padding()
         .frame(maxWidth: .infinity, maxHeight: .infinity)
-        .background(Color(.systemBackground).ignoresSafeArea())  // Keeps system dark mode support
+        .background(Color(.systemBackground).ignoresSafeArea())
     }
 }

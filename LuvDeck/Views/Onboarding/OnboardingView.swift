@@ -39,6 +39,7 @@ struct OnboardingView: View {
     ]
 
     @State private var showConfetti = false
+    @State private var logoPulse = false
 
     var body: some View {
 
@@ -192,6 +193,15 @@ struct OnboardingView: View {
                                 .frame(width: 120, height: 120)
                                 .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
                                 .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+                                .scaleEffect(logoPulse ? 1.08 : 1.0)
+                                .animation(
+                                    .easeInOut(duration: 0.9)
+                                        .repeatForever(autoreverses: true),
+                                    value: logoPulse
+                                )
+                                .onAppear {
+                                    logoPulse = true
+                                }
                         }
 
                         Spacer(minLength: 48)
@@ -220,7 +230,7 @@ struct OnboardingView: View {
                                 .font(.system(size: 20, weight: .semibold, design: .rounded))
                                 .frame(maxWidth: .infinity)
                                 .padding(.vertical, 18)
-                                .background(Color.red)
+                                .background(Color.black)
                                 .foregroundColor(.white)
                                 .cornerRadius(14)
                         }
@@ -297,7 +307,6 @@ struct ShapeConfettiView: UIViewRepresentable {
         emitter.emitterCells = cells
         uiView.layer.addSublayer(emitter)
 
-        // Stop emitter after 5 seconds without affecting SwiftUI UI
         DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
             emitter.birthRate = 0
         }

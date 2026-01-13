@@ -18,7 +18,7 @@ struct AuthView: View {
             NavigationView {
                 VStack(spacing: 28) {
                     // MARK: - Logo – BIGGER & BOLDER
-                    Image("luvdecklogo")
+                    Image("newlogosmile")
                         .resizable()
                         .scaledToFit()
                         .frame(width: min(geometry.size.width * 0.62, 260))
