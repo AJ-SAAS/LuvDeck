@@ -34,11 +34,10 @@ final class AddDatesViewModel: ObservableObject {
         else { events = [] }
     }
 
-    /// Upcoming events only, sorted by nearest date first
+    /// All events, sorted by date (past, today, future)
     var upcomingEvents: [DateEvent] {
         events
-            .filter { $0.date >= Date() }           // Only future dates
-            .sorted { $0.date < $1.date }           // Nearest first
+            .sorted { $0.date < $1.date }           // Sort all events by date
     }
 
     /// Utility: whether the current user may create another event
