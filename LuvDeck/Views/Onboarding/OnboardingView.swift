@@ -107,7 +107,9 @@ struct OnboardingView: View {
                         VStack(spacing: 12) {
                             if isNotificationStep {
                                 Button {
-                                    viewModel.requestNotificationPermission(userId: authViewModel.user?.id)
+                                    viewModel.requestNotificationPermission(userId: authViewModel.user?.id) {
+                                        viewModel.nextStep(userId: authViewModel.user?.id)
+                                    }
                                 } label: {
                                     Text("Allow Notifications")
                                         .font(.system(size: 20, weight: .semibold, design: .rounded))
@@ -171,7 +173,6 @@ struct OnboardingView: View {
                 ZStack {
                     Color(.systemBackground).ignoresSafeArea()
 
-                    // Confetti overlay
                     ShapeConfettiView(isAnimating: $showConfetti)
                         .ignoresSafeArea()
 

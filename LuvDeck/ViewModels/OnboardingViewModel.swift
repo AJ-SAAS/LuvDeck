@@ -16,15 +16,14 @@ class OnboardingViewModel: ObservableObject {
     // =====================================
     // NEW ONBOARDING ANSWERS (CONSISTENT)
     // =====================================
-
     @Published var referralSource: String? = nil
     @Published var relationshipFocus: Set<String> = []
     @Published var dailyCommitment: Int? = nil
 
     // FIXED: Now 9 steps total (0–8)
-    private let totalSteps = 9   // ← CHANGED FROM 8 TO 9
+    private let totalSteps = 9
 
-    // MARK: - Check Onboarding Status (UNCHANGED LOGIC)
+    // MARK: - Check Onboarding Status
     func checkOnboardingStatus(
         userId: String?,
         didJustSignUp: Bool,
@@ -64,7 +63,7 @@ class OnboardingViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Next Step (EXTENDED, SAFE)
+    // MARK: - Next Step
     func nextStep(userId: String?) {
         print("Next step called: currentStep=\(currentStep)")
 
@@ -75,17 +74,18 @@ class OnboardingViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Request Notification Permission (UNCHANGED)
-    func requestNotificationPermission(userId: String?) {
+    // MARK: - Request Notification Permission (FIXED)
+    func requestNotificationPermission(userId: String?, completion: @escaping () -> Void) {
         NotificationManager.shared.requestPermission { success in
             DispatchQueue.main.async {
                 print(success ? "Notification permission granted" : "Notification permission denied")
-                self.currentStep = 4
+                // Move to next step after permission
+                completion()
             }
         }
     }
 
-    // MARK: - Complete Onboarding (EXTENDED, SAFE)
+    // MARK: - Complete Onboarding
     func completeOnboarding(userId: String?) {
         print("Completing onboarding for userId: \(userId ?? "nil")")
 
@@ -96,10 +96,9 @@ class OnboardingViewModel: ObservableObject {
 
             guard let userId else { return }
 
-            // EXISTING behavior
             FirebaseManager.shared.setOnboardingCompleted(for: userId)
 
-            // NEW: persist onboarding answers (merge, non-blocking)
+            // Persist onboarding answers
             let data: [String: Any] = [
                 "referralSource": self.referralSource ?? "",
                 "relationshipFocus": Array(self.relationshipFocus),
