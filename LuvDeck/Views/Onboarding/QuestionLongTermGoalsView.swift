@@ -42,45 +42,39 @@ struct QuestionLongTermGoalsView: View {
                         .padding(.horizontal, 32)
                         .fixedSize(horizontal: false, vertical: true)
                     
-                    // Options
-                    VStack(spacing: 12) {
+                    // Options – now matches ReferralSourceView style perfectly
+                    VStack(spacing: 14) {
                         ForEach(goalOptions, id: \.self) { goal in
                             Button {
                                 withAnimation {
                                     viewModel.longTermGoal = goal
                                 }
                             } label: {
-                                Text(goal)
-                                    .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                    .frame(maxWidth: .infinity, alignment: .leading)
-                                    .padding(.vertical, 16)
-                                    .padding(.horizontal, 20)
-                                    .background(
-                                        RoundedRectangle(cornerRadius: 14)
-                                            .fill(
-                                                viewModel.longTermGoal == goal
-                                                ? Color.pink
-                                                : Color(.systemGray6)
-                                            )
-                                    )
-                                    .overlay(
-                                        RoundedRectangle(cornerRadius: 14)
-                                            .stroke(
-                                                viewModel.longTermGoal == goal
-                                                ? Color.pink
-                                                : Color.clear,
-                                                lineWidth: 2
-                                            )
-                                    )
-                                    .foregroundColor(
-                                        viewModel.longTermGoal == goal
-                                        ? .white
-                                        : .primary
-                                    )
-                                    .shadow(
-                                        color: .black.opacity(0.05),
-                                        radius: 4
-                                    )
+                                HStack(spacing: 16) {
+                                    Text(goal)
+                                        .font(.system(size: 18, weight: .semibold, design: .rounded))
+                                        .foregroundColor(.primary)  // ← FIXED: always primary (black)
+                                    
+                                    Spacer()
+                                    
+                                    if viewModel.longTermGoal == goal {
+                                        Image(systemName: "checkmark.circle.fill")
+                                            .font(.system(size: 24))
+                                            .foregroundColor(.pink)
+                                    }
+                                }
+                                .padding(.vertical, 18)
+                                .padding(.horizontal, 20)
+                                .frame(maxWidth: .infinity, alignment: .leading)
+                                .background(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .fill(viewModel.longTermGoal == goal ? Color.pink.opacity(0.15) : Color(.systemGray6))
+                                )
+                                .overlay(
+                                    RoundedRectangle(cornerRadius: 14)
+                                        .stroke(viewModel.longTermGoal == goal ? Color.pink : Color.clear, lineWidth: 2)
+                                )
+                                .shadow(color: .black.opacity(0.05), radius: 4)
                             }
                             .buttonStyle(.plain)
                         }

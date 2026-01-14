@@ -29,14 +29,14 @@ struct QuestionShortTermGoalsView: View {
                     Spacer().frame(height: 30)
                     
                     Text("What do you want to achieve with LuvDeck?")
-                        .font(.system(size: titleFontSize(for: geometry), weight: .bold, design: .rounded)) // Updated
+                        .font(.system(size: titleFontSize(for: geometry), weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
                         .padding(.horizontal, 32)
                         .fixedSize(horizontal: false, vertical: true)
                     
                     ScrollView(showsIndicators: false) {
-                        VStack(spacing: 12) {
+                        VStack(spacing: 14) {
                             ForEach(goalOptions, id: \.self) { goal in
                                 Button {
                                     withAnimation {
@@ -47,27 +47,30 @@ struct QuestionShortTermGoalsView: View {
                                         }
                                     }
                                 } label: {
-                                    HStack {
+                                    HStack(spacing: 16) {
                                         Text(goal)
                                             .font(.system(size: 18, weight: .semibold, design: .rounded))
-                                            .frame(maxWidth: .infinity, alignment: .leading)
+                                            .foregroundColor(.primary)  // ← FIXED: always primary (black)
+                                        
+                                        Spacer()
                                         
                                         if viewModel.shortTermGoals.contains(goal) {
                                             Image(systemName: "checkmark.circle.fill")
                                                 .font(.system(size: 24))
+                                                .foregroundColor(.pink)
                                         }
                                     }
-                                    .padding(.vertical, 16)
+                                    .padding(.vertical, 18)
                                     .padding(.horizontal, 20)
+                                    .frame(maxWidth: .infinity, alignment: .leading)
                                     .background(
                                         RoundedRectangle(cornerRadius: 14)
-                                            .fill(viewModel.shortTermGoals.contains(goal) ? Color.pink : Color(.systemGray6))
+                                            .fill(viewModel.shortTermGoals.contains(goal) ? Color.pink.opacity(0.15) : Color(.systemGray6))
                                     )
                                     .overlay(
                                         RoundedRectangle(cornerRadius: 14)
                                             .stroke(viewModel.shortTermGoals.contains(goal) ? Color.pink : Color.clear, lineWidth: 2)
                                     )
-                                    .foregroundColor(viewModel.shortTermGoals.contains(goal) ? .white : .primary)
                                     .shadow(color: .black.opacity(0.05), radius: 4)
                                 }
                                 .buttonStyle(.plain)
@@ -102,6 +105,6 @@ struct QuestionShortTermGoalsView: View {
     }
     
     private func titleFontSize(for geometry: GeometryProxy) -> CGFloat {
-        min(geometry.size.width * 0.078, 32) // Updated to match DailyCommitmentView
+        min(geometry.size.width * 0.078, 32)
     }
 }

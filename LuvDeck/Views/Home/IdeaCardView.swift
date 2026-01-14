@@ -2,6 +2,8 @@ import SwiftUI
 
 struct IdeaCardView: View {
     let idea: Idea
+    let isFirstCard: Bool  // Still here for future use if needed
+    
     @EnvironmentObject var viewModel: HomeViewModel
     @EnvironmentObject var purchaseVM: PurchaseViewModel
     @EnvironmentObject var savedVM: SavedIdeasViewModel
@@ -11,7 +13,9 @@ struct IdeaCardView: View {
     @State private var showHeartBurst = false
     @State private var isSaved = false
     @State private var showPaywall = false
-    @State private var overlayPulse = false  // <-- New pulse state
+    @State private var overlayPulse = false
+    
+    @State private var microAnimationOffset: CGFloat = 0  // Keep micro slide on first card
 
     // MARK: - Premium Only (Epic + Legendary)
     private var isPremiumPaywalled: Bool {
@@ -28,7 +32,7 @@ struct IdeaCardView: View {
                     .clipped()
                     .brightness(isPremiumPaywalled ? -0.12 : 0)
                     .blur(radius: isPremiumPaywalled ? 3 : 0)
-                    .offset(y: -geometry.safeAreaInsets.top * 0.3)
+                    .offset(y: -geometry.safeAreaInsets.top * 0.3 + microAnimationOffset)
 
                 if !isPremiumPaywalled {
                     bottomOverlay(geometry: geometry)
@@ -49,6 +53,8 @@ struct IdeaCardView: View {
                             PaywallView(isPresented: $showPaywall, purchaseVM: purchaseVM)
                         }
                 }
+
+                // NO inline swipe hint anymore — only the pop-up in HomeView handles guidance
             }
             .clipShape(RoundedRectangle(cornerRadius: 20, style: .continuous))
             .shadow(color: .black.opacity(0.3), radius: 20, x: 0, y: 12)

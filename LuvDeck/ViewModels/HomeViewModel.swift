@@ -92,7 +92,7 @@ class HomeViewModel: ObservableObject {
         swipeCount = 0
     }
     
-    // MARK: - Data Loading – Legendary every 12th card
+    // MARK: - Data Loading – First 12 free ideas are cute + spicy only
     func fetchIdeas() {
         guard let url = Bundle.main.url(forResource: "SwipeDeck", withExtension: "json") else {
             loadSampleIdeas()
@@ -103,21 +103,59 @@ class HomeViewModel: ObservableObject {
             let data = try Data(contentsOf: url)
             let decoded = try JSONDecoder().decode([Idea].self, from: data)
             
+            // Separate by level
+            let cuteSpicyIdeas = decoded.filter { $0.level == .cute || $0.level == .spicy }
+            let epicIdeas = decoded.filter { $0.level == .epic }
             let legendaryIdeas = decoded.filter { $0.level == .legendary }
-            let regularIdeas = decoded.filter { $0.level != .legendary }
             
-            let shuffledRegular = regularIdeas.shuffled()
+            // Shuffle each group
+            let shuffledCuteSpicy = cuteSpicyIdeas.shuffled()
+            let shuffledEpic = epicIdeas.shuffled()
+            let shuffledLegendary = legendaryIdeas.shuffled()
+            
             var finalDeck: [Idea] = []
-            var regularIndex = 0
+            var cuteSpicyIndex = 0
+            var epicIndex = 0
+            var legendaryIndex = 0
             
-            for position in 0..<1000 {
-                if (position + 1) % 12 == 0 && !legendaryIdeas.isEmpty {
-                    let legendaryIndex = (position / 12) % legendaryIdeas.count
-                    finalDeck.append(legendaryIdeas[legendaryIndex])
-                } else if regularIndex < shuffledRegular.count {
-                    finalDeck.append(shuffledRegular[regularIndex])
-                    regularIndex += 1
-                    if regularIndex >= shuffledRegular.count { regularIndex = 0 }
+            // If user is premium → full mix from start
+            if isPremiumProvider() {
+                // Same as your original logic (every 12th legendary)
+                for position in 0..<1000 {
+                    if (position + 1) % 12 == 0 && !shuffledLegendary.isEmpty {
+                        let idx = (position / 12) % shuffledLegendary.count
+                        finalDeck.append(shuffledLegendary[idx])
+                    } else if !shuffledCuteSpicy.isEmpty {
+                        finalDeck.append(shuffledCuteSpicy[cuteSpicyIndex % shuffledCuteSpicy.count])
+                        cuteSpicyIndex += 1
+                    }
+                }
+            }
+            // Free user → first 12 cute/spicy only, then mix with premium
+            else {
+                // First 12: only cute + spicy
+                for _ in 0..<12 {
+                    if !shuffledCuteSpicy.isEmpty {
+                        finalDeck.append(shuffledCuteSpicy[cuteSpicyIndex % shuffledCuteSpicy.count])
+                        cuteSpicyIndex += 1
+                    }
+                }
+                
+                // After that: normal mix (epic + legendary every 12th)
+                for position in 12..<1000 {
+                    let realPosition = position - 12  // for legendary timing
+                    
+                    if (realPosition + 1) % 12 == 0 && !shuffledLegendary.isEmpty {
+                        let idx = (realPosition / 12) % shuffledLegendary.count
+                        finalDeck.append(shuffledLegendary[idx])
+                    } else if (realPosition + 1) % 6 == 0 && !shuffledEpic.isEmpty {
+                        // Optional: add epic more frequently (every 6th after intro)
+                        let idx = (realPosition / 6) % shuffledEpic.count
+                        finalDeck.append(shuffledEpic[idx])
+                    } else if !shuffledCuteSpicy.isEmpty {
+                        finalDeck.append(shuffledCuteSpicy[cuteSpicyIndex % shuffledCuteSpicy.count])
+                        cuteSpicyIndex += 1
+                    }
                 }
             }
             
