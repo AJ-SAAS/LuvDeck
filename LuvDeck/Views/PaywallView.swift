@@ -19,19 +19,23 @@ struct PaywallView: View {
 
             VStack(spacing: 18) {
 
-                // Top-right: delayed X button – now properly positioned
+                // Top-right: delayed X button
                 HStack {
                     Spacer()
                     ZStack {
                         if showCloseButton {
-                            Button(action: { isPresented = false }) {
+                            Button(action: {
+                                completePaywall()
+                            }) {
                                 Image(systemName: "xmark")
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundColor(.black.opacity(0.7))
                                     .frame(width: 38, height: 38)
                                     .background(Color.black.opacity(0.08))
                                     .clipShape(Circle())
-                                    .overlay(Circle().stroke(Color.black.opacity(0.12), lineWidth: 0.5))
+                                    .overlay(
+                                        Circle().stroke(Color.black.opacity(0.12), lineWidth: 0.5)
+                                    )
                             }
                             .transition(.scale.combined(with: .opacity))
                         } else {
@@ -44,7 +48,7 @@ struct PaywallView: View {
                         }
                     }
                     .padding(.trailing, 16)
-                    .padding(.top, 50)  // Increased to avoid notch/status bar overlap
+                    .padding(.top, 50)
                 }
 
                 // Header
@@ -72,8 +76,7 @@ struct PaywallView: View {
                     .padding(.horizontal, 32)
                 }
 
-                // Reduced gap here – no extra Spacer
-                // Plan Cards
+                // Plan cards
                 VStack(spacing: 14) {
 
                     PlanCard(
@@ -82,8 +85,10 @@ struct PaywallView: View {
                         subtitle: "One-time payment",
                         rightText: "BEST VALUE",
                         isSelected: selectedPlan == .lifetime,
-                        isPremium: true  // Reduced padding inside PlanCard below
-                    ) { withAnimation { selectedPlan = .lifetime } }
+                        isPremium: true
+                    ) {
+                        withAnimation { selectedPlan = .lifetime }
+                    }
 
                     PlanCard(
                         planName: "3-Day Trial",
@@ -91,7 +96,9 @@ struct PaywallView: View {
                         subtitle: nil,
                         rightText: "Short Term",
                         isSelected: selectedPlan == .weekly
-                    ) { withAnimation { selectedPlan = .weekly } }
+                    ) {
+                        withAnimation { selectedPlan = .weekly }
+                    }
 
                     Text("NO PAYMENT REQUIRED TODAY")
                         .font(.system(size: 16, weight: .bold, design: .rounded))
@@ -100,7 +107,7 @@ struct PaywallView: View {
                 }
                 .padding(.horizontal, 20)
 
-                // Subscribe button – even larger text (+3pt → 23pt)
+                // Subscribe button
                 Button {
                     Task { await purchaseTapped() }
                 } label: {
@@ -109,7 +116,7 @@ struct PaywallView: View {
                             ProgressView().tint(.white).scaleEffect(0.9)
                         }
                         Text(isProcessing ? "Processing…" : "Subscribe & Start now")
-                            .font(.system(size: 23, weight: .semibold, design: .rounded))  // ← +3pt
+                            .font(.system(size: 23, weight: .semibold, design: .rounded))
                     }
                     .frame(maxWidth: .infinity)
                     .padding(.vertical, 16)
@@ -122,16 +129,17 @@ struct PaywallView: View {
                 .padding(.top, 4)
                 .disabled(isProcessing)
 
-                // "Cancel anytime" – closer to button
                 Text("Cancel anytime, no commitment")
                     .font(.system(size: 13, weight: .medium, design: .rounded))
                     .foregroundColor(.black.opacity(0.8))
-                    .padding(.top, 4)  // Even tighter
+                    .padding(.top, 4)
                     .padding(.horizontal, 20)
 
-                // Maybe later (delayed 6 seconds)
+                // Maybe later
                 if showMaybeLater {
-                    Button { isPresented = false } label: {
+                    Button {
+                        completePaywall()
+                    } label: {
                         Text("Maybe later.. >")
                             .font(.system(.headline, design: .rounded))
                             .foregroundColor(.black.opacity(0.65))
@@ -144,11 +152,17 @@ struct PaywallView: View {
 
                 // Legal + Restore
                 HStack(spacing: 20) {
-                    Button("Terms of use") { openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") }
+                    Button("Terms of use") {
+                        openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")
+                    }
                     Text("|").foregroundColor(.black.opacity(0.3))
-                    Button("Privacy") { openURL("https://www.luvdeck.com/r/privacy") }
+                    Button("Privacy") {
+                        openURL("https://www.luvdeck.com/r/privacy")
+                    }
                     Text("|").foregroundColor(.black.opacity(0.3))
-                    Button("Restore") { Task { await restoreTapped() } }
+                    Button("Restore") {
+                        Task { await restoreTapped() }
+                    }
                 }
                 .font(.system(.caption, design: .rounded))
                 .foregroundColor(.black.opacity(0.68))
@@ -157,7 +171,9 @@ struct PaywallView: View {
                 if !restoreMessage.isEmpty {
                     Text(restoreMessage)
                         .font(.caption)
-                        .foregroundColor(restoreMessage.contains("success") ? .green : .red)
+                        .foregroundColor(
+                            restoreMessage.contains("success") ? .green : .red
+                        )
                         .padding(.top, 8)
                 }
 
@@ -166,7 +182,9 @@ struct PaywallView: View {
             .padding(.bottom, safeAreaBottom() + 10)
         }
         .onChange(of: purchaseVM.isSubscribed) { _, newValue in
-            if newValue { isPresented = false }
+            if newValue {
+                completePaywall()
+            }
         }
         .task {
             try? await Task.sleep(nanoseconds: 3_000_000_000)
@@ -181,7 +199,13 @@ struct PaywallView: View {
         }
     }
 
-    // MARK: Logic
+    // MARK: - Completion Handler
+    private func completePaywall() {
+        purchaseVM.triggerPaywallAfterOnboarding = false
+        isPresented = false
+    }
+
+    // MARK: - Logic
     private func purchaseTapped() async {
         isProcessing = true
         restoreMessage = ""
@@ -215,12 +239,16 @@ struct PaywallView: View {
     }
 
     private func openURL(_ urlString: String) {
-        if let url = URL(string: urlString) { UIApplication.shared.open(url) }
+        if let url = URL(string: urlString) {
+            UIApplication.shared.open(url)
+        }
     }
 }
 
 // MARK: - Supporting Types
-private enum PaywallPlan: String { case weekly, lifetime }
+private enum PaywallPlan: String {
+    case weekly, lifetime
+}
 
 private struct PlanCard: View {
 
@@ -238,7 +266,6 @@ private struct PlanCard: View {
                 Color.white
 
                 HStack(spacing: 16) {
-
                     VStack(alignment: .leading, spacing: 4) {
                         Text(planName)
                             .font(.system(size: 18, weight: .bold, design: .rounded))
@@ -261,9 +288,8 @@ private struct PlanCard: View {
 
                     if let right = rightText {
                         HStack(spacing: 10) {
-
                             Text(right)
-                                .font(.system(size: right == "Short Term" ? 15 : 15, weight: .bold, design: .rounded))  // ← BEST VALUE +3pt
+                                .font(.system(size: 15, weight: .bold, design: .rounded))
                                 .padding(.horizontal, 10)
                                 .padding(.vertical, 4)
                                 .background(right == "BEST VALUE" ? Color.red : Color.clear)
@@ -288,14 +314,16 @@ private struct PlanCard: View {
                         }
                     }
                 }
-                .padding(isPremium ? 18 : 20)  // ← Reduced padding for Lifetime card
+                .padding(isPremium ? 18 : 20)
             }
             .frame(maxWidth: .infinity)
             .cornerRadius(18)
             .overlay(
                 RoundedRectangle(cornerRadius: 18)
-                    .stroke(isSelected ? Color.red : Color.gray.opacity(0.3),
-                            lineWidth: isSelected ? 3 : 1.5)
+                    .stroke(
+                        isSelected ? Color.red : Color.gray.opacity(0.3),
+                        lineWidth: isSelected ? 3 : 1.5
+                    )
             )
             .shadow(
                 color: isSelected ? Color.red.opacity(0.35) : Color.black.opacity(0.06),
@@ -309,6 +337,9 @@ private struct PlanCard: View {
 
 struct PaywallView_Previews: PreviewProvider {
     static var previews: some View {
-        PaywallView(isPresented: .constant(true), purchaseVM: PurchaseViewModel())
+        PaywallView(
+            isPresented: .constant(true),
+            purchaseVM: PurchaseViewModel()
+        )
     }
 }

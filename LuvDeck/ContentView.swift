@@ -1,4 +1,5 @@
-// ContentView.swift — FINAL FIXED & CRASH-FREE (2025)
+// ContentView.swift — FINAL FIXED & CRASH-FREE
+// Works with AppFlow.swift for AppScreen enum
 // → Bookmark button works instantly after Paywall → Close
 
 import SwiftUI
@@ -8,11 +9,11 @@ import FirebaseAuth
 
 struct ContentView: View {
     // MARK: - Shared Global ViewModels (from LuvDeckApp.swift)
-    @EnvironmentObject var purchaseVM: PurchaseViewModel        // ← Now from App
-    @EnvironmentObject var savedIdeasVM: SavedIdeasViewModel    // ← ADDED: Fixes crash!
-    @EnvironmentObject var homeVM: HomeViewModel                // ← HomeViewModel available
+    @EnvironmentObject var purchaseVM: PurchaseViewModel
+    @EnvironmentObject var savedIdeasVM: SavedIdeasViewModel
+    @EnvironmentObject var homeVM: HomeViewModel
 
-    // MARK: - Local ViewModels (still created here)
+    // MARK: - Local ViewModels
     @StateObject private var authViewModel = AuthViewModel()
     @StateObject private var onboardingViewModel = OnboardingViewModel()
     @StateObject private var addDatesViewModel = AddDatesViewModel()
@@ -44,14 +45,17 @@ struct ContentView: View {
                         .environmentObject(onboardingViewModel)
                         .environmentObject(purchaseVM)
 
+                case .welcome:
+                    WelcomeView(currentScreen: $currentScreen)  // ← Updated: pass binding
+
                 case .home:
                     TabBarView()
                         .environmentObject(authViewModel)
                         .environmentObject(onboardingViewModel)
                         .environmentObject(addDatesViewModel)
                         .environmentObject(purchaseVM)
-                        .environmentObject(savedIdeasVM)   // ← CRITICAL: Bookmark works!
-                        .environmentObject(homeVM)         // ← HomeViewModel available
+                        .environmentObject(savedIdeasVM)
+                        .environmentObject(homeVM)
                 }
             } else {
                 SplashView()
@@ -82,7 +86,7 @@ struct ContentView: View {
             withAnimation { currentScreen = .auth }
         }
 
-        // PAYWALL AFTER ONBOARDING → Close → Home
+        // PAYWALL AFTER ONBOARDING → decide next screen based on subscription
         .fullScreenCover(isPresented: $purchaseVM.triggerPaywallAfterOnboarding) {
             PaywallView(
                 isPresented: $purchaseVM.triggerPaywallAfterOnboarding,
@@ -90,8 +94,13 @@ struct ContentView: View {
             )
             .onDisappear {
                 purchaseVM.completeOnboardingForCurrentUser()
-                withAnimation(.easeInOut(duration: 0.35)) {
-                    currentScreen = .home
+                
+                withAnimation(.easeInOut(duration: 0.4)) {
+                    if purchaseVM.isSubscribed {
+                        currentScreen = .home
+                    } else {
+                        currentScreen = .welcome
+                    }
                 }
             }
         }
@@ -100,6 +109,7 @@ struct ContentView: View {
         .animation(.easeInOut(duration: 0.35), value: currentScreen)
     }
 
+    // MARK: - Helpers
     private func loadInitialState() {
         if Auth.auth().currentUser != nil {
             onboardingViewModel.checkOnboardingStatus(
@@ -124,7 +134,7 @@ struct ContentView: View {
         } else {
             currentScreen = .home
         }
-        
+
         withAnimation { isReady = true }
     }
 }

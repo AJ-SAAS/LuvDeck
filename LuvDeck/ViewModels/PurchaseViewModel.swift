@@ -62,9 +62,13 @@ class PurchaseViewModel: ObservableObject {
                 case .unverified:
                     print("Unverified transaction")
                 }
-            case .userCancelled: break
-            case .pending: break
-            default: break
+            case .userCancelled:
+                break
+            case .pending:
+                // Pending, but we still let .onDisappear handle navigation
+                break
+            default:
+                break
             }
         } catch {
             errorMessage = "Purchase failed: \(error.localizedDescription)"
@@ -109,7 +113,7 @@ class PurchaseViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Complete Onboarding Helper (IMPROVED)
+    // MARK: - Complete Onboarding Helper
     func completeOnboardingForCurrentUser() {
         UserDefaults.standard.set(true, forKey: "onboardingCompleted")
         

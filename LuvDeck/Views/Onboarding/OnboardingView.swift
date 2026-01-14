@@ -33,221 +33,204 @@ struct OnboardingView: View {
         (
             "onboard5",
             "Romance is now your unfair advantage.",
-            "You’re equipped to lead, surprise, and keep the spark alive — with total confidence.",
+            "You're equipped to lead, surprise, and keep the spark alive — with total confidence.",
             "Continue"
         )
     ]
 
-    @State private var showConfetti = false
-    @State private var logoPulse = false
-
     var body: some View {
+        ZStack {
+            mainContent
 
+            // Back button overlay (currently disabled)
+            if false && viewModel.currentStep > 0 && viewModel.currentStep < 10 {
+                VStack {
+                    HStack {
+                        Button {
+                            withAnimation {
+                                viewModel.previousStep()
+                            }
+                        } label: {
+                            HStack(spacing: 6) {
+                                Image(systemName: "chevron.left")
+                                    .font(.system(size: 16, weight: .semibold))
+                                Text("Back")
+                                    .font(.system(size: 17, weight: .medium))
+                            }
+                            .foregroundColor(.primary)
+                            .padding(.horizontal, 16)
+                            .padding(.vertical, 10)
+                            .background(Color(.systemGray6))
+                            .cornerRadius(20)
+                        }
+                        .padding(.leading, 20)
+                        .padding(.top, 50)
+                        Spacer()
+                    }
+                    Spacer()
+                }
+            }
+        }
+    }
+
+    @ViewBuilder
+    private var mainContent: some View {
         // ============================
-        // PRE-ONBOARDING QUESTIONS
+        // PRE-ONBOARDING QUESTIONS (0-4)
         // ============================
         if viewModel.currentStep == 0 {
             ReferralSourceView()
         }
         else if viewModel.currentStep == 1 {
-            RelationshipFocusView()
+            QuestionShortTermGoalsView()
         }
         else if viewModel.currentStep == 2 {
+            QuestionLongTermGoalsView()
+        }
+        else if viewModel.currentStep == 3 {
+            RelationshipFocusView()
+        }
+        else if viewModel.currentStep == 4 {
             DailyCommitmentView()
         }
 
         // ============================
-        // ILLUSTRATED SCREENS (3–7)
+        // ILLUSTRATED SCREENS (5–9)
         // ============================
-        else if viewModel.currentStep >= 3 && viewModel.currentStep < 8 {
-            GeometryReader { geometry in
-                let adjustedStep = viewModel.currentStep - 3
-                let safeStep = min(max(0, adjustedStep), screens.count - 1)
-                let screen = screens[safeStep]
-
-                let isNotificationStep = safeStep == 3
-                let isOldFinalStep = safeStep == screens.count - 1
-
-                ZStack {
-                    Color(.systemBackground).ignoresSafeArea()
-
-                    VStack(spacing: 0) {
-                        Spacer(minLength: geometry.size.height * 0.07)
-
-                        Image(screen.icon)
-                            .resizable()
-                            .scaledToFit()
-                            .frame(
-                                width: min(geometry.size.width * 0.5, 240),
-                                height: min(geometry.size.width * 0.5, 240)
-                            )
-                            .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
-                            .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
-                            .padding(.horizontal, 40)
-
-                        Spacer(minLength: 48)
-
-                        VStack(spacing: 16) {
-                            Text(screen.mainText)
-                                .font(.system(size: titleFontSize(for: geometry), weight: .bold, design: .rounded))
-                                .foregroundColor(.primary)
-                                .multilineTextAlignment(.center)
-                                .minimumScaleFactor(0.7)
-
-                            Text(screen.subText)
-                                .font(.system(size: subtitleFontSize(for: geometry), weight: .medium, design: .rounded))
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .minimumScaleFactor(0.8)
-                        }
-                        .padding(.horizontal, 40)
-
-                        Spacer()
-
-                        VStack(spacing: 12) {
-                            if isNotificationStep {
-                                Button {
-                                    viewModel.requestNotificationPermission(userId: authViewModel.user?.id) {
-                                        viewModel.nextStep(userId: authViewModel.user?.id)
-                                    }
-                                } label: {
-                                    Text("Allow Notifications")
-                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 18)
-                                        .background(Color.pink)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(14)
-                                }
-                                .padding(.horizontal, 32)
-
-                                Button("Skip") {
-                                    viewModel.nextStep(userId: authViewModel.user?.id)
-                                }
-                                .font(.system(size: 17, weight: .semibold))
-                                .foregroundColor(.blue)
-
-                            }
-                            else if isOldFinalStep {
-                                Button {
-                                    viewModel.nextStep(userId: authViewModel.user?.id)
-                                } label: {
-                                    Text("Continue")
-                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 18)
-                                        .background(Color.pink)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(14)
-                                }
-                                .padding(.horizontal, 32)
-                            }
-                            else {
-                                Button {
-                                    viewModel.nextStep(userId: authViewModel.user?.id)
-                                } label: {
-                                    Text(screen.buttonText)
-                                        .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                        .frame(maxWidth: .infinity)
-                                        .padding(.vertical, 18)
-                                        .background(Color.pink)
-                                        .foregroundColor(.white)
-                                        .cornerRadius(14)
-                                }
-                                .padding(.horizontal, 32)
-                            }
-                        }
-                        .frame(maxHeight: 100)
-
-                        Spacer(minLength: geometry.size.height * 0.07)
-                    }
-                }
-            }
+        else if viewModel.currentStep >= 5 && viewModel.currentStep < 10 {
+            illustratedScreen(step: viewModel.currentStep - 5)
         }
 
         // ============================
-        // FINAL WELCOME SCREEN (step 8) — ENHANCED CONFETTI
+        // FREE TRIAL TOGGLE (step 10)
         // ============================
-        else if viewModel.currentStep == 8 {
-            GeometryReader { geometry in
-                ZStack {
-                    Color(.systemBackground).ignoresSafeArea()
+        else if viewModel.currentStep == 10 {
+            FreeTrialToggleView()
+        }
 
-                    ShapeConfettiView(isAnimating: $showConfetti)
-                        .ignoresSafeArea()
-
-                    VStack(spacing: 0) {
-                        Spacer(minLength: geometry.size.height * 0.1)
-
-                        ZStack {
-                            Circle()
-                                .fill(Color.pink.opacity(0.3))
-                                .frame(width: 140, height: 140)
-                                .scaleEffect(1.6)
-                                .opacity(0.8)
-                                .blur(radius: 10)
-                                .blendMode(.screen)
-
-                            Image("newlogosmile")
-                                .resizable()
-                                .scaledToFit()
-                                .frame(width: 120, height: 120)
-                                .clipShape(RoundedRectangle(cornerRadius: 24, style: .continuous))
-                                .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
-                                .scaleEffect(logoPulse ? 1.08 : 1.0)
-                                .animation(
-                                    .easeInOut(duration: 0.9)
-                                        .repeatForever(autoreverses: true),
-                                    value: logoPulse
-                                )
-                                .onAppear {
-                                    logoPulse = true
-                                }
-                        }
-
-                        Spacer(minLength: 48)
-
-                        VStack(spacing: 16) {
-                            Text("Welcome to LuvDeck!")
-                                .font(.system(size: titleFontSize(for: geometry), weight: .bold, design: .rounded))
-                                .foregroundColor(.primary)
-                                .multilineTextAlignment(.center)
-
-                            Text("All personal information will remain private and secure.")
-                                .font(.system(size: subtitleFontSize(for: geometry), weight: .medium, design: .rounded))
-                                .foregroundColor(.secondary)
-                                .multilineTextAlignment(.center)
-                                .padding(.horizontal, 50)
-                        }
-                        .padding(.horizontal, 40)
-
-                        Spacer()
-
-                        Button {
-                            viewModel.completeOnboarding(userId: authViewModel.user?.id)
-                            purchaseVM.triggerPaywallAfterOnboarding = true
-                        } label: {
-                            Text("Let’s Go")
-                                .font(.system(size: 20, weight: .semibold, design: .rounded))
-                                .frame(maxWidth: .infinity)
-                                .padding(.vertical, 18)
-                                .background(Color.black)
-                                .foregroundColor(.white)
-                                .cornerRadius(14)
-                        }
-                        .padding(.horizontal, 32)
-
-                        Spacer(minLength: geometry.size.height * 0.07)
+        // ============================
+        // FREE TRIAL INFO / PAYWALL TRIGGER (step 11)
+        // ============================
+        else if viewModel.currentStep == 11 {
+            ZStack {
+                Color(.systemBackground).ignoresSafeArea()
+                
+                VStack(spacing: 0) {
+                    Spacer(minLength: 20)
+                    
+                    FreeTrialInfoView()
+                        .environmentObject(viewModel)
+                    
+                    Spacer(minLength: 20)
+                    
+                    Button {
+                        purchaseVM.triggerPaywallAfterOnboarding = true
+                        // No closure needed anymore — handled in ContentView .onDisappear
+                    } label: {
+                        Text("Start Free Trial")
+                            .font(.system(size: 20, weight: .semibold, design: .rounded))
+                            .frame(maxWidth: .infinity)
+                            .padding(.vertical, 18)
+                            .background(Color.pink)
+                            .foregroundColor(.white)
+                            .cornerRadius(14)
                     }
+                    .padding(.horizontal, 32)
+                    .padding(.bottom, 40)
                 }
-            }
-            .onAppear {
-                showConfetti = true
             }
         }
 
         else {
             EmptyView()
+        }
+    }
+
+    // MARK: - Helpers
+    @ViewBuilder
+    private func illustratedScreen(step: Int) -> some View {
+        GeometryReader { geometry in
+            let safeStep = min(max(0, step), screens.count - 1)
+            let screen = screens[safeStep]
+            let isNotificationStep = safeStep == 3
+
+            ZStack {
+                Color(.systemBackground).ignoresSafeArea()
+
+                VStack(spacing: 0) {
+                    Spacer(minLength: geometry.size.height * 0.07)
+
+                    Image(screen.icon)
+                        .resizable()
+                        .scaledToFit()
+                        .frame(width: min(geometry.size.width * 0.5, 240), height: min(geometry.size.width * 0.5, 240))
+                        .clipShape(RoundedRectangle(cornerRadius: 28, style: .continuous))
+                        .shadow(color: .black.opacity(0.15), radius: 12, x: 0, y: 6)
+                        .padding(.horizontal, 40)
+
+                    Spacer(minLength: 48)
+
+                    VStack(spacing: 16) {
+                        Text(screen.mainText)
+                            .font(.system(size: titleFontSize(for: geometry), weight: .bold, design: .rounded))
+                            .foregroundColor(.primary)
+                            .multilineTextAlignment(.center)
+                            .minimumScaleFactor(0.7)
+
+                        Text(screen.subText)
+                            .font(.system(size: subtitleFontSize(for: geometry), weight: .medium, design: .rounded))
+                            .foregroundColor(.secondary)
+                            .multilineTextAlignment(.center)
+                            .minimumScaleFactor(0.8)
+                    }
+                    .padding(.horizontal, 40)
+
+                    Spacer()
+
+                    VStack(spacing: 12) {
+                        if isNotificationStep {
+                            Button {
+                                viewModel.requestNotificationPermission(userId: authViewModel.user?.id) {
+                                    withAnimation { viewModel.nextStep(userId: authViewModel.user?.id) }
+                                }
+                            } label: {
+                                Text("Allow Notifications")
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 18)
+                                    .background(Color.pink)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(14)
+                            }
+                            .padding(.horizontal, 32)
+
+                            Button {
+                                withAnimation { viewModel.nextStep(userId: authViewModel.user?.id) }
+                            } label: {
+                                Text("Skip")
+                                    .font(.system(size: 17, weight: .semibold))
+                                    .foregroundColor(.blue)
+                            }
+                        } else {
+                            Button {
+                                withAnimation { viewModel.nextStep(userId: authViewModel.user?.id) }
+                            } label: {
+                                Text(screen.buttonText)
+                                    .font(.system(size: 20, weight: .semibold, design: .rounded))
+                                    .frame(maxWidth: .infinity)
+                                    .padding(.vertical, 18)
+                                    .background(Color.pink)
+                                    .foregroundColor(.white)
+                                    .cornerRadius(14)
+                            }
+                            .padding(.horizontal, 32)
+                        }
+                    }
+                    .frame(maxHeight: 100)
+
+                    Spacer(minLength: geometry.size.height * 0.07)
+                }
+            }
         }
     }
 
@@ -257,59 +240,5 @@ struct OnboardingView: View {
 
     private func subtitleFontSize(for geometry: GeometryProxy) -> CGFloat {
         min(geometry.size.width * 0.045, 18)
-    }
-}
-
-// MARK: - Shape Confetti (Triangles & Stars)
-struct ShapeConfettiView: UIViewRepresentable {
-    @Binding var isAnimating: Bool
-
-    func makeUIView(context: Context) -> UIView {
-        let view = UIView()
-        view.backgroundColor = .clear
-        return view
-    }
-
-    func updateUIView(_ uiView: UIView, context: Context) {
-        uiView.layer.sublayers?.forEach { $0.removeFromSuperlayer() }
-
-        guard isAnimating else { return }
-
-        let emitter = CAEmitterLayer()
-        emitter.emitterPosition = CGPoint(x: UIScreen.main.bounds.width / 2, y: -10)
-        emitter.emitterShape = .line
-        emitter.emitterSize = CGSize(width: UIScreen.main.bounds.width, height: 1)
-
-        let colors: [UIColor] = [.systemRed, .systemPink, .systemYellow, .systemGreen, .systemBlue, .systemOrange]
-        let symbols = ["triangle.fill", "star.fill"]
-
-        var cells: [CAEmitterCell] = []
-
-        for color in colors {
-            for symbol in symbols {
-                let cell = CAEmitterCell()
-                cell.birthRate = 8
-                cell.lifetime = 5.0
-                cell.lifetimeRange = 2
-                cell.velocity = 250
-                cell.velocityRange = 150
-                cell.emissionLongitude = .pi
-                cell.emissionRange = .pi / 3
-                cell.spin = CGFloat.random(in: -3...3)
-                cell.spinRange = CGFloat.random(in: 2...5)
-                cell.scale = 0.07
-                cell.scaleRange = 0.03
-                cell.color = color.cgColor
-                cell.contents = UIImage(systemName: symbol)?.cgImage
-                cells.append(cell)
-            }
-        }
-
-        emitter.emitterCells = cells
-        uiView.layer.addSublayer(emitter)
-
-        DispatchQueue.main.asyncAfter(deadline: .now() + 5) {
-            emitter.birthRate = 0
-        }
     }
 }

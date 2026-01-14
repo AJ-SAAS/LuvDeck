@@ -1,4 +1,3 @@
-// AppFlow.swift   (new file – put it next to Helpers.swift)
 import Foundation
 
 enum AppScreen: Hashable {
@@ -6,5 +5,6 @@ enum AppScreen: Hashable {
     case congratulations
     case auth
     case onboarding
+    case welcome    // ← NEW: Welcome screen after onboarding/paywall
     case home
 }
