@@ -9,12 +9,12 @@ struct TabBarView: View {
 
     @StateObject private var homeVM: HomeViewModel
     @StateObject private var datesVM: AddDatesViewModel
+    @StateObject private var sparkVM = SparkViewModel()  // ✅ Added
     @State private var selectedTab: Int = 0
 
     init() {
         let currentUID = Auth.auth().currentUser?.uid
 
-        // Temp HomeVM & DatesVM, actual premium check via closure
         let tempPurchaseVM = PurchaseViewModel()
         _homeVM = StateObject(wrappedValue: HomeViewModel(
             userId: currentUID,
@@ -57,9 +57,9 @@ struct TabBarView: View {
             .tabItem { Label("Dates", systemImage: "calendar") }
             .tag(1)
 
-            // Spark
+            // Spark ✅ Fixed: passing sparkVM and purchaseVM
             NavigationStack {
-                SparkView()
+                SparkView(vm: sparkVM, purchaseVM: purchaseVM)
                     .navigationTitle("Spark")
                     .navigationBarTitleDisplayMode(.large)
             }

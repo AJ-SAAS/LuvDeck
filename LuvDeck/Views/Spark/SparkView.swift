@@ -2,8 +2,8 @@ import SwiftUI
 
 struct SparkView: View {
 
-    @StateObject private var vm = SparkViewModel()
-    @StateObject private var purchaseVM = PurchaseViewModel()
+    @ObservedObject var vm: SparkViewModel
+    @ObservedObject var purchaseVM: PurchaseViewModel
 
     @State private var showHowItWorks = false
 
@@ -28,37 +28,38 @@ struct SparkView: View {
                     }
                     .padding(.top, 20)
 
-                    // SPARK GRID
+                    // SPARK GRID (4 cards — tap shows a random prompt sheet)
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
                         sparkCard(
                             title: "Conversation\nStarters",
                             icon: "message.fill",
                             color: Color.pink.opacity(0.85),
-                            action: { vm.showRandom(.conversation) }
+                            category: .conversation
                         )
-
                         sparkCard(
                             title: "Know Your\nPartner",
                             icon: "heart.text.square.fill",
                             color: Color.purple.opacity(0.85),
-                            action: { vm.showRandom(.deepQuestion) }
+                            category: .deepQuestion
                         )
-
                         sparkCard(
                             title: "Romance\nChallenge",
                             icon: "flame.fill",
                             color: Color.red.opacity(0.9),
-                            action: { vm.showRandom(.challenge) }
+                            category: .challenge
                         )
-
                         sparkCard(
                             title: "Mini Love\nAction",
                             icon: "bolt.heart.fill",
                             color: Color.orange.opacity(0.9),
-                            action: { vm.showRandom(.miniAction) }
+                            category: .miniAction
                         )
                     }
                     .padding(.horizontal)
+
+                    // MOMENTUM CARD (full width, opens full-page sheet)
+                    momentumCard
+                        .padding(.horizontal)
 
                     Spacer(minLength: 100)
                 }
@@ -71,7 +72,6 @@ struct SparkView: View {
                 ToolbarItem(placement: .topBarLeading) {
                     Color.clear.frame(width: 24, height: 24)
                 }
-
                 ToolbarItem(placement: .principal) {
                     Image("luvdeckclean")
                         .resizable()
@@ -81,11 +81,18 @@ struct SparkView: View {
                 }
             }
 
-            // SPARK DETAIL SHEET
+            // SPARK DETAIL SHEET (random prompt cards)
             .sheet(isPresented: $vm.showingSheet) {
-                SparkDetailView(item: vm.selectedItem)
-                    .presentationDetents([.medium, .large])
-                    .presentationDragIndicator(.visible)
+                if let item = vm.selectedItem {
+                    SparkDetailView(spark: Spark(id: UUID(), title: item.text, completed: false))
+                        .presentationDetents([.medium, .large])
+                        .presentationDragIndicator(.visible)
+                }
+            }
+
+            // MOMENTUM FULL-PAGE SHEET
+            .sheet(isPresented: $vm.showMomentumSheet) {
+                SparkMomentumView(vm: vm, purchaseVM: purchaseVM)
             }
 
             // PAYWALL SHEET
@@ -93,9 +100,9 @@ struct SparkView: View {
                 PaywallView(isPresented: $vm.showPaywall, purchaseVM: purchaseVM)
             }
 
-            // Sync premium state
-            .onChange(of: purchaseVM.isSubscribed) { newValue in
-                vm.setPremium(newValue)
+            // Sync premium from purchaseVM → vm
+            .onChange(of: purchaseVM.isSubscribed) { _, newValue in
+                vm.isPremium = newValue
             }
 
             // HOW IT WORKS overlay
@@ -112,39 +119,90 @@ struct SparkView: View {
     }
 
     // MARK: - Spark Card
-    private func sparkCard(title: String, icon: String, color: Color, action: @escaping () -> Void) -> some View {
+    private func sparkCard(title: String, icon: String, color: Color, category: SparkCategory) -> some View {
+        Button {
+            // Pick a random item from this category and show the sheet
+            if let item = sparkDatabase.filter({ $0.category == category }).randomElement() {
+                if vm.isPremium || category == .conversation {
+                    vm.selectedItem = item
+                    vm.showingSheet = true
+                } else {
+                    vm.showPaywall = true
+                }
+            }
+        } label: {
+            VStack(spacing: 16) {
+                Image(systemName: icon)
+                    .font(.system(size: 44))
+                    .foregroundStyle(.white)
 
-        Button(action: action) {
+                Text(title)
+                    .font(.title3.bold())
+                    .foregroundStyle(.white)
+                    .multilineTextAlignment(.center)
+                    .lineSpacing(4)
+            }
+            .frame(height: 160)
+            .frame(maxWidth: .infinity)
+            .background(color.gradient)
+            .cornerRadius(20)
+            .shadow(color: color.opacity(0.4), radius: 12, y: 8)
+        }
+        .buttonStyle(SparkButtonStyle())
+    }
+
+    // MARK: - Momentum Card
+    private var momentumCard: some View {
+        Button {
+            vm.showMomentumSheet = true
+        } label: {
             ZStack(alignment: .topTrailing) {
-
-                VStack(spacing: 16) {
-                    Image(systemName: icon)
+                HStack(spacing: 20) {
+                    Image(systemName: "bolt.heart.fill")
                         .font(.system(size: 44))
                         .foregroundStyle(.white)
 
-                    Text(title)
-                        .font(.title3.bold())
-                        .foregroundStyle(.white)
-                        .multilineTextAlignment(.center)
-                        .lineSpacing(4)
-                }
-                .frame(height: 160)
-                .frame(maxWidth: .infinity)
-                .background(color.gradient)
-                .cornerRadius(20)
-                .shadow(color: color.opacity(0.4), radius: 12, y: 8)
+                    VStack(alignment: .leading, spacing: 6) {
+                        Text("Momentum")
+                            .font(.title2.bold())
+                            .foregroundStyle(.white)
 
-                // Taps-left badge
-                if !vm.isPremium {
-                    Text("\(vm.tapsRemaining) left")
+                        Text("50 romance challenges to build your love")
+                            .font(.subheadline)
+                            .foregroundStyle(.white.opacity(0.85))
+                            .multilineTextAlignment(.leading)
+                    }
+
+                    Spacer()
+
+                    Image(systemName: "chevron.right")
+                        .font(.system(size: 18, weight: .semibold))
+                        .foregroundStyle(.white.opacity(0.8))
+                }
+                .padding(.horizontal, 24)
+                .padding(.vertical, 28)
+                .frame(maxWidth: .infinity)
+                .background(
+                    LinearGradient(
+                        colors: [Color(red: 0.6, green: 0.1, blue: 0.9), Color(red: 0.9, green: 0.2, blue: 0.5)],
+                        startPoint: .topLeading,
+                        endPoint: .bottomTrailing
+                    )
+                )
+                .cornerRadius(20)
+                .shadow(color: Color.purple.opacity(0.4), radius: 12, y: 8)
+
+                // Progress badge — only shows once user has started
+                let pct = Int(vm.completionPercentage)
+                if pct > 0 {
+                    Text("\(pct)% done")
                         .font(.caption2.bold())
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(.gray.opacity(0.75))
+                        .background(.white.opacity(0.25))
                         .foregroundStyle(.white)
                         .clipShape(Capsule())
-                        .padding(8)
-                        .opacity(vm.tapsRemaining > 0 ? 1.0 : 0.0)
+                        .padding(10)
                 }
             }
         }
@@ -177,7 +235,7 @@ struct SparkView: View {
                     bulletPoint("Science-backed: small actions create big bonds")
                 }
                 .font(.subheadline)
-                .foregroundStyle(.primary)  // ← Changed from .black to .primary (adapts to dark mode)
+                .foregroundStyle(.primary)
                 .multilineTextAlignment(.leading)
                 .transition(.opacity.combined(with: .scale))
             }
