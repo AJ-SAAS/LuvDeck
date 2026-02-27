@@ -5,7 +5,7 @@ struct PaywallView: View {
     @Binding var isPresented: Bool
     @ObservedObject var purchaseVM: PurchaseViewModel
 
-    @State private var selectedPlan: PaywallPlan = .lifetime
+    @State private var selectedPlan: PaywallPlan = .annual
     @State private var showCloseButton = false
     @State private var showMaybeLater = false
     @State private var isProcessing = false
@@ -24,9 +24,7 @@ struct PaywallView: View {
                     Spacer()
                     ZStack {
                         if showCloseButton {
-                            Button(action: {
-                                completePaywall()
-                            }) {
+                            Button(action: { completePaywall() }) {
                                 Image(systemName: "xmark")
                                     .font(.system(size: 16, weight: .bold))
                                     .foregroundColor(.black.opacity(0.7))
@@ -58,52 +56,59 @@ struct PaywallView: View {
                         .scaledToFit()
                         .frame(height: 60)
 
-                    Text("PREMIUM ACCESS")
+                    Text("Turn Ordinary Nights Into Memories")
                         .font(.system(size: 29, weight: .bold, design: .rounded))
                         .foregroundColor(.black.opacity(0.85))
                         .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
                         .padding(.horizontal, 32)
 
                     VStack(alignment: .leading, spacing: 14) {
-                        Text("• 100+ Expert-backed questions")
-                        Text("• Get Unlimited Date Ideas")
-                        Text("• Unlock Unlimited Date Reminders")
-                        Text("• Full Access to All Spark Deck")
-                        Text("• Remove Boring Dates Forever")
+                        Text("🎯 Plan unforgettable dates in seconds")
+                        Text("💬 Deepen your connection")
+                        Text("🙅 No more \"what should we do?\"")
+                        Text("💑 Build a weekly romance habit")
                     }
                     .font(.system(size: 18, weight: .regular, design: .rounded))
                     .foregroundColor(.black.opacity(0.75))
                     .padding(.horizontal, 32)
+                    
+                    // Quote with light yellow background, italic only
+                    Text("“Best thing we've done for our relationship”")
+                        .font(.system(size: 16, weight: .regular, design: .rounded).italic())
+                        .foregroundColor(.black.opacity(0.85))
+                        .padding(.horizontal, 12)
+                        .padding(.vertical, 6)
+                        .background(Color.yellow.opacity(0.2))
+                        .cornerRadius(10)
+                        .multilineTextAlignment(.center)
+                        .fixedSize(horizontal: false, vertical: true)
+                        .padding(.top, 8)
                 }
 
                 // Plan cards
                 VStack(spacing: 14) {
 
                     PlanCard(
-                        planName: "Lifetime Plan",
-                        price: "$17.99",
-                        subtitle: "One-time payment",
-                        rightText: "BEST VALUE",
-                        isSelected: selectedPlan == .lifetime,
-                        isPremium: true
+                        planName: "Annual Plan", // keep for reference
+                        price: "$29.99/year",
+                        subtitle: "Save over 50%",
+                        rightText: "MOST POPULAR",
+                        isSelected: selectedPlan == .annual
                     ) {
-                        withAnimation { selectedPlan = .lifetime }
+                        withAnimation { selectedPlan = .annual }
                     }
 
                     PlanCard(
-                        planName: "3-Day Trial",
-                        price: "$4.99 per week",
-                        subtitle: nil,
-                        rightText: "Short Term",
+                        planName: "Weekly Plan", // keep for reference
+                        price: "$4.99/week",
+                        subtitle: "3-day free trial, then $4.99/week",
+                        rightText: nil,
                         isSelected: selectedPlan == .weekly
                     ) {
                         withAnimation { selectedPlan = .weekly }
                     }
 
-                    Text("NO PAYMENT REQUIRED TODAY")
-                        .font(.system(size: 16, weight: .bold, design: .rounded))
-                        .foregroundColor(.black.opacity(0.6))
-                        .padding(.top, 2)
                 }
                 .padding(.horizontal, 20)
 
@@ -115,7 +120,7 @@ struct PaywallView: View {
                         if isProcessing {
                             ProgressView().tint(.white).scaleEffect(0.9)
                         }
-                        Text(isProcessing ? "Processing…" : "Subscribe & Start now")
+                        Text(isProcessing ? "Processing…" : "Continue")
                             .font(.system(size: 23, weight: .semibold, design: .rounded))
                     }
                     .frame(maxWidth: .infinity)
@@ -137,9 +142,7 @@ struct PaywallView: View {
 
                 // Maybe later
                 if showMaybeLater {
-                    Button {
-                        completePaywall()
-                    } label: {
+                    Button { completePaywall() } label: {
                         Text("Maybe later.. >")
                             .font(.system(.headline, design: .rounded))
                             .foregroundColor(.black.opacity(0.65))
@@ -152,17 +155,11 @@ struct PaywallView: View {
 
                 // Legal + Restore
                 HStack(spacing: 20) {
-                    Button("Terms of use") {
-                        openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")
-                    }
+                    Button("Terms of use") { openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") }
                     Text("|").foregroundColor(.black.opacity(0.3))
-                    Button("Privacy") {
-                        openURL("https://www.luvdeck.com/r/privacy")
-                    }
+                    Button("Privacy") { openURL("https://www.luvdeck.com/r/privacy") }
                     Text("|").foregroundColor(.black.opacity(0.3))
-                    Button("Restore") {
-                        Task { await restoreTapped() }
-                    }
+                    Button("Restore") { Task { await restoreTapped() } }
                 }
                 .font(.system(.caption, design: .rounded))
                 .foregroundColor(.black.opacity(0.68))
@@ -182,20 +179,14 @@ struct PaywallView: View {
             .padding(.bottom, safeAreaBottom() + 10)
         }
         .onChange(of: purchaseVM.isSubscribed) { _, newValue in
-            if newValue {
-                completePaywall()
-            }
+            if newValue { completePaywall() }
         }
         .task {
             try? await Task.sleep(nanoseconds: 3_000_000_000)
-            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) {
-                showCloseButton = true
-            }
+            withAnimation(.spring(response: 0.5, dampingFraction: 0.8)) { showCloseButton = true }
 
             try? await Task.sleep(nanoseconds: 3_000_000_000)
-            withAnimation(.easeOut(duration: 0.4)) {
-                showMaybeLater = true
-            }
+            withAnimation(.easeOut(duration: 0.4)) { showMaybeLater = true }
         }
     }
 
@@ -212,7 +203,7 @@ struct PaywallView: View {
 
         let productID = selectedPlan == .weekly
             ? "luvdeck_weekly_399"
-            : "luvdeck_lifetime_8999"
+            : "luvdeck_annual_2999"
 
         guard let product = purchaseVM.allProducts.first(where: { $0.id == productID }) else {
             isProcessing = false
@@ -239,16 +230,12 @@ struct PaywallView: View {
     }
 
     private func openURL(_ urlString: String) {
-        if let url = URL(string: urlString) {
-            UIApplication.shared.open(url)
-        }
+        if let url = URL(string: urlString) { UIApplication.shared.open(url) }
     }
 }
 
 // MARK: - Supporting Types
-private enum PaywallPlan: String {
-    case weekly, lifetime
-}
+private enum PaywallPlan: String { case weekly, annual }
 
 private struct PlanCard: View {
 
@@ -266,51 +253,56 @@ private struct PlanCard: View {
                 Color.white
 
                 HStack(spacing: 16) {
-                    VStack(alignment: .leading, spacing: 4) {
-                        Text(planName)
-                            .font(.system(size: 18, weight: .bold, design: .rounded))
+                    // Left: only price & subtitle
+                    VStack(alignment: .leading, spacing: 2) {
+
+                        Text(price)
+                            .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundColor(.black)
+                            .lineLimit(1)
+                            .fixedSize(horizontal: false, vertical: true)
 
-                        VStack(alignment: .leading, spacing: 2) {
-                            Text(price)
-                                .font(.system(size: 20, weight: .bold, design: .rounded))
-                                .foregroundColor(.black)
-
-                            if let subtitle = subtitle {
-                                Text(subtitle)
-                                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                                    .foregroundColor(.black.opacity(0.8))
-                            }
+                        if let subtitle = subtitle {
+                            Text(subtitle)
+                                .font(.system(size: 13, weight: .medium, design: .rounded))
+                                .foregroundColor(.black.opacity(0.8))
+                                .lineLimit(1)
+                                .fixedSize(horizontal: false, vertical: true)
                         }
                     }
 
                     Spacer()
 
-                    if let right = rightText {
-                        HStack(spacing: 10) {
-                            Text(right)
-                                .font(.system(size: 15, weight: .bold, design: .rounded))
-                                .padding(.horizontal, 10)
-                                .padding(.vertical, 4)
-                                .background(right == "BEST VALUE" ? Color.red : Color.clear)
-                                .foregroundColor(right == "BEST VALUE" ? .white : .black)
-                                .cornerRadius(6)
+                    // Right side: tick circle + badge
+                    ZStack(alignment: .topTrailing) {
 
-                            ZStack {
+                        // Tick circle
+                        ZStack {
+                            Circle()
+                                .stroke(Color.gray.opacity(0.3), lineWidth: 2)
+                                .frame(width: 26, height: 26)
+
+                            if isSelected {
                                 Circle()
-                                    .stroke(Color.gray.opacity(0.3), lineWidth: 2)
+                                    .fill(Color.green)
                                     .frame(width: 26, height: 26)
 
-                                if isSelected {
-                                    Circle()
-                                        .fill(Color.green)
-                                        .frame(width: 26, height: 26)
-
-                                    Image(systemName: "checkmark")
-                                        .font(.system(size: 12, weight: .bold))
-                                        .foregroundColor(.white)
-                                }
+                                Image(systemName: "checkmark")
+                                    .font(.system(size: 12, weight: .bold))
+                                    .foregroundColor(.white)
                             }
+                        }
+
+                        // Badge
+                        if let right = rightText {
+                            Text(right)
+                                .font(.system(size: 12, weight: .bold, design: .rounded))
+                                .padding(.horizontal, 6)
+                                .padding(.vertical, 2)
+                                .background(Color.red)
+                                .foregroundColor(.white)
+                                .cornerRadius(4)
+                                .offset(x: 0, y: -22)
                         }
                     }
                 }

@@ -4,14 +4,10 @@ struct QuestionShortTermGoalsView: View {
     @EnvironmentObject var viewModel: OnboardingViewModel
     
     let goalOptions = [
-        "💬 Improve daily communication",
-        "❤️ Deepen emotional connection",
-        "🎁 Plan better surprises",
-        "📅 Remember important dates",
-        "😊 Reduce relationship stress",
         "✨ Reignite the spark",
-        "🌹 Be more romantic",
-        "💪 Build relationship confidence"
+        "💬 Connect more deeply",
+        "🎯 Plan better dates",
+        "😊 Reduce relationship stress"
     ]
     
     var body: some View {

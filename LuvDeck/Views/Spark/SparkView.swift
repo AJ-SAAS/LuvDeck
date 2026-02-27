@@ -140,7 +140,7 @@ struct SparkView: View {
                         .font(.caption2.bold())
                         .padding(.horizontal, 8)
                         .padding(.vertical, 4)
-                        .background(.black.opacity(0.75))
+                        .background(.gray.opacity(0.75))
                         .foregroundStyle(.white)
                         .clipShape(Capsule())
                         .padding(8)

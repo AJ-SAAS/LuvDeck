@@ -6,7 +6,7 @@ struct QuestionLongTermGoalsView: View {
     let goalOptions = [
         "💍 Build a lasting relationship",
         "👨‍👩‍👧 Strengthen family bonds",
-        "🌟 Become her dream partner",
+        "🌟 Become a better partner",
         "🤔 Not sure yet"
     ]
     

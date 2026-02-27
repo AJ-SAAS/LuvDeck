@@ -35,7 +35,8 @@ class PurchaseViewModel: ObservableObject {
         do {
             let productIDs: Set<String> = [
                 "luvdeck_weekly_399",
-                "luvdeck_lifetime_8999"
+                "luvdeck_annual_2999",      // <- updated annual product
+                "luvdeck_lifetime_8999"     // <- legacy lifetime, optional
             ]
             let products = try await Product.products(for: productIDs)
             DispatchQueue.main.async {
@@ -95,7 +96,9 @@ class PurchaseViewModel: ObservableObject {
         for await result in Transaction.currentEntitlements {
             switch result {
             case .verified(let transaction):
+                // ✅ New annual subscription + weekly + legacy lifetime
                 if transaction.productID == "luvdeck_weekly_399" ||
+                   transaction.productID == "luvdeck_annual_2999" ||
                    transaction.productID == "luvdeck_lifetime_8999" {
                     DispatchQueue.main.async {
                         self.isSubscribed = true
