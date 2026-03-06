@@ -6,17 +6,15 @@ import FirebaseFirestore
 @MainActor
 class SparkViewModel: ObservableObject {
     
-    // MARK: - Spark UI (Original Spark Cards)
+    // MARK: - Spark UI
     @Published var showingSheet = false
     @Published var selectedItem: SparkItem?
-    
     @Published var showPaywall = false
     
-    @AppStorage("luvdeck_isPremium") var isPremium: Bool = false
+    // ✅ Changed from @AppStorage to @Published so it stays in sync with PurchaseViewModel
+    @Published var isPremium: Bool = false
     
-    // ==========================
-    // 🔥 Momentum
-    // ==========================
+    // MARK: - Momentum
     @Published var showMomentumSheet = false
     @Published var userSparks: [Spark] = []
     
@@ -24,10 +22,7 @@ class SparkViewModel: ObservableObject {
         fetchCurrentUserSparks()
     }
     
-    // ==========================
-    // 🔥 Momentum Fetch
-    // ==========================
-    
+    // MARK: - Fetch
     func fetchCurrentUserSparks() {
         guard let userId = Auth.auth().currentUser?.uid else { return }
         fetchUserSparks(userId: userId)
@@ -45,12 +40,8 @@ class SparkViewModel: ObservableObject {
         }
     }
     
-    // ==========================
-    // 🔥 Seed Momentum From momentumDatabase
-    // ==========================
-    
+    // MARK: - Seed Momentum
     private func seedUserSparksIfNeeded(userId: String) {
-        
         let categoryOrder: [MomentumCategory] = [
             .playfulness,
             .emotionalDepth,
@@ -70,16 +61,12 @@ class SparkViewModel: ObservableObject {
         }
         
         self.userSparks = newSparks
-        
         newSparks.forEach {
             FirebaseManager.shared.saveSpark(userId: userId, spark: $0)
         }
     }
     
-    // ==========================
-    // 🔥 Toggle Momentum Spark
-    // ==========================
-    
+    // MARK: - Toggle Momentum Spark
     func toggleSpark(_ spark: Spark) {
         guard let index = userSparks.firstIndex(where: { $0.id == spark.id }) else { return }
         
@@ -103,10 +90,7 @@ class SparkViewModel: ObservableObject {
         return false
     }
     
-    // ==========================
-    // 🔥 Progress
-    // ==========================
-    
+    // MARK: - Progress
     var completedSparksCount: Double {
         Double(userSparks.filter { $0.completed }.count)
     }

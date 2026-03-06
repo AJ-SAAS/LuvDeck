@@ -9,23 +9,21 @@ struct TabBarView: View {
 
     @StateObject private var homeVM: HomeViewModel
     @StateObject private var datesVM: AddDatesViewModel
-    @StateObject private var sparkVM = SparkViewModel()  // ✅ Added
+    @StateObject private var sparkVM = SparkViewModel()
     @State private var selectedTab: Int = 0
 
-    init() {
+    init(purchaseVM: PurchaseViewModel) {
         let currentUID = Auth.auth().currentUser?.uid
 
-        let tempPurchaseVM = PurchaseViewModel()
         _homeVM = StateObject(wrappedValue: HomeViewModel(
             userId: currentUID,
-            isPremiumProvider: { tempPurchaseVM.isPremium }
+            isPremiumProvider: { purchaseVM.isPremium }
         ))
         _datesVM = StateObject(wrappedValue: AddDatesViewModel(
             userId: currentUID,
-            isPremiumProvider: { tempPurchaseVM.isPremium }
+            isPremiumProvider: { purchaseVM.isPremium }
         ))
 
-        // Transparent tab bar
         let appearance = UITabBarAppearance()
         appearance.configureWithTransparentBackground()
         appearance.backgroundColor = UIColor.clear
@@ -40,7 +38,8 @@ struct TabBarView: View {
 
     var body: some View {
         TabView(selection: $selectedTab) {
-            // Home
+
+            // 1) Home
             NavigationStack {
                 HomeView()
                     .environmentObject(homeVM)
@@ -50,23 +49,23 @@ struct TabBarView: View {
             .tabItem { Label("Home", systemImage: "house.fill") }
             .tag(0)
 
-            // Dates
-            NavigationStack {
-                AddDatesView(purchaseVM: purchaseVM, userId: authViewModel.user?.id)
-            }
-            .tabItem { Label("Dates", systemImage: "calendar") }
-            .tag(1)
-
-            // Spark ✅ Fixed: passing sparkVM and purchaseVM
+            // 2) Spark
             NavigationStack {
                 SparkView(vm: sparkVM, purchaseVM: purchaseVM)
                     .navigationTitle("Spark")
                     .navigationBarTitleDisplayMode(.large)
             }
             .tabItem { Label("Spark", systemImage: "sparkles") }
+            .tag(1)
+
+            // 3) Dates
+            NavigationStack {
+                AddDatesView(purchaseVM: purchaseVM, userId: authViewModel.user?.id)
+            }
+            .tabItem { Label("Dates", systemImage: "calendar") }
             .tag(2)
 
-            // Settings
+            // 4) Settings
             NavigationStack {
                 SettingsView()
                     .environmentObject(authViewModel)
@@ -83,7 +82,7 @@ struct TabBarView: View {
         }
         .onAppear { updateUserId() }
         .onChange(of: authViewModel.user) { _, _ in updateUserId() }
-        .onChange(of: purchaseVM.triggerPaywallAfterOnboarding) { newValue in
+        .onChange(of: purchaseVM.triggerPaywallAfterOnboarding) { _, newValue in
             if newValue {
                 purchaseVM.shouldPresentPaywall = true
                 purchaseVM.triggerPaywallAfterOnboarding = false

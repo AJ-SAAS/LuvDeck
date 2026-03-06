@@ -13,11 +13,9 @@ class PurchaseViewModel: ObservableObject {
     @Published var showError: Bool = false
     @Published var errorMessage: String = ""
 
-    // MARK: - Paywall & onboarding flags
     @Published var shouldPresentPaywall: Bool = false
     @Published var triggerPaywallAfterOnboarding: Bool = false
 
-    // MARK: - Premium shortcut
     var isPremium: Bool { isSubscribed }
 
     private let entitlementID = "premium"
@@ -30,21 +28,29 @@ class PurchaseViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Fetch Products
+    // MARK: - Fetch Products (with retry)
     func fetchProducts() async {
-        do {
-            let productIDs: Set<String> = [
-                "luvdeck_weekly_399",
-                "luvdeck_annual_2999",      // <- updated annual product
-                "luvdeck_lifetime_8999"     // <- legacy lifetime, optional
-            ]
-            let products = try await Product.products(for: productIDs)
-            DispatchQueue.main.async {
-                self.allProducts = products.sorted { $0.displayName < $1.displayName }
+        let productIDs: Set<String> = [
+            "luvdeck_weekly_399",
+            "luvdeck_annual_2999",
+            "luvdeck_lifetime_8999"
+        ]
+
+        for attempt in 1...3 {
+            do {
+                let products = try await Product.products(for: productIDs)
+                if !products.isEmpty {
+                    DispatchQueue.main.async {
+                        self.allProducts = products.sorted { $0.displayName < $1.displayName }
+                    }
+                    return
+                }
+            } catch {
+                print("fetchProducts attempt \(attempt) failed: \(error)")
             }
-        } catch {
-            print("Error fetching products: \(error)")
+            try? await Task.sleep(nanoseconds: 1_000_000_000)
         }
+        print("⚠️ Could not load products after 3 attempts")
     }
 
     // MARK: - Purchase
@@ -66,7 +72,6 @@ class PurchaseViewModel: ObservableObject {
             case .userCancelled:
                 break
             case .pending:
-                // Pending, but we still let .onDisappear handle navigation
                 break
             default:
                 break
@@ -96,7 +101,6 @@ class PurchaseViewModel: ObservableObject {
         for await result in Transaction.currentEntitlements {
             switch result {
             case .verified(let transaction):
-                // ✅ New annual subscription + weekly + legacy lifetime
                 if transaction.productID == "luvdeck_weekly_399" ||
                    transaction.productID == "luvdeck_annual_2999" ||
                    transaction.productID == "luvdeck_lifetime_8999" {
@@ -106,7 +110,8 @@ class PurchaseViewModel: ObservableObject {
                     }
                     return
                 }
-            case .unverified: break
+            case .unverified:
+                break
             }
         }
 
@@ -116,18 +121,17 @@ class PurchaseViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Complete Onboarding Helper
+    // MARK: - Complete Onboarding
     func completeOnboardingForCurrentUser() {
         UserDefaults.standard.set(true, forKey: "onboardingCompleted")
-        
-        // Sync to Firestore if user is logged in
+
         if let userId = Auth.auth().currentUser?.uid {
             Firestore.firestore()
                 .collection("users")
                 .document(userId)
                 .setData(["onboardingCompleted": true], merge: true)
         }
-        
+
         triggerPaywallAfterOnboarding = false
     }
 }

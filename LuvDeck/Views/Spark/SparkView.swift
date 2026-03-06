@@ -28,7 +28,7 @@ struct SparkView: View {
                     }
                     .padding(.top, 20)
 
-                    // SPARK GRID (4 cards — tap shows a random prompt sheet)
+                    // SPARK GRID
                     LazyVGrid(columns: [GridItem(.flexible()), GridItem(.flexible())], spacing: 20) {
                         sparkCard(
                             title: "Conversation\nStarters",
@@ -57,7 +57,7 @@ struct SparkView: View {
                     }
                     .padding(.horizontal)
 
-                    // MOMENTUM CARD (full width, opens full-page sheet)
+                    // MOMENTUM CARD
                     momentumCard
                         .padding(.horizontal)
 
@@ -66,7 +66,6 @@ struct SparkView: View {
                 .padding(.horizontal)
             }
 
-            // NAV BAR
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
                 ToolbarItem(placement: .topBarLeading) {
@@ -81,7 +80,6 @@ struct SparkView: View {
                 }
             }
 
-            // SPARK DETAIL SHEET (random prompt cards)
             .sheet(isPresented: $vm.showingSheet) {
                 if let item = vm.selectedItem {
                     SparkDetailView(spark: Spark(id: UUID(), title: item.text, completed: false))
@@ -90,22 +88,22 @@ struct SparkView: View {
                 }
             }
 
-            // MOMENTUM FULL-PAGE SHEET
             .sheet(isPresented: $vm.showMomentumSheet) {
                 SparkMomentumView(vm: vm, purchaseVM: purchaseVM)
             }
 
-            // PAYWALL SHEET
             .sheet(isPresented: $vm.showPaywall) {
                 PaywallView(isPresented: $vm.showPaywall, purchaseVM: purchaseVM)
             }
 
-            // Sync premium from purchaseVM → vm
+            // ✅ Sync on change AND on appear
             .onChange(of: purchaseVM.isSubscribed) { _, newValue in
                 vm.isPremium = newValue
             }
+            .onAppear {
+                vm.isPremium = purchaseVM.isSubscribed  // ✅ fixes already-subscribed users
+            }
 
-            // HOW IT WORKS overlay
             .overlay(alignment: .bottom) {
                 howItWorksCard
                     .padding(.horizontal)
@@ -121,7 +119,6 @@ struct SparkView: View {
     // MARK: - Spark Card
     private func sparkCard(title: String, icon: String, color: Color, category: SparkCategory) -> some View {
         Button {
-            // Pick a random item from this category and show the sheet
             if let item = sparkDatabase.filter({ $0.category == category }).randomElement() {
                 if vm.isPremium || category == .conversation {
                     vm.selectedItem = item
@@ -192,7 +189,6 @@ struct SparkView: View {
                 .cornerRadius(20)
                 .shadow(color: Color.purple.opacity(0.4), radius: 12, y: 8)
 
-                // Progress badge — only shows once user has started
                 let pct = Int(vm.completionPercentage)
                 if pct > 0 {
                     Text("\(pct)% done")

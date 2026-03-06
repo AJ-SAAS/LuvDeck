@@ -17,166 +17,164 @@ struct PaywallView: View {
         ZStack {
             Color.white.ignoresSafeArea()
 
-            VStack(spacing: 18) {
+            ScrollView(showsIndicators: false) {  // ✅ fixes blank content on iPad
+                VStack(spacing: 18) {
 
-                // Top-right: delayed X button
-                HStack {
-                    Spacer()
-                    ZStack {
-                        if showCloseButton {
-                            Button(action: { completePaywall() }) {
-                                Image(systemName: "xmark")
-                                    .font(.system(size: 16, weight: .bold))
-                                    .foregroundColor(.black.opacity(0.7))
-                                    .frame(width: 38, height: 38)
-                                    .background(Color.black.opacity(0.08))
-                                    .clipShape(Circle())
-                                    .overlay(
-                                        Circle().stroke(Color.black.opacity(0.12), lineWidth: 0.5)
+                    // Top-right: delayed X button
+                    HStack {
+                        Spacer()
+                        ZStack {
+                            if showCloseButton {
+                                Button(action: { completePaywall() }) {
+                                    Image(systemName: "xmark")
+                                        .font(.system(size: 16, weight: .bold))
+                                        .foregroundColor(.black.opacity(0.7))
+                                        .frame(width: 38, height: 38)
+                                        .background(Color.black.opacity(0.08))
+                                        .clipShape(Circle())
+                                        .overlay(
+                                            Circle().stroke(Color.black.opacity(0.12), lineWidth: 0.5)
+                                        )
+                                }
+                                .transition(.scale.combined(with: .opacity))
+                            } else {
+                                ProgressView()
+                                    .progressViewStyle(
+                                        CircularProgressViewStyle(tint: .black.opacity(0.4))
                                     )
+                                    .scaleEffect(0.9)
+                                    .frame(width: 38, height: 38)
                             }
-                            .transition(.scale.combined(with: .opacity))
-                        } else {
-                            ProgressView()
-                                .progressViewStyle(
-                                    CircularProgressViewStyle(tint: .black.opacity(0.4))
-                                )
-                                .scaleEffect(0.9)
-                                .frame(width: 38, height: 38)
                         }
+                        .padding(.trailing, 16)
+                        .padding(.top, 50)
                     }
-                    .padding(.trailing, 16)
-                    .padding(.top, 50)
-                }
 
-                // Header
-                VStack(spacing: 16) {
-                    Image("luvdeckpremium")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(height: 60)
+                    // Header
+                    VStack(spacing: 16) {
+                        Image("luvdeckpremium")
+                            .resizable()
+                            .scaledToFit()
+                            .frame(height: 60)
 
-                    Text("Turn Ordinary Nights Into Memories")
-                        .font(.system(size: 29, weight: .bold, design: .rounded))
-                        .foregroundColor(.black.opacity(0.85))
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
+                        Text("Turn Ordinary Nights Into Memories")
+                            .font(.system(size: 29, weight: .bold, design: .rounded))
+                            .foregroundColor(.black.opacity(0.85))
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.horizontal, 32)
+
+                        VStack(alignment: .leading, spacing: 14) {
+                            Text("🎯 Plan unforgettable dates in seconds")
+                            Text("💬 Deepen your connection")
+                            Text("🙅 No more \"what should we do?\"")
+                            Text("💑 Build a weekly romance habit")
+                        }
+                        .font(.system(size: 18, weight: .regular, design: .rounded))
+                        .foregroundColor(.black.opacity(0.75))
                         .padding(.horizontal, 32)
 
-                    VStack(alignment: .leading, spacing: 14) {
-                        Text("🎯 Plan unforgettable dates in seconds")
-                        Text("💬 Deepen your connection")
-                        Text("🙅 No more \"what should we do?\"")
-                        Text("💑 Build a weekly romance habit")
-                    }
-                    .font(.system(size: 18, weight: .regular, design: .rounded))
-                    .foregroundColor(.black.opacity(0.75))
-                    .padding(.horizontal, 32)
-                    
-                    // Quote with light yellow background, italic only
-                    Text("“Best thing we've done for our relationship”")
-                        .font(.system(size: 16, weight: .regular, design: .rounded).italic())
-                        .foregroundColor(.black.opacity(0.85))
-                        .padding(.horizontal, 12)
-                        .padding(.vertical, 6)
-                        .background(Color.yellow.opacity(0.2))
-                        .cornerRadius(10)
-                        .multilineTextAlignment(.center)
-                        .fixedSize(horizontal: false, vertical: true)
-                        .padding(.top, 8)
-                }
-
-                // Plan cards
-                VStack(spacing: 14) {
-
-                    PlanCard(
-                        planName: "Annual Plan", // keep for reference
-                        price: "$29.99/year",
-                        subtitle: "Save over 50%",
-                        rightText: "MOST POPULAR",
-                        isSelected: selectedPlan == .annual
-                    ) {
-                        withAnimation { selectedPlan = .annual }
+                        Text("\"Best thing we've done for our relationship\"")
+                            .font(.system(size: 16, weight: .regular, design: .rounded).italic())
+                            .foregroundColor(.black.opacity(0.85))
+                            .padding(.horizontal, 12)
+                            .padding(.vertical, 6)
+                            .background(Color.yellow.opacity(0.2))
+                            .cornerRadius(10)
+                            .multilineTextAlignment(.center)
+                            .fixedSize(horizontal: false, vertical: true)
+                            .padding(.top, 8)
                     }
 
-                    PlanCard(
-                        planName: "Weekly Plan", // keep for reference
-                        price: "$4.99/week",
-                        subtitle: "3-day free trial, then $4.99/week",
-                        rightText: nil,
-                        isSelected: selectedPlan == .weekly
-                    ) {
-                        withAnimation { selectedPlan = .weekly }
-                    }
-
-                }
-                .padding(.horizontal, 20)
-
-                // Subscribe button
-                Button {
-                    Task { await purchaseTapped() }
-                } label: {
-                    HStack {
-                        if isProcessing {
-                            ProgressView().tint(.white).scaleEffect(0.9)
+                    // Plan cards
+                    VStack(spacing: 14) {
+                        PlanCard(
+                            planName: "Annual Plan",
+                            price: "$29.99/year",
+                            subtitle: "Save over 50%",
+                            rightText: "MOST POPULAR",
+                            isSelected: selectedPlan == .annual
+                        ) {
+                            withAnimation { selectedPlan = .annual }
                         }
-                        Text(isProcessing ? "Processing…" : "Continue")
-                            .font(.system(size: 23, weight: .semibold, design: .rounded))
-                    }
-                    .frame(maxWidth: .infinity)
-                    .padding(.vertical, 16)
-                    .background(isProcessing ? Color.gray : accent)
-                    .foregroundColor(.white)
-                    .cornerRadius(16)
-                    .shadow(color: accent.opacity(0.3), radius: 12, y: 8)
-                }
-                .padding(.horizontal, 20)
-                .padding(.top, 4)
-                .disabled(isProcessing)
 
-                Text("Cancel anytime, no commitment")
-                    .font(.system(size: 13, weight: .medium, design: .rounded))
-                    .foregroundColor(.black.opacity(0.8))
-                    .padding(.top, 4)
+                        PlanCard(
+                            planName: "Weekly Plan",
+                            price: "$4.99/week",
+                            subtitle: "3-day free trial, then $4.99/week",
+                            rightText: nil,
+                            isSelected: selectedPlan == .weekly
+                        ) {
+                            withAnimation { selectedPlan = .weekly }
+                        }
+                    }
                     .padding(.horizontal, 20)
 
-                // Maybe later
-                if showMaybeLater {
-                    Button { completePaywall() } label: {
-                        Text("Maybe later.. >")
-                            .font(.system(.headline, design: .rounded))
-                            .foregroundColor(.black.opacity(0.65))
+                    // Subscribe button
+                    Button {
+                        Task { await purchaseTapped() }
+                    } label: {
+                        HStack {
+                            if isProcessing {
+                                ProgressView().tint(.white).scaleEffect(0.9)
+                            }
+                            // ✅ Shows "Loading…" until products are ready
+                            Text(isProcessing ? "Processing…" : purchaseVM.allProducts.isEmpty ? "Loading…" : "Continue")
+                                .font(.system(size: 23, weight: .semibold, design: .rounded))
+                        }
+                        .frame(maxWidth: .infinity)
+                        .padding(.vertical, 16)
+                        .background(isProcessing || purchaseVM.allProducts.isEmpty ? Color.gray : accent)
+                        .foregroundColor(.white)
+                        .cornerRadius(16)
+                        .shadow(color: accent.opacity(0.3), radius: 12, y: 8)
                     }
+                    .padding(.horizontal, 20)
+                    .padding(.top, 4)
+                    .disabled(isProcessing || purchaseVM.allProducts.isEmpty)  // ✅ disabled until ready
+
+                    Text("Cancel anytime, no commitment")
+                        .font(.system(size: 13, weight: .medium, design: .rounded))
+                        .foregroundColor(.black.opacity(0.8))
+                        .padding(.top, 4)
+                        .padding(.horizontal, 20)
+
+                    if showMaybeLater {
+                        Button { completePaywall() } label: {
+                            Text("Maybe later.. >")
+                                .font(.system(.headline, design: .rounded))
+                                .foregroundColor(.black.opacity(0.65))
+                        }
+                        .padding(.top, 10)
+                        .transition(.opacity.combined(with: .scale))
+                    } else {
+                        Spacer().frame(height: 40)
+                    }
+
+                    HStack(spacing: 20) {
+                        Button("Terms of use") { openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") }
+                        Text("|").foregroundColor(.black.opacity(0.3))
+                        Button("Privacy") { openURL("https://www.luvdeck.com/r/privacy") }
+                        Text("|").foregroundColor(.black.opacity(0.3))
+                        Button("Restore") { Task { await restoreTapped() } }
+                    }
+                    .font(.system(.caption, design: .rounded))
+                    .foregroundColor(.black.opacity(0.68))
                     .padding(.top, 10)
-                    .transition(.opacity.combined(with: .scale))
-                } else {
-                    Spacer().frame(height: 40)
-                }
 
-                // Legal + Restore
-                HStack(spacing: 20) {
-                    Button("Terms of use") { openURL("https://www.apple.com/legal/internet-services/itunes/dev/stdeula/") }
-                    Text("|").foregroundColor(.black.opacity(0.3))
-                    Button("Privacy") { openURL("https://www.luvdeck.com/r/privacy") }
-                    Text("|").foregroundColor(.black.opacity(0.3))
-                    Button("Restore") { Task { await restoreTapped() } }
-                }
-                .font(.system(.caption, design: .rounded))
-                .foregroundColor(.black.opacity(0.68))
-                .padding(.top, 10)
+                    if !restoreMessage.isEmpty {
+                        Text(restoreMessage)
+                            .font(.caption)
+                            .foregroundColor(
+                                restoreMessage.contains("success") ? .green : .red
+                            )
+                            .padding(.top, 8)
+                    }
 
-                if !restoreMessage.isEmpty {
-                    Text(restoreMessage)
-                        .font(.caption)
-                        .foregroundColor(
-                            restoreMessage.contains("success") ? .green : .red
-                        )
-                        .padding(.top, 8)
+                    Spacer(minLength: 20)
                 }
-
-                Spacer(minLength: 20)
+                .padding(.bottom, safeAreaBottom() + 10)
             }
-            .padding(.bottom, safeAreaBottom() + 10)
         }
         .onChange(of: purchaseVM.isSubscribed) { _, newValue in
             if newValue { completePaywall() }
@@ -190,14 +188,19 @@ struct PaywallView: View {
         }
     }
 
-    // MARK: - Completion Handler
+    // MARK: - Completion
     private func completePaywall() {
-        purchaseVM.triggerPaywallAfterOnboarding = false
         isPresented = false
     }
 
     // MARK: - Logic
     private func purchaseTapped() async {
+        // ✅ Guard against empty products (common in sandbox/slow network)
+        guard !purchaseVM.allProducts.isEmpty else {
+            restoreMessage = "Still loading products, please try again."
+            return
+        }
+
         isProcessing = true
         restoreMessage = ""
 
@@ -206,6 +209,7 @@ struct PaywallView: View {
             : "luvdeck_annual_2999"
 
         guard let product = purchaseVM.allProducts.first(where: { $0.id == productID }) else {
+            restoreMessage = "Product not found. Please try again."
             isProcessing = false
             return
         }
@@ -238,7 +242,6 @@ struct PaywallView: View {
 private enum PaywallPlan: String { case weekly, annual }
 
 private struct PlanCard: View {
-
     let planName: String
     let price: String
     let subtitle: String?
@@ -253,9 +256,7 @@ private struct PlanCard: View {
                 Color.white
 
                 HStack(spacing: 16) {
-                    // Left: only price & subtitle
                     VStack(alignment: .leading, spacing: 2) {
-
                         Text(price)
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundColor(.black)
@@ -273,10 +274,7 @@ private struct PlanCard: View {
 
                     Spacer()
 
-                    // Right side: tick circle + badge
                     ZStack(alignment: .topTrailing) {
-
-                        // Tick circle
                         ZStack {
                             Circle()
                                 .stroke(Color.gray.opacity(0.3), lineWidth: 2)
@@ -293,7 +291,6 @@ private struct PlanCard: View {
                             }
                         }
 
-                        // Badge
                         if let right = rightText {
                             Text(right)
                                 .font(.system(size: 12, weight: .bold, design: .rounded))
