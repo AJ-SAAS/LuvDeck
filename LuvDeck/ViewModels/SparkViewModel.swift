@@ -3,23 +3,33 @@ import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
 
-@MainActor
 class SparkViewModel: ObservableObject {
     
     // MARK: - Spark UI
     @Published var showingSheet = false
     @Published var selectedItem: SparkItem?
     @Published var showPaywall = false
-    
-    // ✅ Changed from @AppStorage to @Published so it stays in sync with PurchaseViewModel
     @Published var isPremium: Bool = false
     
     // MARK: - Momentum
     @Published var showMomentumSheet = false
     @Published var userSparks: [Spark] = []
     
+    // ✅ Holds the auth listener so it doesn't get deallocated
+    private var authListener: AuthStateDidChangeListenerHandle?
+    
     init() {
-        fetchCurrentUserSparks()
+        // ✅ Wait for Firebase Auth to restore session, then fetch
+        authListener = Auth.auth().addStateDidChangeListener { [weak self] _, user in
+            guard let self = self, let userId = user?.uid else { return }
+            self.fetchUserSparks(userId: userId)
+        }
+    }
+    
+    deinit {
+        if let listener = authListener {
+            Auth.auth().removeStateDidChangeListener(listener)
+        }
     }
     
     // MARK: - Fetch
@@ -29,11 +39,42 @@ class SparkViewModel: ObservableObject {
     }
     
     func fetchUserSparks(userId: String) {
-        FirebaseManager.shared.fetchUserSparks(userId: userId) { sparks in
-            DispatchQueue.main.async {
-                if sparks.isEmpty {
-                    self.seedUserSparksIfNeeded(userId: userId)
-                } else {
+        FirebaseManager.shared.fetchUserSparks(userId: userId) { [weak self] sparks in
+            guard let self = self else { return }
+            
+            // ✅ TEMP DEBUG - remove after testing
+            print("📦 Fetched \(sparks.count) sparks")
+            sparks.prefix(3).forEach { print("  - \($0.title) | category: \($0.category)") }
+            
+            if sparks.isEmpty {
+                self.seedUserSparksIfNeeded(userId: userId)
+                return
+            }
+
+            let needsMigration = sparks.contains { spark in
+                momentumDatabase.first(where: { $0.text == spark.title })?.category != spark.category
+            }
+            
+            // ✅ TEMP DEBUG
+            print("🔄 Needs migration: \(needsMigration)")
+
+            if needsMigration {
+                let migratedSparks: [Spark] = sparks.map { spark in
+                    if let match = momentumDatabase.first(where: { $0.text == spark.title }) {
+                        return Spark(id: spark.id, title: spark.title, completed: spark.completed, category: match.category)
+                    }
+                    return spark
+                }
+                DispatchQueue.main.async {
+                    self.userSparks = migratedSparks
+                }
+                DispatchQueue.global(qos: .background).async {
+                    migratedSparks.forEach {
+                        FirebaseManager.shared.saveSpark(userId: userId, spark: $0)
+                    }
+                }
+            } else {
+                DispatchQueue.main.async {
                     self.userSparks = sparks
                 }
             }
@@ -57,12 +98,21 @@ class SparkViewModel: ObservableObject {
         }
         
         let newSparks: [Spark] = sortedItems.map { item in
-            Spark(id: UUID(), title: item.text, completed: false)
+            Spark(id: UUID(), title: item.text, completed: false, category: item.category)
         }
         
-        self.userSparks = newSparks
-        newSparks.forEach {
-            FirebaseManager.shared.saveSpark(userId: userId, spark: $0)
+        // ✅ TEMP DEBUG
+        print("🌱 Seeding \(newSparks.count) sparks")
+        newSparks.prefix(3).forEach { print("  - \($0.title) | category: \($0.category)") }
+        
+        DispatchQueue.main.async {
+            self.userSparks = newSparks
+        }
+        
+        DispatchQueue.global(qos: .background).async {
+            newSparks.forEach {
+                FirebaseManager.shared.saveSpark(userId: userId, spark: $0)
+            }
         }
     }
     
@@ -71,23 +121,23 @@ class SparkViewModel: ObservableObject {
         guard let index = userSparks.firstIndex(where: { $0.id == spark.id }) else { return }
         
         if isPremium || sparkIsFree(spark) {
-            withAnimation(.easeInOut(duration: 0.25)) {
-                userSparks[index].completed.toggle()
+            DispatchQueue.main.async {
+                withAnimation(.easeInOut(duration: 0.25)) {
+                    self.userSparks[index].completed.toggle()
+                }
             }
-            
             if let userId = Auth.auth().currentUser?.uid {
                 FirebaseManager.shared.saveSpark(userId: userId, spark: userSparks[index])
             }
         } else {
-            showPaywall = true
+            DispatchQueue.main.async {
+                self.showPaywall = true
+            }
         }
     }
     
     private func sparkIsFree(_ spark: Spark) -> Bool {
-        if let item = momentumDatabase.first(where: { $0.text == spark.title }) {
-            return item.category == .playfulness
-        }
-        return false
+        spark.category == .playfulness
     }
     
     // MARK: - Progress

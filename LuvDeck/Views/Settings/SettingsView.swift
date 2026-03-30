@@ -1,4 +1,5 @@
-// SettingsView.swift — FINAL DESIGN (2025) – Dark Mode Fixed
+// SettingsView.swift — Updated with Premium Gradient Card
+
 import SwiftUI
 import FirebaseAuth
 import RevenueCat
@@ -20,122 +21,120 @@ struct SettingsView: View {
     @State private var isRestoring = false
 
     var body: some View {
-        List {
-            // MARK: - Messages
-            if let error = errorMessage {
-                Text(error)
-                    .foregroundStyle(.red)
-                    .font(.caption)
-                    .listRowBackground(Color.clear)
-            }
-            if let success = successMessage {
-                Text(success)
-                    .foregroundStyle(.green)
-                    .font(.caption)
-                    .listRowBackground(Color.clear)
-            }
-
-            // MARK: - Profile
-            Section("Profile") {
-                NavigationLink("Username") { updateUsernameView }
-                    .foregroundStyle(.primary)
-            }
-
-            // MARK: - Account
-            Section("Account") {
-                NavigationLink("Update Email") { updateEmailView }
-                    .foregroundStyle(.primary)
-                NavigationLink("Update Password") { updatePasswordView }
-                    .foregroundStyle(.primary)
-            }
-
-            // MARK: - Premium
-            Section("Premium") {
-                Button {
-                    showPaywall = true
-                } label: {
-                    Label("Get LuvDeck Premium", systemImage: "crown.fill")
-                        .fontWeight(.bold)
+        VStack(spacing: 0) {
+            // MARK: - Premium Promotion Card (Top)
+            premiumStatusCard
+            
+            List {
+                // MARK: - Messages
+                if let error = errorMessage {
+                    Text(error)
                         .foregroundStyle(.red)
+                        .font(.caption)
+                        .listRowBackground(Color.clear)
+                }
+                if let success = successMessage {
+                    Text(success)
+                        .foregroundStyle(.green)
+                        .font(.caption)
+                        .listRowBackground(Color.clear)
                 }
 
-                Button {
-                    Task { await restorePurchases() }
-                } label: {
-                    HStack {
-                        Label("Restore Purchases", systemImage: "arrow.clockwise")
-                        if isRestoring {
-                            Spacer()
-                            ProgressView()
-                                .scaleEffect(0.8)
-                        }
-                    }
-                    .foregroundStyle(.primary)
-                }
-                .disabled(isRestoring)
-
-                Button {
-                    openSubscriptionManagement()
-                } label: {
-                    Label("Manage Subscription", systemImage: "gear")
+                // MARK: - Profile
+                Section("Profile") {
+                    NavigationLink("Username") { updateUsernameView }
                         .foregroundStyle(.primary)
                 }
-            }
 
-            // MARK: - Support
-            Section("Support") {
-                Link(destination: URL(string: "mailto:helloluvdeck@gmail.com")!) {
-                    Label("Contact Us", systemImage: "envelope.fill")
-                        .foregroundStyle(.blue)
+                // MARK: - Account
+                Section("Account") {
+                    NavigationLink("Update Email") { updateEmailView }
+                        .foregroundStyle(.primary)
+                    NavigationLink("Update Password") { updatePasswordView }
+                        .foregroundStyle(.primary)
                 }
 
-                Button { sendFeedback() } label: {
-                    Label("Share Your Feedback", systemImage: "message")
-                        .foregroundStyle(.blue)
-                }
-
-                Button {
-                    if let url = URL(string: "https://apps.apple.com/us/app/relationship-dates-luvdeck/id6755172208?action=write-review") {
-                        UIApplication.shared.open(url)
+                // MARK: - Premium Section (Old button removed)
+                Section("Premium") {
+                    Button {
+                        Task { await restorePurchases() }
+                    } label: {
+                        HStack {
+                            Label("Restore Purchases", systemImage: "arrow.clockwise")
+                            if isRestoring {
+                                Spacer()
+                                ProgressView()
+                                    .scaleEffect(0.8)
+                            }
+                        }
+                        .foregroundStyle(.primary)
                     }
-                } label: {
-                    Label("Rate Us ⭐️", systemImage: "star.fill")
-                        .foregroundStyle(.blue)
-                }
-            }
+                    .disabled(isRestoring)
 
-            // MARK: - Legal
-            Section("Legal") {
-                Link(
-                    "Terms of Use",
-                    destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
-                )
-                .foregroundStyle(.primary)
-
-                Link(
-                    "Privacy Policy",
-                    destination: URL(string: "https://www.luvdeck.com/r/privacy")!
-                )
-                .foregroundStyle(.primary)
-
-                Link(
-                    "Visit Website",
-                    destination: URL(string: "https://www.luvdeck.com")!
-                )
-                .foregroundStyle(.primary)
-            }
-
-            // MARK: - Danger Zone
-            Section {
-                Button("Sign Out", role: .destructive) {
-                    authViewModel.signOut()
+                    Button {
+                        openSubscriptionManagement()
+                    } label: {
+                        Label("Manage Subscription", systemImage: "gear")
+                            .foregroundStyle(.primary)
+                    }
                 }
 
-                Button("Delete Account", role: .destructive) {
-                    showingAlert = true
-                    alertMessage = "Are you sure you want to delete your account? This action cannot be undone."
+                // MARK: - Support
+                Section("Support") {
+                    Link(destination: URL(string: "mailto:helloluvdeck@gmail.com")!) {
+                        Label("Contact Us", systemImage: "envelope.fill")
+                            .foregroundStyle(.blue)
+                    }
+
+                    Button { sendFeedback() } label: {
+                        Label("Share Your Feedback", systemImage: "message")
+                            .foregroundStyle(.blue)
+                    }
+
+                    Button {
+                        if let url = URL(string: "https://apps.apple.com/us/app/relationship-dates-luvdeck/id6755172208?action=write-review") {
+                            UIApplication.shared.open(url)
+                        }
+                    } label: {
+                        Label("Rate Us ⭐️", systemImage: "star.fill")
+                            .foregroundStyle(.blue)
+                    }
+                }
+
+                // MARK: - Legal
+                Section("Legal") {
+                    Link(
+                        "Terms of Use",
+                        destination: URL(string: "https://www.apple.com/legal/internet-services/itunes/dev/stdeula/")!
+                    )
+                    .foregroundStyle(.primary)
+
+                    Link(
+                        "Privacy Policy",
+                        destination: URL(string: "https://www.luvdeck.com/r/privacy")!
+                    )
+                    .foregroundStyle(.primary)
+
+                    Link(
+                        "Visit Website",
+                        destination: URL(string: "https://www.luvdeck.com")!
+                    )
+                    .foregroundStyle(.primary)
+                }
+
+                // MARK: - Danger Zone
+                Section {
+                    Button("Sign Out", role: .destructive) {
+                        authViewModel.signOut()
+                    }
+
+                    Button("Delete Account", role: .destructive) {
+                        showingAlert = true
+                        alertMessage = "Are you sure you want to delete your account? This action cannot be undone."
+                    }
                 }
             }
+            .listStyle(.insetGrouped)
         }
         // ✅ FORCE WHITE TAB BAR BACKGROUND (Settings ONLY)
         .toolbarBackground(Color.white, for: .tabBar)
@@ -154,6 +153,65 @@ struct SettingsView: View {
         }
         .task {
             await loadCurrentUserData()
+        }
+    }
+
+    // MARK: - Premium Status Card with Custom Gradient
+    private var premiumStatusCard: some View {
+        let isPremium = purchaseVM.isPremium
+
+        return VStack(alignment: .leading, spacing: 10) {
+            if isPremium {
+                // Subscribed state
+                HStack(spacing: 12) {
+                    Text("LuvDeck Premium")
+                        .font(.title2.bold())
+                        .foregroundStyle(.white)
+                    
+                    Spacer()
+                    
+                    Image(systemName: "checkmark.seal.fill")
+                        .font(.title2)
+                        .foregroundStyle(.white)
+                }
+                
+                Text("Unlocked ✨ All 365+ date ideas, couple q's, momentum prompts, and features.")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.95))
+                    .fixedSize(horizontal: false, vertical: true)
+            } else {
+                // Upgrade state - matches your request
+                Text("Upgrade to LuvDeck Premium")
+                    .font(.title2.bold())
+                    .foregroundStyle(.white)
+                
+                Text("Unlocks all 365+ date ideas, couple q's, momentum prompts, and features")
+                    .font(.subheadline)
+                    .foregroundStyle(.white.opacity(0.9))
+                    .fixedSize(horizontal: false, vertical: true)
+            }
+        }
+        .padding(20)
+        .frame(maxWidth: .infinity, alignment: .leading)
+        .background(
+            LinearGradient(
+                colors: [
+                    Color(hex: "#fd0093"),
+                    Color(hex: "#ff0400")
+                ],
+                startPoint: .topLeading,
+                endPoint: .bottomTrailing
+            )
+        )
+        .clipShape(RoundedRectangle(cornerRadius: 16))
+        .padding(.horizontal, 16)
+        .padding(.top, 12)
+        .padding(.bottom, 8)
+        .shadow(color: Color.black.opacity(0.25), radius: 12, x: 0, y: 6)
+        .onTapGesture {
+            if !isPremium {
+                showPaywall = true
+            }
         }
     }
 
@@ -221,12 +279,11 @@ struct SettingsView: View {
         }
     }
 
-    private func updateUsername() { /* unchanged */ }
-    private func updateEmail() { /* unchanged */ }
-    private func updatePassword() { /* unchanged */ }
-
-    private func restorePurchases() async { /* unchanged */ }
-    private func openSubscriptionManagement() { /* unchanged */ }
+    private func updateUsername() { /* implement your logic */ }
+    private func updateEmail() { /* implement your logic */ }
+    private func updatePassword() { /* implement your logic */ }
+    private func restorePurchases() async { /* implement your logic */ }
+    private func openSubscriptionManagement() { /* implement your logic */ }
 }
 
 // MARK: - Primary Button Style
@@ -238,6 +295,33 @@ private extension View {
             .foregroundStyle(.white)
             .cornerRadius(10)
             .padding(.horizontal)
+    }
+}
+
+// MARK: - Hex Color Extension
+extension Color {
+    init(hex: String) {
+        let hex = hex.trimmingCharacters(in: CharacterSet.alphanumerics.inverted)
+        var int: UInt64 = 0
+        Scanner(string: hex).scanHexInt64(&int)
+        let a, r, g, b: UInt64
+        switch hex.count {
+        case 3: // RGB (12-bit)
+            (a, r, g, b) = (255, (int >> 8) * 17, (int >> 4 & 0xF) * 17, (int & 0xF) * 17)
+        case 6: // RGB (24-bit)
+            (a, r, g, b) = (255, int >> 16, int >> 8 & 0xFF, int & 0xFF)
+        case 8: // ARGB (32-bit)
+            (a, r, g, b) = (int >> 24, int >> 16 & 0xFF, int >> 8 & 0xFF, int & 0xFF)
+        default:
+            (a, r, g, b) = (255, 0, 0, 0)
+        }
+        self.init(
+            .sRGB,
+            red: Double(r) / 255,
+            green: Double(g) / 255,
+            blue: Double(b) / 255,
+            opacity: Double(a) / 255
+        )
     }
 }
 

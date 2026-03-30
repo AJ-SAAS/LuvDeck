@@ -7,15 +7,20 @@ struct SparkMomentumView: View {
 
     @State private var selectedChapter: MomentumCategory = .playfulness
     @State private var animatedTasks: Set<UUID> = []
-    @State private var showPaywallLocal = false  // ✅ local paywall trigger
+    @State private var showPaywallLocal = false
 
-    // Deep plum that matches the Momentum card gradient
+    // ✅ Local completed state saved to UserDefaults by task title
+    @State private var completedTitles: Set<String> = []
+
     private let bgTop    = Color(red: 0.28, green: 0.08, blue: 0.45)
     private let bgBottom = Color(red: 0.48, green: 0.10, blue: 0.30)
 
+    // ✅ All tasks hardcoded from momentumDatabase — no Firebase dependency
+    private let allSparks: [Spark] = momentumDatabase
+        .map { Spark(id: UUID(), title: $0.text, completed: false, category: $0.category) }
+
     var body: some View {
         ZStack {
-            // Background gradient matching the Momentum card
             LinearGradient(
                 colors: [bgTop, bgBottom],
                 startPoint: .topLeading,
@@ -30,14 +35,38 @@ struct SparkMomentumView: View {
             }
         }
         .preferredColorScheme(.dark)
-        // ✅ Paywall presented directly from this view
         .sheet(isPresented: $showPaywallLocal) {
             PaywallView(isPresented: $showPaywallLocal, purchaseVM: purchaseVM)
         }
-        // ✅ Instantly unlock chapters if purchase completes while sheet is open
         .onChange(of: purchaseVM.isSubscribed) { _, newValue in
             vm.isPremium = newValue
         }
+        .onAppear {
+            loadCompletedTitles()
+        }
+    }
+
+    // MARK: - Load / Save
+    private func loadCompletedTitles() {
+        let saved = UserDefaults.standard.stringArray(forKey: "completedMomentumTitles") ?? []
+        completedTitles = Set(saved)
+    }
+
+    private func saveCompletedTitles() {
+        UserDefaults.standard.set(Array(completedTitles), forKey: "completedMomentumTitles")
+    }
+
+    private func toggleCompleted(for spark: Spark) {
+        if completedTitles.contains(spark.title) {
+            completedTitles.remove(spark.title)
+        } else {
+            completedTitles.insert(spark.title)
+        }
+        saveCompletedTitles()
+    }
+
+    private func isCompleted(_ spark: Spark) -> Bool {
+        completedTitles.contains(spark.title)
     }
 
     // MARK: - Header
@@ -70,11 +99,11 @@ struct SparkMomentumView: View {
 
             VStack(spacing: 8) {
                 HStack {
-                    Text("\(Int(vm.completionPercentage))% complete")
+                    Text("\(Int(overallCompletionPercentage))% complete")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.7))
                     Spacer()
-                    Text("\(completedCount) / \(vm.userSparks.count) done")
+                    Text("\(completedCount) / \(totalCount) done")
                         .font(.system(size: 13, weight: .semibold, design: .rounded))
                         .foregroundStyle(.white.opacity(0.7))
                 }
@@ -95,7 +124,7 @@ struct SparkMomentumView: View {
                                 )
                             )
                             .frame(
-                                width: geo.size.width * CGFloat(vm.completionPercentage / 100),
+                                width: geo.size.width * CGFloat(overallCompletionPercentage / 100),
                                 height: 6
                             )
                             .shadow(color: .white.opacity(0.5), radius: 4)
@@ -116,7 +145,6 @@ struct SparkMomentumView: View {
                     let isSelected = selectedChapter == chapter
                     let isLocked = !vm.isPremium && chapter != .playfulness
                     let progress = chapterProgress(chapter)
-                    let colors = gradientColors(chapter)
 
                     Button {
                         withAnimation(.spring(response: 0.35, dampingFraction: 0.75)) {
@@ -178,7 +206,9 @@ struct SparkMomentumView: View {
     private var taskList: some View {
         let chapter = selectedChapter
         let isChapterLocked = !vm.isPremium && chapter != .playfulness
-        let sparks = vm.userSparks.filter { sparkToMomentumItem($0)?.category == chapter }
+        // ✅ All chapters now use hardcoded allSparks — no Firebase needed
+        let sparks = allSparks.filter { $0.category == chapter }
+        let completedInChapter = sparks.filter { isCompleted($0) }.count
 
         return ScrollView {
             VStack(spacing: 10) {
@@ -188,7 +218,7 @@ struct SparkMomentumView: View {
                         Text(chapter.rawValue)
                             .font(.system(size: 20, weight: .bold, design: .rounded))
                             .foregroundStyle(.white)
-                        Text("\(sparks.filter(\.completed).count) of \(sparks.count) completed")
+                        Text("\(completedInChapter) of \(sparks.count) completed")
                             .font(.system(size: 13, weight: .medium, design: .rounded))
                             .foregroundStyle(.white.opacity(0.6))
                     }
@@ -213,30 +243,29 @@ struct SparkMomentumView: View {
 
     // MARK: - Task Row
     private func taskRow(spark: Spark) -> some View {
-        let isCompleted = spark.completed
+        let completed = isCompleted(spark)
         let isAnimating = animatedTasks.contains(spark.id)
 
         return Button {
-            vm.toggleSpark(spark)
-            if !isCompleted {
-                withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+            withAnimation(.spring(response: 0.4, dampingFraction: 0.6)) {
+                toggleCompleted(for: spark)
+                if !completed {
                     animatedTasks.insert(spark.id)
                 }
-                DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
-                    animatedTasks.remove(spark.id)
-                }
+            }
+            DispatchQueue.main.asyncAfter(deadline: .now() + 0.6) {
+                animatedTasks.remove(spark.id)
             }
             triggerHaptic()
         } label: {
             HStack(spacing: 14) {
 
-                // Checkbox
                 ZStack {
                     Circle()
                         .stroke(.white.opacity(0.35), lineWidth: 1.5)
                         .frame(width: 28, height: 28)
 
-                    if isCompleted {
+                    if completed {
                         Circle()
                             .fill(.white)
                             .frame(width: 28, height: 28)
@@ -250,9 +279,9 @@ struct SparkMomentumView: View {
 
                 Text(spark.title)
                     .font(.system(size: 15, weight: .medium, design: .rounded))
-                    .foregroundStyle(isCompleted ? .white.opacity(0.5) : .white)
+                    .foregroundStyle(completed ? .white.opacity(0.5) : .white)
                     .multilineTextAlignment(.leading)
-                    .strikethrough(isCompleted, color: .white.opacity(0.4))
+                    .strikethrough(completed, color: .white.opacity(0.4))
 
                 Spacer()
             }
@@ -260,11 +289,10 @@ struct SparkMomentumView: View {
             .padding(.vertical, 16)
             .background(
                 RoundedRectangle(cornerRadius: 14)
-                    // ✅ Lighter frosted white card
-                    .fill(.white.opacity(isCompleted ? 0.10 : 0.18))
+                    .fill(.white.opacity(completed ? 0.10 : 0.18))
                     .overlay(
                         RoundedRectangle(cornerRadius: 14)
-                            .stroke(.white.opacity(isCompleted ? 0.1 : 0.25), lineWidth: 1)
+                            .stroke(.white.opacity(completed ? 0.1 : 0.25), lineWidth: 1)
                     )
             )
         }
@@ -275,7 +303,6 @@ struct SparkMomentumView: View {
     // MARK: - Paywall Teaser
     private var paywallTeaser: some View {
         ZStack {
-            // Ghost rows behind blur
             VStack(spacing: 10) {
                 ForEach(0..<3, id: \.self) { _ in
                     RoundedRectangle(cornerRadius: 14)
@@ -286,7 +313,6 @@ struct SparkMomentumView: View {
             }
             .blur(radius: 5)
 
-            // Lock overlay
             VStack(spacing: 14) {
                 Image(systemName: "lock.fill")
                     .font(.system(size: 28))
@@ -296,11 +322,11 @@ struct SparkMomentumView: View {
                     .font(.system(size: 17, weight: .bold, design: .rounded))
                     .foregroundStyle(.white)
 
-                Text("Get all 5 chapters and 50 challenges")
+                // ✅ Updated copy to reflect new task count
+                Text("Get all 5 chapters and 90 challenges")
                     .font(.system(size: 14, weight: .medium, design: .rounded))
                     .foregroundStyle(.white.opacity(0.65))
 
-                // ✅ Now triggers local sheet which works from within this view
                 Button {
                     showPaywallLocal = true
                 } label: {
@@ -320,16 +346,24 @@ struct SparkMomentumView: View {
     }
 
     // MARK: - Helpers
-    private var completedCount: Int { vm.userSparks.filter(\.completed).count }
-
-    private func chapterProgress(_ category: MomentumCategory) -> CGFloat {
-        let all = vm.userSparks.filter { sparkToMomentumItem($0)?.category == category }
-        guard !all.isEmpty else { return 0 }
-        return CGFloat(all.filter(\.completed).count) / CGFloat(all.count)
+    private var completedCount: Int {
+        momentumDatabase.filter { completedTitles.contains($0.text) }.count
     }
 
-    private func sparkToMomentumItem(_ spark: Spark) -> MomentumItem? {
-        momentumDatabase.first { $0.text == spark.title }
+    private var totalCount: Int {
+        momentumDatabase.count
+    }
+
+    private var overallCompletionPercentage: Double {
+        guard totalCount > 0 else { return 0 }
+        return (Double(completedCount) / Double(totalCount)) * 100
+    }
+
+    private func chapterProgress(_ category: MomentumCategory) -> CGFloat {
+        let all = momentumDatabase.filter { $0.category == category }
+        guard !all.isEmpty else { return 0 }
+        let done = all.filter { completedTitles.contains($0.text) }.count
+        return CGFloat(done) / CGFloat(all.count)
     }
 
     private func triggerHaptic() {

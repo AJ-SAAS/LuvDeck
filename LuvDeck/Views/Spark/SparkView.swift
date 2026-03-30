@@ -65,45 +65,33 @@ struct SparkView: View {
                 }
                 .padding(.horizontal)
             }
-
             .navigationBarTitleDisplayMode(.inline)
             .toolbar {
-                ToolbarItem(placement: .topBarLeading) {
-                    Color.clear.frame(width: 24, height: 24)
-                }
                 ToolbarItem(placement: .principal) {
-                    Image("luvdeckclean")
-                        .resizable()
-                        .scaledToFit()
-                        .frame(width: 140, height: 48)
-                        .padding(.vertical, 6)
+                    Text("LuvDeck")
+                        .font(.system(size: 22, weight: .bold, design: .rounded))
+                        .foregroundStyle(.pink)
                 }
             }
-
             .sheet(isPresented: $vm.showingSheet) {
                 if let item = vm.selectedItem {
-                    SparkDetailView(spark: Spark(id: UUID(), title: item.text, completed: false))
+                    SparkDetailView(spark: Spark(id: UUID(), title: item.text, completed: false, category: .playfulness))
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
                 }
             }
-
             .sheet(isPresented: $vm.showMomentumSheet) {
                 SparkMomentumView(vm: vm, purchaseVM: purchaseVM)
             }
-
             .sheet(isPresented: $vm.showPaywall) {
                 PaywallView(isPresented: $vm.showPaywall, purchaseVM: purchaseVM)
             }
-
-            // ✅ Sync on change AND on appear
             .onChange(of: purchaseVM.isSubscribed) { _, newValue in
                 vm.isPremium = newValue
             }
             .onAppear {
-                vm.isPremium = purchaseVM.isSubscribed  // ✅ fixes already-subscribed users
+                vm.isPremium = purchaseVM.isSubscribed
             }
-
             .overlay(alignment: .bottom) {
                 howItWorksCard
                     .padding(.horizontal)

@@ -1,5 +1,5 @@
 import Foundation
-import StoreKit
+import RevenueCat
 import SwiftUI
 import FirebaseAuth
 import FirebaseFirestore
@@ -7,14 +7,14 @@ import FirebaseFirestore
 @MainActor
 class PurchaseViewModel: ObservableObject {
     @Published var isSubscribed: Bool = false
-    @Published var purchasedItems: [Product] = []
-    @Published var allProducts: [Product] = []
+    @Published var allPackages: [Package] = []       // <- Updated to Package
     @Published var isLoading: Bool = false
     @Published var showError: Bool = false
     @Published var errorMessage: String = ""
 
     @Published var shouldPresentPaywall: Bool = false
     @Published var triggerPaywallAfterOnboarding: Bool = false
+    @Published var selectedPackageIndex: Int = 0     // <- Track which plan is selected
 
     var isPremium: Bool { isSubscribed }
 
@@ -28,53 +28,34 @@ class PurchaseViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Fetch Products (with retry)
+    // MARK: - Fetch RevenueCat Products (Annual + Lifetime only)
     func fetchProducts() async {
-        let productIDs: Set<String> = [
-            "luvdeck_weekly_399",
-            "luvdeck_annual_2999",
-            "luvdeck_lifetime_8999"
-        ]
-
-        for attempt in 1...3 {
-            do {
-                let products = try await Product.products(for: productIDs)
-                if !products.isEmpty {
-                    DispatchQueue.main.async {
-                        self.allProducts = products.sorted { $0.displayName < $1.displayName }
-                    }
-                    return
-                }
-            } catch {
-                print("fetchProducts attempt \(attempt) failed: \(error)")
-            }
-            try? await Task.sleep(nanoseconds: 1_000_000_000)
-        }
-        print("⚠️ Could not load products after 3 attempts")
-    }
-
-    // MARK: - Purchase
-    func purchase(product: Product) async {
         isLoading = true
         defer { isLoading = false }
 
         do {
-            let result = try await product.purchase()
-            switch result {
-            case .success(let verification):
-                switch verification {
-                case .verified(let transaction):
-                    await transaction.finish()
-                    await updateSubscriptionStatus()
-                case .unverified:
-                    print("Unverified transaction")
-                }
-            case .userCancelled:
-                break
-            case .pending:
-                break
-            default:
-                break
+            let offerings = try await Purchases.shared.offerings()
+            if let availablePackages = offerings.current?.availablePackages {
+                // Only include Annual + Lifetime packages
+                self.allPackages = availablePackages.filter { $0.packageType == .annual || $0.packageType == .lifetime }
+            }
+        } catch {
+            errorMessage = "Failed to load products: \(error.localizedDescription)"
+            showError = true
+        }
+    }
+
+    // MARK: - Purchase a package
+    func purchase(package: Package) async {
+        isLoading = true
+        defer { isLoading = false }
+
+        do {
+            let result = try await Purchases.shared.purchase(package: package)
+            
+            // Check if entitlement is active after purchase
+            if result.customerInfo.entitlements[entitlementID]?.isActive == true {
+                isSubscribed = true
             }
         } catch {
             errorMessage = "Purchase failed: \(error.localizedDescription)"
@@ -88,50 +69,37 @@ class PurchaseViewModel: ObservableObject {
         defer { isLoading = false }
 
         do {
-            try await AppStore.sync()
-            await updateSubscriptionStatus()
+            let customerInfo = try await Purchases.shared.restorePurchases()
+            isSubscribed = customerInfo.entitlements[entitlementID]?.isActive == true
         } catch {
             errorMessage = "Restore failed: \(error.localizedDescription)"
             showError = true
         }
     }
 
-    // MARK: - Update Subscription Status
+    // MARK: - Check Subscription Status
     func updateSubscriptionStatus() async {
-        for await result in Transaction.currentEntitlements {
-            switch result {
-            case .verified(let transaction):
-                if transaction.productID == "luvdeck_weekly_399" ||
-                   transaction.productID == "luvdeck_annual_2999" ||
-                   transaction.productID == "luvdeck_lifetime_8999" {
-                    DispatchQueue.main.async {
-                        self.isSubscribed = true
-                        UserDefaults.standard.set(true, forKey: self.userDefaultsKey)
-                    }
-                    return
-                }
-            case .unverified:
-                break
-            }
-        }
-
-        DispatchQueue.main.async {
+        do {
+            let customerInfo = try await Purchases.shared.customerInfo()
+            let isActive = customerInfo.entitlements[entitlementID]?.isActive ?? false
+            self.isSubscribed = isActive
+            UserDefaults.standard.set(isActive, forKey: userDefaultsKey)
+        } catch {
+            print("Failed to fetch customer info: \(error)")
             self.isSubscribed = false
-            UserDefaults.standard.set(false, forKey: self.userDefaultsKey)
+            UserDefaults.standard.set(false, forKey: userDefaultsKey)
         }
     }
 
-    // MARK: - Complete Onboarding
+    // MARK: - Onboarding
     func completeOnboardingForCurrentUser() {
         UserDefaults.standard.set(true, forKey: "onboardingCompleted")
-
         if let userId = Auth.auth().currentUser?.uid {
             Firestore.firestore()
                 .collection("users")
                 .document(userId)
                 .setData(["onboardingCompleted": true], merge: true)
         }
-
         triggerPaywallAfterOnboarding = false
     }
 }
