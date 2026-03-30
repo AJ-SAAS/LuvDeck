@@ -75,7 +75,7 @@ struct SparkView: View {
             }
             .sheet(isPresented: $vm.showingSheet) {
                 if let item = vm.selectedItem {
-                    SparkDetailView(spark: Spark(id: UUID(), title: item.text, completed: false, category: .playfulness))
+                    SparkDetailView(spark: item)   // Fixed: Now correctly passes SparkItem
                         .presentationDetents([.medium, .large])
                         .presentationDragIndicator(.visible)
                 }
@@ -104,16 +104,15 @@ struct SparkView: View {
         }
     }
 
-    // MARK: - Spark Card
+    // MARK: - Spark Card (Fixed - no more repeating prompts + proper free limit)
     private func sparkCard(title: String, icon: String, color: Color, category: SparkCategory) -> some View {
         Button {
-            if let item = sparkDatabase.filter({ $0.category == category }).randomElement() {
-                if vm.isPremium || category == .conversation {
-                    vm.selectedItem = item
-                    vm.showingSheet = true
-                } else {
-                    vm.showPaywall = true
-                }
+            if let item = vm.getRandomSpark(for: category) {
+                vm.selectedItem = item
+                vm.showingSheet = true
+            } else {
+                // Free user has used their 3 taps for this category
+                vm.showPaywall = true
             }
         } label: {
             VStack(spacing: 16) {
@@ -136,7 +135,7 @@ struct SparkView: View {
         .buttonStyle(SparkButtonStyle())
     }
 
-    // MARK: - Momentum Card
+    // MARK: - Momentum Card (unchanged)
     private var momentumCard: some View {
         Button {
             vm.showMomentumSheet = true
@@ -193,7 +192,7 @@ struct SparkView: View {
         .buttonStyle(SparkButtonStyle())
     }
 
-    // MARK: - How It Works
+    // MARK: - How It Works (unchanged)
     private var howItWorksCard: some View {
         VStack(alignment: .leading, spacing: 12) {
             Button {
@@ -244,7 +243,7 @@ struct SparkView: View {
     }
 }
 
-// MARK: - Button Style
+// MARK: - Button Style (unchanged)
 struct SparkButtonStyle: ButtonStyle {
     func makeBody(configuration: Configuration) -> some View {
         configuration.label

@@ -1,61 +1,24 @@
 import SwiftUI
 
 struct SparkDetailView: View {
-    let spark: Spark
+    let spark: SparkItem          // Use SparkItem for quick sparks
     @Environment(\.dismiss) var dismiss
     
-    // MARK: - Determine category from title
-    private var category: Any? {  // ✅ Fixed: Any? instead of Any
-        if let item = momentumDatabase.first(where: { $0.text == spark.title }) {
-            return item.category
-        }
-        if let item = sparkDatabase.first(where: { $0.text == spark.title }) {
-            return item.category
-        }
-        return nil
-    }
-    
     private var backgroundColor: Color {
-        switch category {
-        case let c as SparkCategory:
-            switch c {
-            case .conversation: return .pink
-            case .deepQuestion: return .purple
-            case .challenge: return .red
-            case .miniAction: return .orange
-            }
-        case let c as MomentumCategory:
-            switch c {
-            case .playfulness: return .blue
-            case .emotionalDepth: return .purple
-            case .surpriseChemistry: return .pink
-            case .adventureMemory: return .orange
-            case .legendaryPartner: return .red
-            }
-        default:
-            return .gray
+        switch spark.category {
+        case .conversation: return .pink
+        case .deepQuestion: return .purple
+        case .challenge:    return .red
+        case .miniAction:   return .orange
         }
     }
     
     private var categoryIcon: String {
-        switch category {
-        case let c as SparkCategory:
-            switch c {
-            case .conversation: return "message.fill"
-            case .deepQuestion: return "heart.text.square.fill"
-            case .challenge: return "flame.fill"
-            case .miniAction: return "bolt.heart.fill"
-            }
-        case let c as MomentumCategory:
-            switch c {
-            case .playfulness: return "face.smiling.fill"
-            case .emotionalDepth: return "heart.text.square.fill"
-            case .surpriseChemistry: return "sparkles"
-            case .adventureMemory: return "map.fill"
-            case .legendaryPartner: return "star.fill"
-            }
-        default:
-            return "sparkles"
+        switch spark.category {
+        case .conversation: return "message.fill"
+        case .deepQuestion: return "heart.text.square.fill"
+        case .challenge:    return "flame.fill"
+        case .miniAction:   return "bolt.heart.fill"
         }
     }
     
@@ -66,7 +29,7 @@ struct SparkDetailView: View {
                     .font(.system(size: 80))
                     .foregroundStyle(.white.opacity(0.9))
                 
-                Text(spark.title)
+                Text(spark.text)
                     .font(.title2)
                     .fontWeight(.medium)
                     .foregroundStyle(.white)

@@ -1,5 +1,6 @@
 import Foundation
 
+// MARK: - Momentum Spark (Saved to Firestore)
 struct Spark: Identifiable, Codable {
     let id: UUID
     let title: String
