@@ -37,12 +37,12 @@ struct CongratulationsView: View {
                 Spacer(minLength: 48)
 
                 VStack(spacing: 16) {
-                    Text("Congratulations!")
+                    Text("Congrats, you’re in!")
                         .font(.system(size: 32, weight: .bold, design: .rounded))
                         .foregroundColor(.primary)
                         .multilineTextAlignment(.center)
 
-                    Text("You're all set to start your journey with LuvDeck.")
+                    Text("Built to help couples feel closer — one date at a time.")
                         .font(.system(size: 18, weight: .medium, design: .rounded))
                         .foregroundColor(.secondary)
                         .multilineTextAlignment(.center)

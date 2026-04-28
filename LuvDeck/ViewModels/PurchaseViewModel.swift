@@ -6,15 +6,17 @@ import FirebaseFirestore
 
 @MainActor
 class PurchaseViewModel: ObservableObject {
+
     @Published var isSubscribed: Bool = false
-    @Published var allPackages: [Package] = []       // <- Updated to Package
+    @Published var allPackages: [Package] = []
     @Published var isLoading: Bool = false
     @Published var showError: Bool = false
     @Published var errorMessage: String = ""
 
     @Published var shouldPresentPaywall: Bool = false
     @Published var triggerPaywallAfterOnboarding: Bool = false
-    @Published var selectedPackageIndex: Int = 0     // <- Track which plan is selected
+
+    @Published var selectedPackageIndex: Int = 0
 
     var isPremium: Bool { isSubscribed }
 
@@ -28,78 +30,102 @@ class PurchaseViewModel: ObservableObject {
         }
     }
 
-    // MARK: - Fetch RevenueCat Products (Annual + Lifetime only)
+    // MARK: - Products
     func fetchProducts() async {
         isLoading = true
         defer { isLoading = false }
 
         do {
             let offerings = try await Purchases.shared.offerings()
-            if let availablePackages = offerings.current?.availablePackages {
-                // Only include Annual + Lifetime packages
-                self.allPackages = availablePackages.filter { $0.packageType == .annual || $0.packageType == .lifetime }
+
+            if let packages = offerings.current?.availablePackages {
+                self.allPackages = packages.filter {
+                    $0.packageType == .annual || $0.packageType == .lifetime
+                }
             }
         } catch {
-            errorMessage = "Failed to load products: \(error.localizedDescription)"
+            errorMessage = error.localizedDescription
             showError = true
         }
     }
 
-    // MARK: - Purchase a package
+    // MARK: - Purchase
     func purchase(package: Package) async {
         isLoading = true
         defer { isLoading = false }
 
         do {
             let result = try await Purchases.shared.purchase(package: package)
-            
-            // Check if entitlement is active after purchase
-            if result.customerInfo.entitlements[entitlementID]?.isActive == true {
-                isSubscribed = true
-            }
+
+            let active = result.customerInfo.entitlements[entitlementID]?.isActive == true
+            isSubscribed = active
+
+            UserDefaults.standard.set(active, forKey: userDefaultsKey)
+
         } catch {
-            errorMessage = "Purchase failed: \(error.localizedDescription)"
+            errorMessage = error.localizedDescription
             showError = true
         }
     }
 
-    // MARK: - Restore Purchases
+    // MARK: - Restore
     func restorePurchases() async {
         isLoading = true
         defer { isLoading = false }
 
         do {
-            let customerInfo = try await Purchases.shared.restorePurchases()
-            isSubscribed = customerInfo.entitlements[entitlementID]?.isActive == true
+            let info = try await Purchases.shared.restorePurchases()
+
+            let active = info.entitlements[entitlementID]?.isActive == true
+            isSubscribed = active
+
+            UserDefaults.standard.set(active, forKey: userDefaultsKey)
+
         } catch {
-            errorMessage = "Restore failed: \(error.localizedDescription)"
+            errorMessage = error.localizedDescription
             showError = true
         }
     }
 
-    // MARK: - Check Subscription Status
+    // MARK: - Sync subscription state
     func updateSubscriptionStatus() async {
         do {
-            let customerInfo = try await Purchases.shared.customerInfo()
-            let isActive = customerInfo.entitlements[entitlementID]?.isActive ?? false
-            self.isSubscribed = isActive
-            UserDefaults.standard.set(isActive, forKey: userDefaultsKey)
+            let info = try await Purchases.shared.customerInfo()
+
+            let active = info.entitlements[entitlementID]?.isActive ?? false
+            isSubscribed = active
+
+            UserDefaults.standard.set(active, forKey: userDefaultsKey)
+
         } catch {
-            print("Failed to fetch customer info: \(error)")
-            self.isSubscribed = false
+            isSubscribed = false
             UserDefaults.standard.set(false, forKey: userDefaultsKey)
         }
     }
 
-    // MARK: - Onboarding
-    func completeOnboardingForCurrentUser() {
-        UserDefaults.standard.set(true, forKey: "onboardingCompleted")
-        if let userId = Auth.auth().currentUser?.uid {
-            Firestore.firestore()
-                .collection("users")
-                .document(userId)
-                .setData(["onboardingCompleted": true], merge: true)
-        }
+    // MARK: - Paywall trigger reset ONLY (safe)
+    func resetPaywallTrigger() {
         triggerPaywallAfterOnboarding = false
+        shouldPresentPaywall = false
+    }
+
+    // MARK: - Onboarding completion (IMPORTANT FIX)
+    func completeOnboardingForCurrentUser() {
+
+        // ⚠️ ONLY mark onboarding complete AFTER paywall closes
+        UserDefaults.standard.set(true, forKey: "onboardingCompleted")
+
+        guard let userId = Auth.auth().currentUser?.uid else { return }
+
+        Firestore.firestore()
+            .collection("users")
+            .document(userId)
+            .setData([
+                "onboardingCompleted": true,
+                "onboardingCompletedAt": Date()
+            ], merge: true)
+
+        // Reset paywall state safely
+        resetPaywallTrigger()
     }
 }

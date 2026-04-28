@@ -1,3 +1,5 @@
+// PaywallView.swift
+
 import SwiftUI
 import RevenueCat
 
@@ -8,6 +10,7 @@ struct PaywallView: View {
     @State private var showCloseButton = false
     @State private var isProcessing = false
     @State private var restoreMessage = ""
+    @State private var pulse = false   // For pulsating badge
 
     private let accent = Color.white
     private let tickColor = Color.green
@@ -52,16 +55,16 @@ struct PaywallView: View {
 
                         // Header
                         VStack(spacing: 12) {
-                            Text("Better Dates.\nDeeper Connection.")
+                            Text("Unlock Better Dates.\nDeeper Connection.")
                                 .font(.system(size: 31, weight: .bold, design: .rounded))
                                 .foregroundColor(.white)
                                 .multilineTextAlignment(.center)
                                 .padding(.horizontal, 28)
 
-                            // Bullet points with light black background
+                            // Bullet points
                             bulletPointsContainer
 
-                            // Social Proof Quote with gradient background
+                            // Social Proof Quote
                             socialProofQuote
                         }
 
@@ -88,14 +91,31 @@ struct PaywallView: View {
                             HStack {
                                 Spacer()
                                 Text("$1.66 / month")
-                                    .font(.system(size: 11, weight: .bold, design: .rounded))
+                                    .font(.system(size: 13, weight: .bold, design: .rounded))
                                     .foregroundColor(.white)
                                     .padding(.horizontal, 10)
                                     .padding(.vertical, 5)
-                                    .background(Color.green)
+                                    .background(
+                                        LinearGradient(
+                                            colors: [Color.pink, Color.red],
+                                            startPoint: .leading,
+                                            endPoint: .trailing
+                                        )
+                                    )
                                     .cornerRadius(20)
+                                    .scaleEffect(pulse ? 1.06 : 1.0)
+                                    .opacity(pulse ? 1.0 : 0.95)
+                                    .shadow(color: Color.pink.opacity(0.5), radius: 6, y: 2)
                                     .offset(y: -12)
                                     .padding(.trailing, 16)
+                                    .onAppear {
+                                        withAnimation(
+                                            .easeInOut(duration: 1.6)
+                                            .repeatForever(autoreverses: true)
+                                        ) {
+                                            pulse = true
+                                        }
+                                    }
                             }
                         }
 
@@ -153,23 +173,22 @@ struct PaywallView: View {
         }
     }
 
-    // MARK: - Bullet Points Container
+    // MARK: - Bullet Points Container (Your Chosen Version)
     private var bulletPointsContainer: some View {
-        VStack(alignment: .leading, spacing: 12) {
-            bulletPoint("365+ ready-to-use date ideas")
-            bulletPoint("All conversation starters & deep questions")
-            bulletPoint("Unlock all romance challenges")
-            bulletPoint("Unlimited 5 relationship modes")
-            bulletPoint("All Your Dates Saved: Organized + Reminders")
-            bulletPoint("Full access to the Momentum*")
+        VStack(alignment: .leading, spacing: 14) {
+            bulletPoint("300+ instant date ideas")
+            bulletPoint("Reignite the spark with Momentum")
+            bulletPoint("Deeper conversations every day")
+            bulletPoint("Unlimited saving & organizing of dates")
+            bulletPoint("Access everything — no limits")
         }
-        .padding(16)
+        .padding(18)
         .background(lightBlack)
-        .cornerRadius(14)
-        .padding(.horizontal, 28)
+        .cornerRadius(16)
+        .padding(.horizontal, 24)
     }
 
-    // MARK: - Social Proof Quote with Gradient
+    // MARK: - Social Proof Quote
     private var socialProofQuote: some View {
         Text("\"Best thing we've done for our relationship\"")
             .font(.system(size: 14, weight: .regular, design: .rounded).italic())
@@ -214,19 +233,19 @@ struct PaywallView: View {
         }
     }
 
-    // MARK: - Helpers
+    // MARK: - Bullet Point Helper
     private func bulletPoint(_ text: String) -> some View {
-        HStack(alignment: .top, spacing: 8) {
-            Image(systemName: "checkmark.circle.fill")
+        HStack(alignment: .top, spacing: 10) {
+            Image(systemName: "checkmark")
                 .foregroundColor(tickColor)
-                .font(.system(size: 20))
+                .font(.system(size: 19, weight: .semibold))
             Text(text)
                 .foregroundColor(.white)
-                .font(.system(size: 20, weight: .regular, design: .rounded))
-                .fixedSize(horizontal: false, vertical: true)
+                .font(.system(size: 17, weight: .regular, design: .rounded))
         }
     }
 
+    // MARK: - Helpers
     private func completePaywall() { isPresented = false }
 
     private func purchaseTapped() async {
